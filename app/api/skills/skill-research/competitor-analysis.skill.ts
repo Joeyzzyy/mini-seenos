@@ -402,6 +402,11 @@ You have full browser automation capabilities:
     whatArtifactsWillBeGenerated: [
       'Word Document'
     ],
+    expectedOutput: `• 竞争对手列表（10-20 个直接竞品，含网站 URL）
+• 定价对比表格：各竞品的定价层级、功能限制、免费试用情况
+• 功能对比矩阵：你的产品 vs 竞品的功能覆盖对比
+• 市场定位分析：价格-功能象限图、目标客群差异
+• 战略机会与威胁：可执行的差异化建议和风险预警`,
     changeDescription: '支持竞品发现、网站深度抓取及自动化 Word 报告生成。',
     playbook: {
       trigger: {
