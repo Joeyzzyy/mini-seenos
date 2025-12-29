@@ -79,8 +79,55 @@ export default function SkillsPage() {
     { id: 'research', name: '研究阶段', nameEn: 'Research Phase' },
     { id: 'build', name: '内容构建', nameEn: 'Build Phase' },
     { id: 'optimize', name: '优化阶段', nameEn: 'Optimize Phase' },
-    { id: 'monitor', name: '监控阶段', nameEn: 'Monitor Phase' }
+    { id: 'monitor', name: '监控阶段', nameEn: 'Monitor Phase' },
+    { id: 'context', name: '品牌资产', nameEn: 'Brand Context' }
   ];
+
+  // Context fields configuration
+  const contextFields = [
+    {
+      id: 'logo',
+      name: 'Logo',
+      nameCn: '品牌 Logo',
+      description: '网站的 Logo 图片，用于生成的页面 Header 和 Footer 中展示品牌标识。',
+      descriptionEn: 'Your brand logo image. Used in generated page headers and footers.',
+      importance: '所有生成的页面都会使用此 Logo，确保品牌一致性。',
+    },
+    {
+      id: 'header',
+      name: 'Header',
+      nameCn: '网站头部',
+      description: '网站的统一导航头部，包含 Logo、导航菜单和 CTA 按钮。',
+      descriptionEn: 'Unified site header with logo, navigation menu, and CTA button.',
+      importance: '所有生成的页面都会复用此 Header，保持全站导航一致。',
+    },
+    {
+      id: 'footer',
+      name: 'Footer',
+      nameCn: '网站底部',
+      description: '网站的统一底部，包含公司信息、链接分类、社交媒体链接。',
+      descriptionEn: 'Unified site footer with company info, link columns, and social media.',
+      importance: '所有生成的页面都会复用此 Footer，保持全站底部一致。',
+    },
+    {
+      id: 'meta',
+      name: 'Meta Tags',
+      nameCn: '默认 Meta 标签',
+      description: '网站的默认 <head> 标签内容，包含 SEO Meta、Open Graph、Twitter Card 等。',
+      descriptionEn: 'Default head tag content including SEO meta, Open Graph, and Twitter Cards.',
+      importance: 'AI 生成页面时会参考这些默认设置，确保 SEO 和社交分享一致性。',
+    },
+    {
+      id: 'sitemap',
+      name: 'Sitemap',
+      nameCn: '站点地图',
+      description: '通过 Site Context Acquisition 技能获取的网站 URL 结构，按类型自动分类。',
+      descriptionEn: 'Website URL structure acquired via Site Context Acquisition skill, auto-categorized.',
+      importance: 'AI 生成内部链接建议时会使用此数据，了解网站的内容结构。',
+    },
+  ];
+
+  const [selectedContextId, setSelectedContextId] = useState<string>('logo');
 
   useEffect(() => {
     fetch('/api/skills')
@@ -121,8 +168,12 @@ export default function SkillsPage() {
 
   const currentSkillId = selectedSkillId || (skills.length > 0 ? skills[0].id : '');
   
-  // Check if a tab has any skills with issues (pending_review or unresolved)
+  // Check if a tab has any skills/contexts with issues (pending_review or unresolved)
   const tabHasIssues = (tabId: string) => {
+    if (tabId === 'context') {
+      // Check context fields for issues
+      return contextFields.some(cf => executionExamples[`context_${cf.id}`]?.some(issue => issue.status !== 'resolved'));
+    }
     const skillsInTab = skills.filter(s => {
       const cat = s.metadata?.category || 'Others';
       return cat === tabId;
@@ -478,17 +529,61 @@ export default function SkillsPage() {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar: Skill List */}
+        {/* Sidebar: Skill/Context List */}
         <div className="w-80 border-r border-[#F3F4F6] bg-white flex flex-col shrink-0 h-full">
           <div className="px-6 h-[52px] border-b border-[#F3F4F6] bg-[#FAFAFA] flex items-center">
             <div className="flex flex-col">
-              <span className="text-[11px] font-black text-[#111827] leading-tight">技能列表</span>
-              <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Skills</span>
+              <span className="text-[11px] font-black text-[#111827] leading-tight">
+                {activeTab === 'context' ? '资产列表' : '技能列表'}
+              </span>
+              <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">
+                {activeTab === 'context' ? 'Context Assets' : 'Skills'}
+              </span>
             </div>
           </div>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-2 thin-scrollbar">
-            {loading ? (
+            {activeTab === 'context' ? (
+              /* Context Fields List */
+              <>
+                {contextFields.map((cf) => {
+                  const contextIssueId = `context_${cf.id}`;
+                  const hasPendingReview = executionExamples[contextIssueId]?.some(issue => issue.status === 'pending_review');
+                  const hasUnresolved = executionExamples[contextIssueId]?.some(issue => issue.status === 'unresolved');
+                  
+                  return (
+                    <button 
+                      key={cf.id}
+                      onClick={() => setSelectedContextId(cf.id)}
+                      className={`w-full text-left p-4 rounded-xl transition-all relative group ${
+                        selectedContextId === cf.id 
+                          ? 'bg-[#FAFAFA] shadow-sm border border-[#E5E5E5] text-[#111827]' 
+                          : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                      }`}
+                    >
+                      <div className="text-[14px] font-black leading-tight tracking-tight mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="block flex-1">{cf.nameCn}</span>
+                          {hasUnresolved && (
+                            <div className="relative flex-shrink-0">
+                              <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                              <div className="absolute inset-0 w-2 h-2 rounded-full bg-rose-500 animate-ping opacity-75"></div>
+                            </div>
+                          )}
+                          {!hasUnresolved && hasPendingReview && (
+                            <div className="relative flex-shrink-0">
+                              <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                              <div className="absolute inset-0 w-2 h-2 rounded-full bg-amber-500 animate-ping opacity-75"></div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-[9px] text-[#9CA3AF] font-medium uppercase tracking-wider">{cf.name}</div>
+                    </button>
+                  );
+                })}
+              </>
+            ) : loading ? (
               <div className="p-4 text-center">
                 <div className="text-[11px] text-[#111827] animate-pulse font-black mb-0.5">加载中...</div>
                 <div className="text-[8px] text-[#9CA3AF] uppercase font-medium tracking-wider">Loading...</div>
@@ -587,6 +682,266 @@ export default function SkillsPage() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 bg-white">
         <main className="flex-1 flex overflow-hidden bg-[#FCFCFC]">
+          {activeTab === 'context' ? (
+            /* Context Detail View */
+            <>
+              {/* Context Info Column */}
+              <div className="w-[40%] flex flex-col border-r border-[#F3F4F6] bg-white">
+                <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-black text-[#111827] leading-tight">资产说明</span>
+                      <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Context Description</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-8 overflow-y-auto flex-1 thin-scrollbar space-y-8">
+                  {(() => {
+                    const selectedContext = contextFields.find(cf => cf.id === selectedContextId);
+                    if (!selectedContext) return null;
+                    return (
+                      <>
+                        <div>
+                          <div className="flex flex-col mb-4">
+                            <h4 className="text-[10px] font-black text-[#111827] leading-tight">资产名称</h4>
+                            <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Asset Name</span>
+                          </div>
+                          <div className="text-xl font-black text-[#111827]">{selectedContext.nameCn}</div>
+                          <div className="text-[11px] text-[#9CA3AF] font-medium uppercase tracking-wider mt-1">{selectedContext.name}</div>
+                        </div>
+                        <div>
+                          <div className="flex flex-col mb-4">
+                            <h4 className="text-[10px] font-black text-[#111827] leading-tight">功能说明</h4>
+                            <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Description</span>
+                          </div>
+                          <p className="text-[13px] font-medium text-[#111827] leading-[1.8]">{selectedContext.description}</p>
+                          <p className="text-[11px] text-[#6B7280] leading-[1.6] mt-2">{selectedContext.descriptionEn}</p>
+                        </div>
+                        <div>
+                          <div className="flex flex-col mb-4">
+                            <h4 className="text-[10px] font-black text-[#111827] leading-tight">重要性</h4>
+                            <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Importance</span>
+                          </div>
+                          <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E5E5E5]">
+                            <p className="text-[12px] font-medium text-[#374151] leading-[1.7]">{selectedContext.importance}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex flex-col mb-4">
+                            <h4 className="text-[10px] font-black text-[#111827] leading-tight">配置入口</h4>
+                            <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Configuration Entry</span>
+                          </div>
+                          <div className="p-4 rounded-xl bg-[#F3F4F6] border border-[#E5E5E5]">
+                            <p className="text-[11px] text-[#6B7280] leading-[1.6]">
+                              在 <span className="font-bold text-[#111827]">Chat 页面</span> 左侧边栏的 <span className="font-bold text-[#111827]">On Site Context</span> 区域进行配置和管理。
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Context Feedback Column */}
+              <div className="flex-1 flex flex-col bg-[#FCFCFC]">
+                <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-black text-[#111827] leading-tight">问题反馈</span>
+                      <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Context Issues & Feedback</span>
+                    </div>
+                  </div>
+                  
+                  {/* Add Button */}
+                  {!editingExample?.startsWith('new_') && (
+                    <button
+                      onClick={() => handleEditExample(`context_${selectedContextId}`)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 transition-all uppercase tracking-wider"
+                      style={{ background: brandGradient }}
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2.5} /></svg>
+                      添加反馈
+                    </button>
+                  )}
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-8 thin-scrollbar">
+                  <div className="space-y-3">
+                    {/* New Issue Editor for Context */}
+                    {editingExample === `new_context_${selectedContextId}` && (
+                      <div 
+                        className="p-4 rounded-2xl border-2 border-[#D194EC]/30 bg-white shadow-sm space-y-3"
+                        onPaste={handlePaste}
+                      >
+                        <textarea
+                          value={tempExample}
+                          onChange={(e) => setTempExample(e.target.value)}
+                          placeholder="描述发现的问题或建议... (支持直接粘贴图片)"
+                          className="w-full p-3 rounded-xl border border-[#D194EC]/30 focus:border-[#9A8FEA] focus:outline-none text-[11px] text-[#111827] font-medium leading-relaxed resize-none"
+                          rows={3}
+                          autoFocus
+                        />
+                        <div className="flex flex-wrap items-center gap-2">
+                          {tempImages.map((url, idx) => (
+                            <div key={idx} className="relative group w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5]">
+                              <img src={url} alt="" className="w-full h-full object-cover" />
+                              <button onClick={() => handleRemoveImage(idx)} className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth={2} /></svg>
+                              </button>
+                            </div>
+                          ))}
+                          {isUploading && (
+                            <div className="w-14 h-14 rounded-lg border border-[#D194EC]/30 bg-[#FAFAFA] flex items-center justify-center">
+                              <div className="w-5 h-5 border-2 border-[#9A8FEA] border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                          )}
+                          <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-[#9A8FEA] flex flex-col items-center justify-center cursor-pointer transition-colors">
+                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                            <svg className="w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2} /></svg>
+                          </label>
+                          <span className="text-[8px] text-[#9CA3AF] ml-1">Ctrl+V 粘贴图片</span>
+                        </div>
+                        <div className="flex items-center gap-2 justify-end">
+                          <button onClick={handleCancelEdit} className="px-3 py-1.5 rounded-lg border border-[#E5E5E5] text-[9px] font-black text-[#6B7280] hover:bg-[#F3F4F6] uppercase">取消</button>
+                          <button 
+                            onClick={() => handleSaveExample(`context_${selectedContextId}`)} 
+                            className="px-4 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 uppercase shadow-sm"
+                            style={{ background: brandGradient }}
+                            disabled={isUploading}
+                          >
+                            保存
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Issues List for Context */}
+                    {executionExamples[`context_${selectedContextId}`]?.map((issue: any) => (
+                      <div key={issue.id} className={`group relative p-4 rounded-2xl border transition-all ${
+                        issue.status === 'resolved' 
+                          ? 'bg-[#F9FAFB] border-[#E5E5E5] opacity-70' 
+                          : issue.status === 'unresolved'
+                          ? 'bg-rose-50/30 border-rose-100'
+                          : 'bg-amber-50/30 border-amber-100'
+                      }`}>
+                        {editingExample === issue.id ? (
+                          <div className="space-y-3" onPaste={handlePaste}>
+                            <textarea
+                              value={tempExample}
+                              onChange={(e) => setTempExample(e.target.value)}
+                              className="w-full p-3 rounded-xl border border-[#D194EC]/30 focus:border-[#9A8FEA] focus:outline-none text-[11px] text-[#111827] font-medium leading-relaxed resize-none"
+                              rows={2}
+                              autoFocus
+                            />
+                            <div className="flex flex-wrap items-center gap-2">
+                              {tempImages.map((url, idx) => (
+                                <div key={idx} className="relative group w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5]">
+                                  <img src={url} alt="" className="w-full h-full object-cover" />
+                                  <button onClick={() => handleRemoveImage(idx)} className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth={2} /></svg>
+                                  </button>
+                                </div>
+                              ))}
+                              {isUploading && (
+                                <div className="w-14 h-14 rounded-lg border border-[#D194EC]/30 bg-[#FAFAFA] flex items-center justify-center">
+                                  <div className="w-5 h-5 border-2 border-[#9A8FEA] border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                              )}
+                              <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-[#9A8FEA] flex flex-col items-center justify-center cursor-pointer transition-colors">
+                                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                                <svg className="w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2} /></svg>
+                              </label>
+                              <span className="text-[8px] text-[#9CA3AF] ml-1">Ctrl+V 粘贴图片</span>
+                            </div>
+                            <div className="flex items-center gap-2 justify-end">
+                              <button onClick={handleCancelEdit} className="px-3 py-1.5 rounded-lg border border-[#E5E5E5] text-[9px] font-black text-[#6B7280] hover:bg-[#F3F4F6] uppercase">取消</button>
+                              <button 
+                                onClick={() => handleSaveExample(`context_${selectedContextId}`)} 
+                                className="px-4 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 uppercase shadow-sm"
+                                style={{ background: brandGradient }}
+                                disabled={isUploading}
+                              >
+                                保存
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-start justify-between gap-4 mb-2">
+                              <div className="flex items-center gap-2">
+                                {issue.status === 'unresolved' && (
+                                  <div className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0"></div>
+                                )}
+                                {issue.status === 'pending_review' && (
+                                  <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></div>
+                                )}
+                                <select
+                                  value={issue.status || 'pending_review'}
+                                  onChange={(e) => handleStatusChange(issue, `context_${selectedContextId}`, e.target.value as any)}
+                                  className={`text-[9px] font-black uppercase tracking-tight py-1 px-2 rounded-lg border cursor-pointer transition-all focus:outline-none ${
+                                    issue.status === 'resolved' 
+                                      ? 'bg-[#F3F4F6] border-[#E5E5E5] text-[#6B7280]' 
+                                      : issue.status === 'unresolved'
+                                      ? 'bg-rose-50 border-rose-200 text-rose-700'
+                                      : 'bg-amber-50 border-amber-200 text-amber-700'
+                                  }`}
+                                >
+                                  <option value="pending_review">待验收</option>
+                                  <option value="unresolved">未解决</option>
+                                  <option value="resolved">已解决</option>
+                                </select>
+                              </div>
+                              
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                <button onClick={() => handleEditExample(`context_${selectedContextId}`, issue)} className="p-1 hover:bg-[#F3F4F6] rounded-lg text-[#9CA3AF] hover:text-[#111827]"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" strokeWidth={2} /></svg></button>
+                                <button onClick={() => handleDeleteIssue(issue.id)} className="p-1 hover:bg-rose-50 rounded-lg text-[#9CA3AF] hover:text-rose-600"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth={2} /></svg></button>
+                              </div>
+                            </div>
+                            
+                            <p className={`text-[11px] font-medium leading-relaxed whitespace-pre-wrap ${issue.status === 'resolved' ? 'text-[#9CA3AF] line-through' : issue.status === 'unresolved' ? 'text-rose-600' : 'text-amber-700'}`}>
+                              {issue.text}
+                            </p>
+                            
+                            {issue.images?.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-3">
+                                {issue.images.map((url: string, idx: number) => (
+                                  <div key={idx} className="w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5] cursor-zoom-in hover:opacity-80" onClick={() => setPreviewImage(url)}>
+                                    <img src={url} alt="" className="w-full h-full object-cover" />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div className="mt-2.5 flex items-center justify-end gap-1.5 text-[7px] text-[#9CA3AF] font-bold uppercase tracking-wider">
+                              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth={2.5} /></svg>
+                              <span>{new Date(issue.updatedAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+
+                    {(!executionExamples[`context_${selectedContextId}`] || executionExamples[`context_${selectedContextId}`].length === 0) && !editingExample?.startsWith('new_') && (
+                      <div className="text-center py-12 border-2 border-dashed border-[#F3F4F6] rounded-2xl">
+                        <div className="w-12 h-12 rounded-full bg-[#FAFAFA] flex items-center justify-center mx-auto mb-3 border border-[#E5E5E5]">
+                          <svg className="w-6 h-6 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6" strokeWidth={2} /></svg>
+                        </div>
+                        <button onClick={() => handleEditExample(`context_${selectedContextId}`)} className="text-[11px] text-[#111827] hover:text-[#6B7280] font-black underline">添加首个问题反馈</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Skill Detail View */
+            <>
             {/* Input & Value Proposition Column */}
             <div className="w-[25%] flex flex-col border-r border-[#F3F4F6] bg-white">
               <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center justify-between">
@@ -1063,6 +1418,8 @@ export default function SkillsPage() {
                 )}
               </div>
           </div>
+            </>
+          )}
         </main>
 
           <footer className="p-4 border-t border-[#F3F4F6] bg-white flex items-center justify-center gap-8 shrink-0">
