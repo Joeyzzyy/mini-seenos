@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
   devIndicators: {
     position: 'bottom-right',
   },
+  async rewrites() {
+    return [
+      {
+        source: '/test-rendering/:path*',
+        destination: 'https://mini-seenos-page-rendering-seopageaiteam.vercel.app/test-rendering/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

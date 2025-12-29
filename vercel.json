@@ -1,9 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/test-rendering/:path*",
-      "destination": "https://mini-seenos-page-rendering-seopageaiteam.vercel.app/test-rendering/:path*"
-    }
-  ]
-}
-
