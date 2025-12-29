@@ -1,0 +1,90 @@
+-- ============================================
+-- Mini Agent - 数据库初始化脚本
+-- 在 Supabase SQL Editor 中运行此脚本
+-- ============================================
+
+-- 1. 创建 conversations 表
+CREATE TABLE IF NOT EXISTS conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. 创建 messages 表
+CREATE TABLE IF NOT EXISTS messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  content TEXT,
+  tool_invocations JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. 创建 files 表
+CREATE TABLE IF NOT EXISTS files (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  type TEXT,
+  size INTEGER,
+  url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. 创建 content_items 表
+CREATE TABLE IF NOT EXISTS content_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
+  title TEXT,
+  content TEXT,
+  page_type TEXT,
+  status TEXT DEFAULT 'draft',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. 创建 gsc_integrations 表（Google Search Console）
+CREATE TABLE IF NOT EXISTS gsc_integrations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+  access_token TEXT,
+  refresh_token TEXT,
+  expiry_date BIGINT,
+  authorized_sites TEXT[],
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. 启用 RLS（行级安全）
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE files ENABLE ROW LEVEL SECURITY;
+ALTER TABLE content_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE gsc_integrations ENABLE ROW LEVEL SECURITY;
+
+-- 7. 创建 RLS 策略
+CREATE POLICY "Users can access own conversations" ON conversations
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can access own messages" ON messages
+  FOR ALL USING (conversation_id IN (
+    SELECT id FROM conversations WHERE user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can access own files" ON files
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can access own content" ON content_items
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can access own gsc" ON gsc_integrations
+  FOR ALL USING (auth.uid() = user_id);
+
+-- ============================================
+-- 初始化完成
+-- ============================================
+
