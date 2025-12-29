@@ -869,18 +869,21 @@ export default function SkillsPage() {
                       <div className="space-y-3">
                         {/* New Issue Editor */}
                         {editingExample === `new_${currentSkillId}` && (
-                          <div className="p-4 rounded-2xl border-2 border-purple-200 bg-white shadow-sm space-y-3">
+                          <div 
+                            className="p-4 rounded-2xl border-2 border-purple-200 bg-white shadow-sm space-y-3"
+                            onPaste={handlePaste}
+                          >
                             <textarea
                               value={tempExample}
                               onChange={(e) => setTempExample(e.target.value)}
-                              onPaste={handlePaste}
-                              placeholder="描述发现的问题或建议... (支持直接粘贴图片)"
+                              placeholder="描述发现的问题或建议..."
                               className="w-full p-3 rounded-xl border border-[#F3F4F6] focus:border-purple-400 focus:outline-none text-[11px] text-[#111827] font-medium leading-relaxed resize-none"
                               rows={2}
+                              autoFocus
                             />
                             
                             {/* Image Upload Area */}
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               {tempImages.map((url, idx) => (
                                 <div key={idx} className="relative group w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5]">
                                   <img src={url} alt="" className="w-full h-full object-cover" />
@@ -889,10 +892,16 @@ export default function SkillsPage() {
                                   </button>
                                 </div>
                               ))}
-                              <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-purple-400 flex flex-col items-center justify-center cursor-pointer">
+                              {isUploading && (
+                                <div className="w-14 h-14 rounded-lg border border-purple-200 bg-purple-50 flex items-center justify-center">
+                                  <div className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                              )}
+                              <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-purple-400 flex flex-col items-center justify-center cursor-pointer transition-colors">
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                                 <svg className="w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2} /></svg>
                               </label>
+                              <span className="text-[8px] text-[#9CA3AF] ml-1">Ctrl+V 粘贴图片</span>
                             </div>
 
                             <div className="flex items-center gap-2 justify-end">
@@ -901,6 +910,7 @@ export default function SkillsPage() {
                                 onClick={() => handleSaveExample(currentSkillId)} 
                                 className="px-4 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 uppercase shadow-sm"
                                 style={{ background: brandGradient }}
+                                disabled={isUploading}
                               >
                                 提交
                               </button>
@@ -912,15 +922,15 @@ export default function SkillsPage() {
                         {executionExamples[currentSkillId]?.map((issue: any) => (
                           <div key={issue.id} className={`group relative p-4 rounded-2xl border transition-all ${issue.isResolved ? 'bg-emerald-50/30 border-emerald-100 opacity-70' : 'bg-white border-rose-100'}`}>
                             {editingExample === issue.id ? (
-                              <div className="space-y-3">
+                              <div className="space-y-3" onPaste={handlePaste}>
                                 <textarea
                                   value={tempExample}
                                   onChange={(e) => setTempExample(e.target.value)}
-                                  onPaste={handlePaste}
                                   className="w-full p-3 rounded-xl border border-purple-200 focus:border-purple-400 focus:outline-none text-[11px] text-[#111827] font-medium leading-relaxed resize-none"
                                   rows={2}
+                                  autoFocus
                                 />
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                   {tempImages.map((url, idx) => (
                                     <div key={idx} className="relative group w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5]">
                                       <img src={url} alt="" className="w-full h-full object-cover" />
@@ -929,10 +939,16 @@ export default function SkillsPage() {
                                       </button>
                                     </div>
                                   ))}
-                                  <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-purple-400 flex flex-col items-center justify-center cursor-pointer">
+                                  {isUploading && (
+                                    <div className="w-14 h-14 rounded-lg border border-purple-200 bg-purple-50 flex items-center justify-center">
+                                      <div className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                  )}
+                                  <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-purple-400 flex flex-col items-center justify-center cursor-pointer transition-colors">
                                     <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                                     <svg className="w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2} /></svg>
                                   </label>
+                                  <span className="text-[8px] text-[#9CA3AF] ml-1">Ctrl+V 粘贴图片</span>
                                 </div>
                                 <div className="flex items-center gap-2 justify-end">
                                   <button onClick={handleCancelEdit} className="px-3 py-1.5 rounded-lg border border-[#E5E5E5] text-[9px] font-black text-[#6B7280] hover:bg-[#F3F4F6] uppercase">取消</button>
@@ -940,6 +956,7 @@ export default function SkillsPage() {
                                     onClick={() => handleSaveExample(currentSkillId)} 
                                     className="px-4 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 uppercase shadow-sm"
                                     style={{ background: brandGradient }}
+                                    disabled={isUploading}
                                   >
                                     保存
                                   </button>
