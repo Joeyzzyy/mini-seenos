@@ -24,11 +24,18 @@ export async function GET() {
       if (!issuesMap[item.skill_id]) {
         issuesMap[item.skill_id] = [];
       }
+      // Map is_resolved to status for backward compatibility
+      // status: 'pending_review' | 'unresolved' | 'resolved'
+      let status = item.status;
+      if (!status) {
+        status = item.is_resolved ? 'resolved' : 'pending_review';
+      }
       issuesMap[item.skill_id].push({
         id: item.id,
         text: item.issue_text,
         images: item.image_urls || [],
-        isResolved: item.is_resolved || false,
+        status: status,
+        isResolved: status === 'resolved', // Keep for backward compatibility
         updatedAt: item.updated_at
       });
     });
@@ -46,7 +53,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { id, skill_id, issue_text, image_urls, is_resolved } = body;
+    const { id, skill_id, issue_text, image_urls, is_resolved, status } = body;
 
     if (!skill_id && !id) {
       return NextResponse.json(
@@ -55,10 +62,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Determine status: use provided status, or map from is_resolved for backward compatibility
+    const finalStatus = status || (is_resolved ? 'resolved' : 'pending_review');
+
     const payload: any = {
       issue_text: issue_text || '',
       image_urls: image_urls || [],
-      is_resolved: is_resolved ?? false,
+      status: finalStatus,
+      is_resolved: finalStatus === 'resolved', // Keep for backward compatibility
       updated_at: new Date().toISOString(),
     };
 

@@ -26,7 +26,7 @@ export default function SkillsPage() {
   const [editingExample, setEditingExample] = useState<string | null>(null); // Stores issue ID or "new_[skillId]"
   const [tempExample, setTempExample] = useState<string>('');
   const [tempImages, setTempImages] = useState<string[]>([]);
-  const [tempIsResolved, setTempIsResolved] = useState<boolean>(false);
+  const [tempStatus, setTempStatus] = useState<'pending_review' | 'unresolved' | 'resolved'>('pending_review');
   const [isUploading, setIsUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -121,13 +121,13 @@ export default function SkillsPage() {
 
   const currentSkillId = selectedSkillId || (skills.length > 0 ? skills[0].id : '');
   
-  // Check if a tab has any skills with issues
+  // Check if a tab has any skills with issues (pending_review or unresolved)
   const tabHasIssues = (tabId: string) => {
     const skillsInTab = skills.filter(s => {
       const cat = s.metadata?.category || 'Others';
       return cat === tabId;
     });
-    return skillsInTab.some(s => executionExamples[s.id]?.some(issue => !issue.isResolved));
+    return skillsInTab.some(s => executionExamples[s.id]?.some(issue => issue.status !== 'resolved'));
   };
   
   // Filter skills based on active tab
@@ -214,12 +214,12 @@ export default function SkillsPage() {
       setEditingExample(issue.id);
       setTempExample(issue.text || '');
       setTempImages(issue.images || []);
-      setTempIsResolved(issue.isResolved || false);
+      setTempStatus(issue.status || 'pending_review');
     } else {
       setEditingExample(`new_${skillId}`);
       setTempExample('');
       setTempImages([]);
-      setTempIsResolved(false);
+      setTempStatus('pending_review');
     }
   };
   
@@ -238,7 +238,7 @@ export default function SkillsPage() {
           skill_id: skillId,
           issue_text: tempExample,
           image_urls: tempImages,
-          is_resolved: tempIsResolved,
+          status: tempStatus,
         }),
       });
 
@@ -287,7 +287,7 @@ export default function SkillsPage() {
     }
   };
 
-  const handleToggleResolve = async (issue: any, skillId: string) => {
+  const handleStatusChange = async (issue: any, skillId: string, newStatus: 'pending_review' | 'unresolved' | 'resolved') => {
     try {
       const response = await fetch('/api/skills/issues', {
         method: 'POST',
@@ -299,7 +299,7 @@ export default function SkillsPage() {
           skill_id: skillId,
           issue_text: issue.text,
           image_urls: issue.images,
-          is_resolved: !issue.isResolved,
+          status: newStatus,
         }),
       });
 
@@ -311,10 +311,15 @@ export default function SkillsPage() {
         if (updatedData.success) {
           setExecutionExamples(updatedData.issues || {});
         }
-        setToast({ isOpen: true, message: !issue.isResolved ? '问题已标记为解决！' : '问题已标记为未解决' });
+        const statusLabels: Record<string, string> = {
+          'pending_review': '待验收',
+          'unresolved': '未解决',
+          'resolved': '已解决'
+        };
+        setToast({ isOpen: true, message: `状态已更新为「${statusLabels[newStatus]}」` });
       }
     } catch (error) {
-      console.error('Failed to toggle resolve:', error);
+      console.error('Failed to change status:', error);
     }
   };
   
@@ -494,7 +499,9 @@ export default function SkillsPage() {
                   const isAvailable = !!skill.metadata?.playbook?.trigger || (skill.tools && skill.tools.length > 0);
                   const isComingSoon = !isAvailable || skill.metadata?.status === 'coming_soon';
                   const isSystem = skill.metadata?.category === 'system';
-                  const hasIssue = executionExamples[skill.id]?.some(issue => !issue.isResolved);
+                  const hasIssue = executionExamples[skill.id]?.some(issue => issue.status !== 'resolved');
+                  const hasPendingReview = executionExamples[skill.id]?.some(issue => issue.status === 'pending_review');
+                  const hasUnresolved = executionExamples[skill.id]?.some(issue => issue.status === 'unresolved');
                   
                   return (
             <button 
@@ -510,10 +517,16 @@ export default function SkillsPage() {
                       <div className="text-[14px] font-black leading-tight tracking-tight mb-2.5">
                         <div className="flex items-center gap-2">
                           <span className="block flex-1">{skill.name.split(': ')[1] || skill.name}</span>
-                          {hasIssue && (
+                          {hasPendingReview && (
                             <div className="relative flex-shrink-0">
                               <div className="w-2 h-2 rounded-full bg-rose-500"></div>
                               <div className="absolute inset-0 w-2 h-2 rounded-full bg-rose-500 animate-ping opacity-75"></div>
+                            </div>
+                          )}
+                          {!hasPendingReview && hasUnresolved && (
+                            <div className="relative flex-shrink-0">
+                              <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                              <div className="absolute inset-0 w-2 h-2 rounded-full bg-amber-500 animate-ping opacity-75"></div>
                             </div>
                           )}
                         </div>
@@ -920,7 +933,13 @@ export default function SkillsPage() {
 
                         {/* Issues List */}
                         {executionExamples[currentSkillId]?.map((issue: any) => (
-                          <div key={issue.id} className={`group relative p-4 rounded-2xl border transition-all ${issue.isResolved ? 'bg-emerald-50/30 border-emerald-100 opacity-70' : 'bg-white border-rose-100'}`}>
+                          <div key={issue.id} className={`group relative p-4 rounded-2xl border transition-all ${
+                            issue.status === 'resolved' 
+                              ? 'bg-[#F9FAFB] border-[#E5E5E5] opacity-70' 
+                              : issue.status === 'unresolved'
+                              ? 'bg-amber-50/30 border-amber-100'
+                              : 'bg-white border-rose-100'
+                          }`}>
                             {editingExample === issue.id ? (
                               <div className="space-y-3" onPaste={handlePaste}>
                                 <textarea
@@ -966,13 +985,29 @@ export default function SkillsPage() {
                               <>
                                 <div className="flex items-start justify-between gap-4 mb-2">
                                   <div className="flex items-center gap-2">
-                                    <button 
-                                      onClick={() => handleToggleResolve(issue, currentSkillId)}
-                                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${issue.isResolved ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-[#E5E5E5] hover:border-emerald-500'}`}
+                                    {/* Status indicator dot */}
+                                    {issue.status === 'pending_review' && (
+                                      <div className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0"></div>
+                                    )}
+                                    {issue.status === 'unresolved' && (
+                                      <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></div>
+                                    )}
+                                    {/* Status dropdown */}
+                                    <select
+                                      value={issue.status || 'pending_review'}
+                                      onChange={(e) => handleStatusChange(issue, currentSkillId, e.target.value as any)}
+                                      className={`text-[9px] font-black uppercase tracking-tight py-1 px-2 rounded-lg border cursor-pointer transition-all focus:outline-none ${
+                                        issue.status === 'resolved' 
+                                          ? 'bg-[#F3F4F6] border-[#E5E5E5] text-[#6B7280]' 
+                                          : issue.status === 'unresolved'
+                                          ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                          : 'bg-rose-50 border-rose-200 text-rose-700'
+                                      }`}
                                     >
-                                      {issue.isResolved && <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeWidth={3} /></svg>}
-                                    </button>
-                                    {issue.isResolved && <span className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">已解决</span>}
+                                      <option value="pending_review">待验收</option>
+                                      <option value="unresolved">未解决</option>
+                                      <option value="resolved">已解决</option>
+                                    </select>
                                   </div>
                                   
                                   <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
@@ -981,7 +1016,7 @@ export default function SkillsPage() {
                                   </div>
                                 </div>
                                 
-                                <p className={`text-[11px] font-medium leading-relaxed whitespace-pre-wrap ${issue.isResolved ? 'text-[#9CA3AF] line-through' : 'text-rose-600'}`}>
+                                <p className={`text-[11px] font-medium leading-relaxed whitespace-pre-wrap ${issue.status === 'resolved' ? 'text-[#9CA3AF] line-through' : issue.status === 'unresolved' ? 'text-amber-700' : 'text-rose-600'}`}>
                                   {issue.text}
                                 </p>
                                 
