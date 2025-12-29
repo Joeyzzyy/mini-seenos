@@ -2,6 +2,7 @@ import { Skill } from '../types';
 import { domain_gap_analysis } from '../tools/seo/semrush-domain-gap.tool';
 import { web_search } from '../tools/research/tavily-web-search.tool';
 import { extract_content } from '../tools/research/tavily-extract-content.tool';
+import { markdown_to_docx } from '../tools/file/markdown-to-docx.tool';
 
 export const contentGapAnalysisSkill: Skill = {
   id: 'content-gap-analysis',
@@ -42,6 +43,14 @@ For the top 5 gap keywords (or lateral topics), provide:
 - **Target Page Type**: (e.g., "Comparison Page", "Deep-dive Guide", "Feature Landing Page").
 - **Winning Angle**: A specific content strategy to steal this traffic from the rivals (e.g., "Create a 'Top 10 Alternatives' list where you emphasize your [Unique Feature]").
 
+## 4. GENERATE WORD DOCUMENT (MANDATORY)
+After completing the analysis, you MUST call 'markdown_to_docx' to convert your report into a professional Word document:
+- filename: 'content-gap-analysis-[domain]' (without extension)
+- title: 'Content Gap Analysis: [Domain]'
+- subtitle: 'Strategic Growth Blueprint | Analysis Date: [Current Date]'
+
+Provide the download link for the Word document to the user.
+
 # LANGUAGE & STYLE
 - If the target site is in English, the analysis MUST be in English.
 - Use a confident, expert, and data-driven tone.
@@ -50,6 +59,7 @@ For the top 5 gap keywords (or lateral topics), provide:
     domain_gap_analysis,
     web_search,
     extract_content,
+    markdown_to_docx,
   },
   enabled: true,
   metadata: {

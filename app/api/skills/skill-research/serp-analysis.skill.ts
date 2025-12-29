@@ -3,6 +3,7 @@ import { search_serp } from '../tools/seo/serper-search-serp.tool';
 import { analyze_serp_structure } from '../tools/seo/serper-analyze-serp-structure.tool';
 import { extract_content } from '../tools/research/tavily-extract-content.tool';
 import { keyword_overview } from '../tools/seo/semrush-keyword-overview.tool';
+import { markdown_to_docx } from '../tools/file/markdown-to-docx.tool';
 
 export const serpAnalysisSkill: Skill = {
   id: 'serp-analysis',
@@ -25,12 +26,21 @@ WORKFLOW:
    - Differentiators (What makes this page unique?)
 7. STRATEGIC RECOMMENDATION: Synthesize all findings into a "Content Gap Report" and suggest a specific strategy to outrank these competitors.
 
+8. GENERATE WORD DOCUMENT (MANDATORY):
+   After completing the analysis, you MUST call 'markdown_to_docx' to convert your report into a professional Word document.
+   - filename: 'serp-analysis-[keyword]' (without extension)
+   - title: 'SERP Analysis Report: [Keyword]'
+   - subtitle: 'Analysis Date: [Current Date] | Top [N] Results Analyzed'
+   
+   Provide the download link for the Word document to the user.
+
 NOTE: Be objective and data-driven. Use the exact headers and content found by the tools. Leverage 'People Also Ask' questions to suggest new sections.`,
   tools: {
     search_serp,
     analyze_serp_structure,
     extract_content,
     keyword_overview,
+    markdown_to_docx,
   },
   enabled: true,
   metadata: {

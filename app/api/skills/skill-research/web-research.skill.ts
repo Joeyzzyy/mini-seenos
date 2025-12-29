@@ -4,6 +4,7 @@ import { crawl_site } from '../tools/research/tavily-crawl-site.tool';
 import { extract_content } from '../tools/research/tavily-extract-content.tool';
 import { keyword_overview } from '../tools/seo/semrush-keyword-overview.tool';
 import { domain_gap_analysis } from '../tools/seo/semrush-domain-gap.tool';
+import { markdown_to_docx } from '../tools/file/markdown-to-docx.tool';
 
 export const webResearchSkill: Skill = {
   id: 'web-research',
@@ -70,13 +71,22 @@ BEST PRACTICES:
 OUTPUT STYLE:
 - Present keyword data in clear, scannable tables.
 - Prioritize opportunities by business impact (high volume + reasonable difficulty = gold).
-- Be specific: "Create a comprehensive guide on [Topic X] targeting [Keyword Y] with [Angle Z]."`,
+- Be specific: "Create a comprehensive guide on [Topic X] targeting [Keyword Y] with [Angle Z]."
+
+GENERATE WORD DOCUMENT (MANDATORY):
+After completing the analysis, you MUST call 'markdown_to_docx' to convert your report into a professional Word document:
+- filename: 'keyword-research-[domain]' (without extension)
+- title: 'Keyword Research & Gap Analysis: [Domain]'
+- subtitle: 'Strategic SEO Report | Analysis Date: [Current Date]'
+
+Provide the download link for the Word document to the user along with your summary.`,
   tools: {
     web_search,
     crawl_site,
     extract_content,
     keyword_overview,
     domain_gap_analysis,
+    markdown_to_docx,
   },
   enabled: true,
   metadata: {
