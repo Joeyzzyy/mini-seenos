@@ -227,13 +227,13 @@ export default function PlaybookTrigger({ skill, userId, onCancel, onSubmit }: P
                   ))}
                 </select>
               ) : (
-                <input
-                  type="text"
+                <textarea
                   required={field.required}
                   placeholder={field.placeholder}
                   value={values[field.id] || ''}
                   onChange={(e) => setValues(prev => ({ ...prev, [field.id]: e.target.value }))}
-                  className="w-full px-3 py-2 bg-[#FAFAFA] border border-[#E5E5E5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all placeholder:text-[#9CA3AF]"
+                  rows={2}
+                  className="w-full px-3 py-2 bg-[#FAFAFA] border border-[#E5E5E5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all placeholder:text-[#9CA3AF] resize-none"
                 />
               )}
             </div>
