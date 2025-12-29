@@ -327,7 +327,7 @@ export default function SkillsPage() {
     setEditingExample(null);
     setTempExample('');
     setTempImages([]);
-    setTempIsResolved(false);
+    setTempStatus('pending_review');
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
