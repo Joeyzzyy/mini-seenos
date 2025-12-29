@@ -420,17 +420,17 @@ export default function ContentDrawer({ item, onClose }: ContentDrawerProps) {
                           </div>
                           <div className="bg-[#F9FAFB] p-4 rounded-2xl border border-[#E5E5E5] relative overflow-hidden group">
                             <label className="block text-[9px] font-black text-[#6B7280] uppercase mb-1 relative z-10">Difficulty</label>
-                            <div className="text-xl font-black text-[#111827] relative z-10">{item.keyword_data.kd || '-'}%</div>
+                            <div className="text-xl font-black text-[#111827] relative z-10">{typeof item.keyword_data.kd === 'number' ? `${item.keyword_data.kd}%` : '-'}</div>
                             <div className="absolute bottom-0 left-0 h-1 transition-all duration-500 group-hover:h-full opacity-5 w-full" style={{ background: 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }} />
                           </div>
                           <div className="bg-[#F9FAFB] p-4 rounded-2xl border border-[#E5E5E5] relative overflow-hidden group">
                             <label className="block text-[9px] font-black text-[#6B7280] uppercase mb-1 relative z-10">Est. CPC</label>
-                            <div className="text-xl font-black text-[#111827] relative z-10">${item.keyword_data.cpc?.toFixed(2) || '-'}</div>
+                            <div className="text-xl font-black text-[#111827] relative z-10">{typeof item.keyword_data.cpc === 'number' ? `$${item.keyword_data.cpc.toFixed(2)}` : '-'}</div>
                             <div className="absolute bottom-0 left-0 h-1 transition-all duration-500 group-hover:h-full opacity-5 w-full" style={{ background: 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }} />
                           </div>
                           <div className="bg-[#F9FAFB] p-4 rounded-2xl border border-[#E5E5E5] relative overflow-hidden group">
                             <label className="block text-[9px] font-black text-[#6B7280] uppercase mb-1 relative z-10">Competition</label>
-                            <div className="text-xl font-black text-[#111827] relative z-10">{(item.keyword_data.competition * 100)?.toFixed(0) || '-'}%</div>
+                            <div className="text-xl font-black text-[#111827] relative z-10">{typeof item.keyword_data.competition === 'number' && !isNaN(item.keyword_data.competition) ? `${(item.keyword_data.competition * 100).toFixed(0)}%` : '-'}</div>
                             <div className="absolute bottom-0 left-0 h-1 transition-all duration-500 group-hover:h-full opacity-5 w-full" style={{ background: 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }} />
                           </div>
                         </div>
