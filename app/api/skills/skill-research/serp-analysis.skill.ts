@@ -26,13 +26,16 @@ WORKFLOW:
    - Differentiators (What makes this page unique?)
 7. STRATEGIC RECOMMENDATION: Synthesize all findings into a "Content Gap Report" and suggest a specific strategy to outrank these competitors.
 
-8. GENERATE WORD DOCUMENT (MANDATORY):
-   After completing the analysis, you MUST call 'markdown_to_docx' to convert your report into a professional Word document.
+8. GENERATE WORD DOCUMENT (MANDATORY - DO NOT SKIP):
+   **CRITICAL: You MUST call 'markdown_to_docx' as the FINAL step. This is NOT optional.**
+   After completing ALL analysis, call 'markdown_to_docx' with:
+   - markdown_content: [Your complete analysis report in markdown format]
    - filename: 'serp-analysis-[keyword]' (without extension)
    - title: 'SERP Analysis Report: [Keyword]'
    - subtitle: 'Analysis Date: [Current Date] | Top [N] Results Analyzed'
    
-   Provide the download link for the Word document to the user.
+   **FAILURE TO GENERATE THE WORD DOCUMENT IS A TASK FAILURE.**
+   Always provide the download link for the Word document to the user at the end.
 
 NOTE: Be objective and data-driven. Use the exact headers and content found by the tools. Leverage 'People Also Ask' questions to suggest new sections.`,
   tools: {
@@ -90,7 +93,7 @@ NOTE: Be objective and data-driven. Use the exact headers and content found by t
             required: true
           }
         ],
-        initialMessage: '1. Call "search_serp" to show me the organic search results for "{keyword}".\n2. Call "analyze_serp_structure" for the top {results_count} results.\n3. Provide a thorough analysis identifying content patterns, heading structures, and gaps I can exploit.'
+        initialMessage: '1. Call "search_serp" to show me the organic search results for "{keyword}".\n2. Call "analyze_serp_structure" for the top {results_count} results.\n3. Provide a thorough analysis identifying content patterns, heading structures, and gaps I can exploit.\n4. **IMPORTANT**: Generate a Word document report using "markdown_to_docx" and provide the download link.'
       }
     }
   },

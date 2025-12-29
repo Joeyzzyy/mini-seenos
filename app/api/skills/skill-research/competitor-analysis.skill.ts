@@ -450,6 +450,7 @@ Here's what I'll do:
 2. **Discover Competitors:** Identify 10-20 direct competitors in your market
 3. **Deep Website Analysis:** Visit 3-5 pages per competitor, focusing on pricing, features, and positioning
 4. **Generate Report:** Create a detailed competitive analysis with pricing comparison, feature matrix, and strategic recommendations
+5. **IMPORTANT:** Generate a Word document report using "markdown_to_docx" and provide the download link
 
 [Additional Context provided:
 - Product Description: {your_product_description}

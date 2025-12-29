@@ -43,13 +43,16 @@ For the top 5 gap keywords (or lateral topics), provide:
 - **Target Page Type**: (e.g., "Comparison Page", "Deep-dive Guide", "Feature Landing Page").
 - **Winning Angle**: A specific content strategy to steal this traffic from the rivals (e.g., "Create a 'Top 10 Alternatives' list where you emphasize your [Unique Feature]").
 
-## 4. GENERATE WORD DOCUMENT (MANDATORY)
-After completing the analysis, you MUST call 'markdown_to_docx' to convert your report into a professional Word document:
+## 4. GENERATE WORD DOCUMENT (MANDATORY - DO NOT SKIP)
+**CRITICAL: You MUST call 'markdown_to_docx' as the FINAL step. This is NOT optional.**
+After completing ALL analysis, call 'markdown_to_docx' with:
+- markdown_content: [Your complete Strategic Growth Blueprint in markdown format]
 - filename: 'content-gap-analysis-[domain]' (without extension)
 - title: 'Content Gap Analysis: [Domain]'
 - subtitle: 'Strategic Growth Blueprint | Analysis Date: [Current Date]'
 
-Provide the download link for the Word document to the user.
+**FAILURE TO GENERATE THE WORD DOCUMENT IS A TASK FAILURE.**
+Always provide the download link for the Word document to the user at the end.
 
 # LANGUAGE & STYLE
 - If the target site is in English, the analysis MUST be in English.
@@ -115,7 +118,7 @@ Provide the download link for the Word document to the user.
             required: true
           }
         ],
-        initialMessage: 'I need an autonomous Content Gap Analysis for {my_domain} in the {database} market. \n\nPlease: \n1. Crawl my site to understand my business. \n2. Find my top 2-3 search competitors [including {competitor_domains}]. \n3. Run a deep gap audit and provide a 90-day growth blueprint.'
+        initialMessage: 'I need an autonomous Content Gap Analysis for {my_domain} in the {database} market. \n\nPlease: \n1. Crawl my site to understand my business. \n2. Find my top 2-3 search competitors [including {competitor_domains}]. \n3. Run a deep gap audit and provide a 90-day growth blueprint.\n4. **IMPORTANT**: Generate a Word document report using "markdown_to_docx" and provide the download link.'
       }
     }
   },

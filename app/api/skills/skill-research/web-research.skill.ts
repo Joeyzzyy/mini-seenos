@@ -73,13 +73,16 @@ OUTPUT STYLE:
 - Prioritize opportunities by business impact (high volume + reasonable difficulty = gold).
 - Be specific: "Create a comprehensive guide on [Topic X] targeting [Keyword Y] with [Angle Z]."
 
-GENERATE WORD DOCUMENT (MANDATORY):
-After completing the analysis, you MUST call 'markdown_to_docx' to convert your report into a professional Word document:
+GENERATE WORD DOCUMENT (MANDATORY - DO NOT SKIP):
+**CRITICAL: You MUST call 'markdown_to_docx' as the FINAL step. This is NOT optional.**
+After completing ALL analysis, call 'markdown_to_docx' with:
+- markdown_content: [Your complete keyword research report in markdown format]
 - filename: 'keyword-research-[domain]' (without extension)
 - title: 'Keyword Research & Gap Analysis: [Domain]'
 - subtitle: 'Strategic SEO Report | Analysis Date: [Current Date]'
 
-Provide the download link for the Word document to the user along with your summary.`,
+**FAILURE TO GENERATE THE WORD DOCUMENT IS A TASK FAILURE.**
+Always provide the download link for the Word document to the user at the end.`,
   tools: {
     web_search,
     crawl_site,
@@ -140,7 +143,9 @@ Provide the download link for the Word document to the user along with your summ
         initialMessage: `I need a comprehensive keyword research and gap analysis for:
 - Target Site: "{site_url}"
 {focus_topic ? \`- Focus Topic: "\${focus_topic}"\` : ""}{competitor_urls ? \`- Competitors: "\${competitor_urls}"\` : ""}
-Please analyze the site's content, validate keyword opportunities with real search data, {competitor_urls ? "run a gap analysis against the provided competitors, " : ""}and provide strategic keyword recommendations with actionable next steps.`
+Please analyze the site's content, validate keyword opportunities with real search data, {competitor_urls ? "run a gap analysis against the provided competitors, " : ""}and provide strategic keyword recommendations with actionable next steps.
+
+**IMPORTANT**: Generate a Word document report using "markdown_to_docx" and provide the download link.`
       }
     }
   },
