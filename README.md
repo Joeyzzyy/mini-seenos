@@ -13,7 +13,7 @@
 
 ### 方式一：一键部署（推荐）
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/seenos/mini-agent)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Joeyzzyy/mini-seenos)
 
 1. 点击上方按钮，Fork 并部署到 Vercel
 2. 配置环境变量（见下方说明）
@@ -24,8 +24,8 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/seenos/mini-agent.git
-cd mini-agent
+git clone https://github.com/Joeyzzyy/mini-seenos.git
+cd mini-seenos
 
 # 2. 安装依赖
 npm install
