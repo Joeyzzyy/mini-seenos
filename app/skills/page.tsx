@@ -517,13 +517,13 @@ export default function SkillsPage() {
                       <div className="text-[14px] font-black leading-tight tracking-tight mb-2.5">
                         <div className="flex items-center gap-2">
                           <span className="block flex-1">{skill.name.split(': ')[1] || skill.name}</span>
-                          {hasPendingReview && (
+                          {hasUnresolved && (
                             <div className="relative flex-shrink-0">
                               <div className="w-2 h-2 rounded-full bg-rose-500"></div>
                               <div className="absolute inset-0 w-2 h-2 rounded-full bg-rose-500 animate-ping opacity-75"></div>
                             </div>
                           )}
-                          {!hasPendingReview && hasUnresolved && (
+                          {!hasUnresolved && hasPendingReview && (
                             <div className="relative flex-shrink-0">
                               <div className="w-2 h-2 rounded-full bg-amber-500"></div>
                               <div className="absolute inset-0 w-2 h-2 rounded-full bg-amber-500 animate-ping opacity-75"></div>
@@ -937,8 +937,8 @@ export default function SkillsPage() {
                             issue.status === 'resolved' 
                               ? 'bg-[#F9FAFB] border-[#E5E5E5] opacity-70' 
                               : issue.status === 'unresolved'
-                              ? 'bg-amber-50/30 border-amber-100'
-                              : 'bg-white border-rose-100'
+                              ? 'bg-rose-50/30 border-rose-100'
+                              : 'bg-amber-50/30 border-amber-100'
                           }`}>
                             {editingExample === issue.id ? (
                               <div className="space-y-3" onPaste={handlePaste}>
@@ -985,11 +985,11 @@ export default function SkillsPage() {
                               <>
                                 <div className="flex items-start justify-between gap-4 mb-2">
                                   <div className="flex items-center gap-2">
-                                    {/* Status indicator dot */}
-                                    {issue.status === 'pending_review' && (
+                                    {/* Status indicator dot: 未解决=红色, 待验收=黄色, 已解决=无 */}
+                                    {issue.status === 'unresolved' && (
                                       <div className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0"></div>
                                     )}
-                                    {issue.status === 'unresolved' && (
+                                    {issue.status === 'pending_review' && (
                                       <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></div>
                                     )}
                                     {/* Status dropdown */}
@@ -1000,8 +1000,8 @@ export default function SkillsPage() {
                                         issue.status === 'resolved' 
                                           ? 'bg-[#F3F4F6] border-[#E5E5E5] text-[#6B7280]' 
                                           : issue.status === 'unresolved'
-                                          ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                          : 'bg-rose-50 border-rose-200 text-rose-700'
+                                          ? 'bg-rose-50 border-rose-200 text-rose-700'
+                                          : 'bg-amber-50 border-amber-200 text-amber-700'
                                       }`}
                                     >
                                       <option value="pending_review">待验收</option>
@@ -1016,7 +1016,7 @@ export default function SkillsPage() {
                                   </div>
                                 </div>
                                 
-                                <p className={`text-[11px] font-medium leading-relaxed whitespace-pre-wrap ${issue.status === 'resolved' ? 'text-[#9CA3AF] line-through' : issue.status === 'unresolved' ? 'text-amber-700' : 'text-rose-600'}`}>
+                                <p className={`text-[11px] font-medium leading-relaxed whitespace-pre-wrap ${issue.status === 'resolved' ? 'text-[#9CA3AF] line-through' : issue.status === 'unresolved' ? 'text-rose-600' : 'text-amber-700'}`}>
                                   {issue.text}
                                 </p>
                                 
