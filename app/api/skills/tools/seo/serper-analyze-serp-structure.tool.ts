@@ -9,7 +9,10 @@ export const analyze_serp_structure = tool({
   }),
   execute: async ({ query, top_n }) => {
     try {
-      const serperApiKey = 'f946b544b7021701d8ccc5efa7df7e029cde4d0e';
+      const serperApiKey = process.env.SERPER_API_KEY;
+      if (!serperApiKey) {
+        return { success: false, error: 'SERPER_API_KEY not configured' };
+      }
       const serpRes = await fetch('https://google.serper.dev/search', {
         method: 'POST',
         headers: { 'X-API-KEY': serperApiKey, 'Content-Type': 'application/json' },

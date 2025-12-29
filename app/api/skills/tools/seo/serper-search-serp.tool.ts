@@ -9,7 +9,10 @@ export const search_serp = tool({
   }),
     execute: async ({ query, num }) => {
     try {
-      const apiKey = 'f946b544b7021701d8ccc5efa7df7e029cde4d0e';
+      const apiKey = process.env.SERPER_API_KEY;
+      if (!apiKey) {
+        return { success: false, error: 'SERPER_API_KEY not configured' };
+      }
       const response = await fetch('https://google.serper.dev/search', {
         method: 'POST',
         headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
