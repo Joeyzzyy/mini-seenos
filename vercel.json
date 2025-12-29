@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/test-rendering/:path*",
-      "destination": "https://mini-seenos-page-rendering-m2ig4vyvr-seopageaiteam.vercel.app/:path*"
+      "destination": "https://mini-seenos-page-rendering-seopageaiteam.vercel.app/test-rendering/:path*"
     }
   ]
 }
