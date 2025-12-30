@@ -61,6 +61,11 @@ Identify page type (Blog, Product, or Landing) and evaluate these 16 items:
 • AI 感知分析：内容如何被 AI 搜索引擎理解和引用
 • 引用强度评估：权威信号、事实密度、语义清晰度
 • 优化建议：如何提高在 SearchGPT/Perplexity 中的可见性`,
+    expectedOutputEn: `• GEO CORE four-dimensional scoring (Context, Organization, Reliability, Exclusivity): 0-100 points
+• 16-item GEO checklist (based on page type: Blog / Product / Landing)
+• AI perception analysis: how content is understood and cited by AI search engines
+• Citation strength assessment: authority signals, fact density, semantic clarity
+• Optimization recommendations: how to improve visibility in SearchGPT/Perplexity`,
     playbook: {
       trigger: {
         type: 'form',

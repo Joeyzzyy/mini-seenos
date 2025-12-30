@@ -47,6 +47,11 @@ NOTE: Your response is incomplete and a failure of this skill if it does not con
 • 支柱页面和支持页面的内容创意列表
 • Markdown 表格展示：主题、TDK、搜索指标、内容大纲、优先级
 • 战略性创作建议：先做什么、如何建立主题权威`,
+    expectedOutputEn: `• 3-5 high-potential topic clusters (Pillar-Cluster structure)
+• Target keywords for each cluster (with validated data: search volume > 500, difficulty < 60)
+• Content ideas list for pillar and supporting pages
+• Markdown table display: topic, TDK, search metrics, content outline, priority
+• Strategic creation recommendations: what to do first, how to build topic authority`,
     changeDescription: '根据站点目标发散性生成高价值主题集群创意。',
     playbook: {
       trigger: {

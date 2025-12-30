@@ -53,6 +53,12 @@ export const rankTrackerSkill: Skill = {
 • 排名变动趋势：突出显示重要的排名变化和位置趋势
 • 高展示低点击机会：识别有可见性但点击率低的关键词
 • 专业数据表格：清晰展示所有性能指标的表格化呈现`,
+    expectedOutputEn: `• GSC authorization status: confirm Google Search Console connection status
+• Authorized site list: all sites currently authorized by the user
+• Keyword ranking data: search performance of target keywords (clicks, impressions, average position)
+• Ranking trend changes: highlight important ranking changes and position trends
+• High impression low click opportunities: identify keywords with visibility but low click-through rate
+• Professional data tables: clear tabular presentation of all performance metrics`,
     changeDescription: '集成 Google Search Console，支持自动授权、多站点管理及实时关键词排名与流量获取。',
     playbook: {
       trigger: {

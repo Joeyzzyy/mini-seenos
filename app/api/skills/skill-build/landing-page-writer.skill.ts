@@ -167,6 +167,15 @@ CONVERSION COPYWRITING PRINCIPLES:
 • 常见问题解答（5-8 个问题）
 • 多个战略性 CTA 布局
 • 2 张转化导向的配图`,
+    expectedOutputEn: `• Complete high-conversion landing page HTML
+• Hero section: compelling headline, subheading, primary CTA button
+• Pain point statement section (150-250 words)
+• Solution/how it works (3-4 step process)
+• Benefits/features list (5-7 key benefits)
+• Social proof: user testimonials, case study highlights, statistics
+• FAQ section (5-8 questions)
+• Multiple strategic CTA placements
+• 2 conversion-oriented images`,
     changeDescription: '专注于高转化率落地页的 HTML 全自动生成。',
     playbook: {
       trigger: {

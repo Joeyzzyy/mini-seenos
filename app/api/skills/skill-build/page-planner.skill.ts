@@ -78,6 +78,11 @@ NOTE: The table is your "Master Blueprint". Internal linking is the glue of the 
 • Semrush 验证的 SEO 指标（搜索量、难度、CPC）
 • 基于 SERP 竞品逆向工程的 H1-H3 大纲（每个页面）
 • 数据库保存确认：所有页面已保存到 content_items 表`,
+    expectedOutputEn: `• Topic Cluster structure diagram (1 Pillar + 3-5 Supporting pages)
+• Complete TDK for each page (Title, Description, Keywords)
+• Semrush-validated SEO metrics (search volume, difficulty, CPC)
+• H1-H3 outline reverse-engineered from SERP competitors (for each page)
+• Database save confirmation: all pages saved to content_items table`,
     changeDescription: '将主题转化为包含 Pillar/Supporting 结构的完整集群规划。',
     playbook: {
       trigger: {

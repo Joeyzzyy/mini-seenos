@@ -86,6 +86,11 @@ Always provide the download link for the Word document to the user at the end.
 • 关键词差距表格：竞争对手排名但你缺失的关键词（按搜索量排序）
 • 快速赢得机会：低难度、高流量的关键词列表
 • 具体执行路线图：按优先级排序的内容创作建议`,
+    expectedOutputEn: `• Your website niche analysis (based on site crawl)
+• Auto-discovered competitor list (3-5 direct competitors)
+• Keyword gap table: keywords where competitors rank but you're missing (sorted by search volume)
+• Quick win opportunities: low-difficulty, high-traffic keyword list
+• Actionable roadmap: prioritized content creation recommendations`,
     playbook: {
       trigger: {
         type: 'form',

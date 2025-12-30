@@ -62,6 +62,14 @@ BEST PRACTICES:
 • 与竞争对手的对比分析：解释为何你的版本更优
 • 实施指南：具体的 <head> 标签插入位置和代码
 • CTR 优化建议：使用强力词提升点击率`,
+    expectedOutputEn: `• Complete Meta tags HTML code block
+• Optimized title tag: 50-60 characters, keyword-rich, high-intent, differentiated
+• Optimized meta description: 140-155 characters, includes CTA, aligns with user intent
+• OpenGraph tags: og:title, og:description, og:image
+• Twitter Card tags: complete social media preview tags
+• Competitor comparison analysis: explanation of why your version is superior
+• Implementation guide: specific <head> tag insertion location and code
+• CTR optimization recommendations: use power words to boost click-through rate`,
     playbook: {
       trigger: {
         type: 'form',

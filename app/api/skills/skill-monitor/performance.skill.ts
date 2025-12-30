@@ -57,6 +57,12 @@ export const performanceSkill: Skill = {
 • 增长机会：聚焦"临门一脚"关键词（排名 11-20 且高展示）
 • 技术/SEO 问题：CTR 或排名下降的模式分析，建议优化方向
 • 对比分析：最近 28 天与之前周期的数据对比`,
+    expectedOutputEn: `• Executive summary: high-level overview of total clicks, impressions, CTR, and average ranking
+• Top content analysis: detailed analysis of pages driving the most traffic
+• Keyword ranking deep dive: identification of top-ranking keywords and their trend changes
+• Growth opportunities: focus on "almost there" keywords (ranking 11-20 with high impressions)
+• Technical/SEO issues: pattern analysis of CTR or ranking drops, optimization recommendations
+• Comparative analysis: data comparison between recent 28 days and previous period`,
     changeDescription: '自动抓取 GSC 数据进行多维度分析，并全自动生成专业排版的 Word 版 SEO 绩效报告。',
     playbook: {
       trigger: {

@@ -74,6 +74,15 @@ OTHER OPERATIONS:
   - 优先级
 • 列表查询结果（内容项列表或主题集群列表）
 • 删除操作的确认消息`,
+    expectedOutputEn: `• Content item records in database
+• Detailed Markdown table report after successful save, including:
+  - Role
+  - Page Title
+  - TDK information (SEO title, Meta description, keywords)
+  - Metrics (search volume/difficulty/CPC)
+  - Priority
+• List query results (content items list or topic cluster list)
+• Delete operation confirmation message`,
     changeDescription: '底层的数据库 CRUD 支持。已从 Build 迁移至系统层，不对用户直接暴露。',
     demoUrl: '',
   },

@@ -78,6 +78,11 @@ Use extract_content to get data, then call 'seo_audit' with scores (0-100) and f
 • 内容质量分析：作者身份、引用质量、专业深度
 • 技术 SEO 问题：H 标签层次、关键词布局、Schema 标记
 • 可操作改进建议：按优先级排序的优化清单`,
+    expectedOutputEn: `• EEAT score report (Experience, Expertise, Authority, Trust): 0-100 points
+• 20-item EEAT checklist results (✅ / ❌ marks)
+• Content quality analysis: author identity, citation quality, professional depth
+• Technical SEO issues: H tag hierarchy, keyword layout, Schema markup
+• Actionable improvement recommendations: prioritized optimization checklist`,
     renamingInfo: 'On-Page SEO → SEO Auditor',
     changeDescription: '能力升级：不仅做 On-Page 标签，更涵盖了深度的 EEAT 内容质量审计。',
     playbook: {

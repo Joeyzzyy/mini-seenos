@@ -59,6 +59,12 @@ BEST PRACTICES:
 • 具体插入位置：引用原文内容片段，标注最佳插入点
 • 链接权益分布策略：优先链接到高价值支柱页面的建议
 • 自然度评估：避免过度优化的链接密度建议`,
+    expectedOutputEn: `• Site architecture mapping: URL list obtained from sitemap.xml (max 500)
+• Target page content analysis: extract page themes and keywords
+• Internal link recommendation table: includes target keywords, link destination URL, semantic relevance reason, context snippet
+• Specific insertion locations: quote original content fragments, mark best insertion points
+• Link equity distribution strategy: recommendations to prioritize linking to high-value pillar pages
+• Naturalness assessment: link density recommendations to avoid over-optimization`,
     playbook: {
       trigger: {
         type: 'form',

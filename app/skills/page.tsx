@@ -20,15 +20,6 @@ export default function SkillsPage() {
     filePath: '',
     loading: false,
   });
-  
-  // State for execution examples
-  const [executionExamples, setExecutionExamples] = useState<Record<string, any[]>>({});
-  const [editingExample, setEditingExample] = useState<string | null>(null); // Stores issue ID or "new_[skillId]"
-  const [tempExample, setTempExample] = useState<string>('');
-  const [tempImages, setTempImages] = useState<string[]>([]);
-  const [tempStatus, setTempStatus] = useState<'pending_review' | 'unresolved' | 'resolved'>('pending_review');
-  const [isUploading, setIsUploading] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const brandGradient = 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)';
 
@@ -152,34 +143,9 @@ export default function SkillsPage() {
         console.error('Failed to fetch skills:', err);
         setLoading(false);
       });
-    
-    // Load execution examples from database
-    fetch('/api/skills/issues')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setExecutionExamples(data.issues || {});
-        }
-      })
-      .catch(err => {
-        console.error('Failed to fetch skill issues:', err);
-      });
   }, []);
 
   const currentSkillId = selectedSkillId || (skills.length > 0 ? skills[0].id : '');
-  
-  // Check if a tab has any skills/contexts with issues (pending_review or unresolved)
-  const tabHasIssues = (tabId: string) => {
-    if (tabId === 'context') {
-      // Check context fields for issues
-      return contextFields.some(cf => executionExamples[`context_${cf.id}`]?.some(issue => issue.status !== 'resolved'));
-    }
-    const skillsInTab = skills.filter(s => {
-      const cat = s.metadata?.category || 'Others';
-      return cat === tabId;
-    });
-    return skillsInTab.some(s => executionExamples[s.id]?.some(issue => issue.status !== 'resolved'));
-  };
   
   // Filter skills based on active tab
   const filteredSkills = skills.filter(s => {
@@ -259,195 +225,6 @@ export default function SkillsPage() {
       loading: false,
     });
   };
-  
-  const handleEditExample = (skillId: string, issue?: any) => {
-    if (issue) {
-      setEditingExample(issue.id);
-      setTempExample(issue.text || '');
-      setTempImages(issue.images || []);
-      setTempStatus(issue.status || 'pending_review');
-    } else {
-      setEditingExample(`new_${skillId}`);
-      setTempExample('');
-      setTempImages([]);
-      setTempStatus('pending_review');
-    }
-  };
-  
-  const handleSaveExample = async (skillId: string) => {
-    const isNew = editingExample?.startsWith('new_');
-    const issueId = isNew ? undefined : editingExample;
-
-    try {
-      const response = await fetch('/api/skills/issues', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: issueId,
-          skill_id: skillId,
-          issue_text: tempExample,
-          image_urls: tempImages,
-          status: tempStatus,
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        // Refresh issues
-        const res = await fetch('/api/skills/issues');
-        const updatedData = await res.json();
-        if (updatedData.success) {
-          setExecutionExamples(updatedData.issues || {});
-        }
-        
-        setEditingExample(null);
-        setToast({ isOpen: true, message: '问题已保存！' });
-      } else {
-        setToast({ isOpen: true, message: '保存失败：' + data.error });
-      }
-    } catch (error: any) {
-      console.error('Failed to save issue:', error);
-      setToast({ isOpen: true, message: '保存失败：' + error.message });
-    }
-  };
-
-  const handleDeleteIssue = async (issueId: string) => {
-    if (!confirm('确定要删除这个问题吗？')) return;
-
-    try {
-      const response = await fetch(`/api/skills/issues?id=${issueId}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        // Refresh issues
-        const res = await fetch('/api/skills/issues');
-        const updatedData = await res.json();
-        if (updatedData.success) {
-          setExecutionExamples(updatedData.issues || {});
-        }
-        setToast({ isOpen: true, message: '问题已删除！' });
-      }
-    } catch (error: any) {
-      console.error('Failed to delete issue:', error);
-      setToast({ isOpen: true, message: '删除失败' });
-    }
-  };
-
-  const handleStatusChange = async (issue: any, skillId: string, newStatus: 'pending_review' | 'unresolved' | 'resolved') => {
-    try {
-      const response = await fetch('/api/skills/issues', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: issue.id,
-          skill_id: skillId,
-          issue_text: issue.text,
-          image_urls: issue.images,
-          status: newStatus,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        // Refresh issues
-        const res = await fetch('/api/skills/issues');
-        const updatedData = await res.json();
-        if (updatedData.success) {
-          setExecutionExamples(updatedData.issues || {});
-        }
-        const statusLabels: Record<string, string> = {
-          'pending_review': '待验收',
-          'unresolved': '未解决',
-          'resolved': '已解决'
-        };
-        setToast({ isOpen: true, message: `状态已更新为「${statusLabels[newStatus]}」` });
-      }
-    } catch (error) {
-      console.error('Failed to change status:', error);
-    }
-  };
-  
-  const handleCancelEdit = () => {
-    setEditingExample(null);
-    setTempExample('');
-    setTempImages([]);
-    setTempStatus('pending_review');
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const response = await fetch('/api/upload-logo', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setTempImages(prev => [...prev, data.url]);
-        setToast({ isOpen: true, message: '图片上传成功！' });
-      } else {
-        setToast({ isOpen: true, message: '上传失败：' + (data.error || '未知错误') });
-      }
-    } catch (error: any) {
-      console.error('Failed to upload image:', error);
-      setToast({ isOpen: true, message: '上传失败：' + error.message });
-    } finally {
-      setIsUploading(false);
-      // Reset input
-      e.target.value = '';
-    }
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setTempImages(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handlePaste = async (e: React.ClipboardEvent) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf('image') !== -1) {
-        const file = items[i].getAsFile();
-        if (file) {
-          setIsUploading(true);
-          const formData = new FormData();
-          formData.append('file', file);
-
-          try {
-            const response = await fetch('/api/upload-logo', {
-              method: 'POST',
-              body: formData,
-            });
-
-            const data = await response.json();
-            if (data.success) {
-              setTempImages(prev => [...prev, data.url]);
-              setToast({ isOpen: true, message: '图片已从剪贴板上传！' });
-            }
-          } catch (error) {
-            console.error('Failed to upload pasted image:', error);
-          } finally {
-            setIsUploading(false);
-          }
-        }
-      }
-    }
-  };
 
   return (
     <div className="h-screen bg-[#FAFAFA] flex flex-col overflow-hidden">
@@ -464,9 +241,7 @@ export default function SkillsPage() {
           </Link>
 
           <nav className="flex items-center gap-2 h-full">
-            {tabs.map((tab) => {
-              const hasIssues = tabHasIssues(tab.id);
-              return (
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => {
@@ -483,19 +258,11 @@ export default function SkillsPage() {
                 className="relative px-6 h-16 flex items-center transition-all group"
               >
                 <div className="flex flex-col items-center gap-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className={`text-[11px] font-black leading-tight transition-colors ${
-                      activeTab === tab.id ? 'text-[#111827]' : 'text-[#9CA3AF] group-hover:text-[#6B7280]'
-                    }`}>
-                      {tab.name}
-                    </span>
-                    {hasIssues && (
-                      <div className="relative">
-                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
-                        <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping opacity-75"></div>
-                      </div>
-                    )}
-                  </div>
+                  <span className={`text-[11px] font-black leading-tight transition-colors ${
+                    activeTab === tab.id ? 'text-[#111827]' : 'text-[#9CA3AF] group-hover:text-[#6B7280]'
+                  }`}>
+                    {tab.name}
+                  </span>
                   <span className={`text-[7px] font-medium uppercase tracking-wider transition-colors ${
                     activeTab === tab.id ? 'text-[#6B7280]' : 'text-[#D1D5DB] group-hover:text-[#9CA3AF]'
                   }`}>
@@ -509,8 +276,7 @@ export default function SkillsPage() {
                   />
                 )}
               </button>
-              );
-            })}
+            ))}
           </nav>
         </div>
 
@@ -546,42 +312,22 @@ export default function SkillsPage() {
             {activeTab === 'context' ? (
               /* Context Fields List */
               <>
-                {contextFields.map((cf) => {
-                  const contextIssueId = `context_${cf.id}`;
-                  const hasPendingReview = executionExamples[contextIssueId]?.some(issue => issue.status === 'pending_review');
-                  const hasUnresolved = executionExamples[contextIssueId]?.some(issue => issue.status === 'unresolved');
-                  
-                  return (
-                    <button 
-                      key={cf.id}
-                      onClick={() => setSelectedContextId(cf.id)}
-                      className={`w-full text-left p-4 rounded-xl transition-all relative group ${
-                        selectedContextId === cf.id 
-                          ? 'bg-[#FAFAFA] shadow-sm border border-[#E5E5E5] text-[#111827]' 
-                          : 'text-[#6B7280] hover:bg-[#F9FAFB]'
-                      }`}
-                    >
-                      <div className="text-[14px] font-black leading-tight tracking-tight mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="block flex-1">{cf.nameCn}</span>
-                          {hasUnresolved && (
-                            <div className="relative flex-shrink-0">
-                              <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-                              <div className="absolute inset-0 w-2 h-2 rounded-full bg-rose-500 animate-ping opacity-75"></div>
-                            </div>
-                          )}
-                          {!hasUnresolved && hasPendingReview && (
-                            <div className="relative flex-shrink-0">
-                              <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                              <div className="absolute inset-0 w-2 h-2 rounded-full bg-amber-500 animate-ping opacity-75"></div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-[9px] text-[#9CA3AF] font-medium uppercase tracking-wider">{cf.name}</div>
-                    </button>
-                  );
-                })}
+                {contextFields.map((cf) => (
+                  <button 
+                    key={cf.id}
+                    onClick={() => setSelectedContextId(cf.id)}
+                    className={`w-full text-left p-4 rounded-xl transition-all relative group ${
+                      selectedContextId === cf.id 
+                        ? 'bg-[#FAFAFA] shadow-sm border border-[#E5E5E5] text-[#111827]' 
+                        : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                    }`}
+                  >
+                    <div className="text-[14px] font-black leading-tight tracking-tight mb-1">
+                      <span className="block">{cf.nameCn}</span>
+                    </div>
+                    <div className="text-[9px] text-[#9CA3AF] font-medium uppercase tracking-wider">{cf.name}</div>
+                  </button>
+                ))}
               </>
             ) : loading ? (
               <div className="p-4 text-center">
@@ -594,9 +340,6 @@ export default function SkillsPage() {
                   const isAvailable = !!skill.metadata?.playbook?.trigger || (skill.tools && skill.tools.length > 0);
                   const isComingSoon = !isAvailable || skill.metadata?.status === 'coming_soon';
                   const isSystem = skill.metadata?.category === 'system';
-                  const hasIssue = executionExamples[skill.id]?.some(issue => issue.status !== 'resolved');
-                  const hasPendingReview = executionExamples[skill.id]?.some(issue => issue.status === 'pending_review');
-                  const hasUnresolved = executionExamples[skill.id]?.some(issue => issue.status === 'unresolved');
                   
                   return (
             <button 
@@ -610,21 +353,7 @@ export default function SkillsPage() {
                     >
                       {/* Skill Name */}
                       <div className="text-[14px] font-black leading-tight tracking-tight mb-2.5">
-                        <div className="flex items-center gap-2">
-                          <span className="block flex-1">{skill.name.split(': ')[1] || skill.name}</span>
-                          {hasUnresolved && (
-                            <div className="relative flex-shrink-0">
-                              <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-                              <div className="absolute inset-0 w-2 h-2 rounded-full bg-rose-500 animate-ping opacity-75"></div>
-                            </div>
-                          )}
-                          {!hasUnresolved && hasPendingReview && (
-                            <div className="relative flex-shrink-0">
-                              <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                              <div className="absolute inset-0 w-2 h-2 rounded-full bg-amber-500 animate-ping opacity-75"></div>
-                            </div>
-                          )}
-                        </div>
+                        <span className="block">{skill.name.split(': ')[1] || skill.name}</span>
                       </div>
                       
                       {/* What this skill will do */}
@@ -686,7 +415,7 @@ export default function SkillsPage() {
             /* Context Detail View */
             <>
               {/* Context Info Column */}
-              <div className="w-[40%] flex flex-col border-r border-[#F3F4F6] bg-white">
+              <div className="flex-1 flex flex-col bg-white">
                 <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center">
                   <div className="flex items-center gap-2">
                     <svg className="w-4 h-4 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -746,198 +475,6 @@ export default function SkillsPage() {
                 </div>
               </div>
 
-              {/* Context Feedback Column */}
-              <div className="flex-1 flex flex-col bg-[#FCFCFC]">
-                <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-black text-[#111827] leading-tight">问题反馈</span>
-                      <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Context Issues & Feedback</span>
-                    </div>
-                  </div>
-                  
-                  {/* Add Button */}
-                  {!editingExample?.startsWith('new_') && (
-                    <button
-                      onClick={() => handleEditExample(`context_${selectedContextId}`)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 transition-all uppercase tracking-wider"
-                      style={{ background: brandGradient }}
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2.5} /></svg>
-                      添加反馈
-                    </button>
-                  )}
-                </div>
-                
-                <div className="flex-1 overflow-y-auto p-8 thin-scrollbar">
-                  <div className="space-y-3">
-                    {/* New Issue Editor for Context */}
-                    {editingExample === `new_context_${selectedContextId}` && (
-                      <div 
-                        className="p-4 rounded-2xl border-2 border-[#D194EC]/30 bg-white shadow-sm space-y-3"
-                        onPaste={handlePaste}
-                      >
-                        <textarea
-                          value={tempExample}
-                          onChange={(e) => setTempExample(e.target.value)}
-                          placeholder="描述发现的问题或建议... (支持直接粘贴图片)"
-                          className="w-full p-3 rounded-xl border border-[#D194EC]/30 focus:border-[#9A8FEA] focus:outline-none text-[11px] text-[#111827] font-medium leading-relaxed resize-none"
-                          rows={3}
-                          autoFocus
-                        />
-                        <div className="flex flex-wrap items-center gap-2">
-                          {tempImages.map((url, idx) => (
-                            <div key={idx} className="relative group w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5]">
-                              <img src={url} alt="" className="w-full h-full object-cover" />
-                              <button onClick={() => handleRemoveImage(idx)} className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth={2} /></svg>
-                              </button>
-                            </div>
-                          ))}
-                          {isUploading && (
-                            <div className="w-14 h-14 rounded-lg border border-[#D194EC]/30 bg-[#FAFAFA] flex items-center justify-center">
-                              <div className="w-5 h-5 border-2 border-[#9A8FEA] border-t-transparent rounded-full animate-spin"></div>
-                            </div>
-                          )}
-                          <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-[#9A8FEA] flex flex-col items-center justify-center cursor-pointer transition-colors">
-                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                            <svg className="w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2} /></svg>
-                          </label>
-                          <span className="text-[8px] text-[#9CA3AF] ml-1">Ctrl+V 粘贴图片</span>
-                        </div>
-                        <div className="flex items-center gap-2 justify-end">
-                          <button onClick={handleCancelEdit} className="px-3 py-1.5 rounded-lg border border-[#E5E5E5] text-[9px] font-black text-[#6B7280] hover:bg-[#F3F4F6] uppercase">取消</button>
-                          <button 
-                            onClick={() => handleSaveExample(`context_${selectedContextId}`)} 
-                            className="px-4 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 uppercase shadow-sm"
-                            style={{ background: brandGradient }}
-                            disabled={isUploading}
-                          >
-                            保存
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Issues List for Context */}
-                    {executionExamples[`context_${selectedContextId}`]?.map((issue: any) => (
-                      <div key={issue.id} className={`group relative p-4 rounded-2xl border transition-all ${
-                        issue.status === 'resolved' 
-                          ? 'bg-[#F9FAFB] border-[#E5E5E5] opacity-70' 
-                          : issue.status === 'unresolved'
-                          ? 'bg-rose-50/30 border-rose-100'
-                          : 'bg-amber-50/30 border-amber-100'
-                      }`}>
-                        {editingExample === issue.id ? (
-                          <div className="space-y-3" onPaste={handlePaste}>
-                            <textarea
-                              value={tempExample}
-                              onChange={(e) => setTempExample(e.target.value)}
-                              className="w-full p-3 rounded-xl border border-[#D194EC]/30 focus:border-[#9A8FEA] focus:outline-none text-[11px] text-[#111827] font-medium leading-relaxed resize-none"
-                              rows={2}
-                              autoFocus
-                            />
-                            <div className="flex flex-wrap items-center gap-2">
-                              {tempImages.map((url, idx) => (
-                                <div key={idx} className="relative group w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5]">
-                                  <img src={url} alt="" className="w-full h-full object-cover" />
-                                  <button onClick={() => handleRemoveImage(idx)} className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth={2} /></svg>
-                                  </button>
-                                </div>
-                              ))}
-                              {isUploading && (
-                                <div className="w-14 h-14 rounded-lg border border-[#D194EC]/30 bg-[#FAFAFA] flex items-center justify-center">
-                                  <div className="w-5 h-5 border-2 border-[#9A8FEA] border-t-transparent rounded-full animate-spin"></div>
-                                </div>
-                              )}
-                              <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-[#9A8FEA] flex flex-col items-center justify-center cursor-pointer transition-colors">
-                                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                                <svg className="w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2} /></svg>
-                              </label>
-                              <span className="text-[8px] text-[#9CA3AF] ml-1">Ctrl+V 粘贴图片</span>
-                            </div>
-                            <div className="flex items-center gap-2 justify-end">
-                              <button onClick={handleCancelEdit} className="px-3 py-1.5 rounded-lg border border-[#E5E5E5] text-[9px] font-black text-[#6B7280] hover:bg-[#F3F4F6] uppercase">取消</button>
-                              <button 
-                                onClick={() => handleSaveExample(`context_${selectedContextId}`)} 
-                                className="px-4 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 uppercase shadow-sm"
-                                style={{ background: brandGradient }}
-                                disabled={isUploading}
-                              >
-                                保存
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex items-start justify-between gap-4 mb-2">
-                              <div className="flex items-center gap-2">
-                                {issue.status === 'unresolved' && (
-                                  <div className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0"></div>
-                                )}
-                                {issue.status === 'pending_review' && (
-                                  <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></div>
-                                )}
-                                <select
-                                  value={issue.status || 'pending_review'}
-                                  onChange={(e) => handleStatusChange(issue, `context_${selectedContextId}`, e.target.value as any)}
-                                  className={`text-[9px] font-black uppercase tracking-tight py-1 px-2 rounded-lg border cursor-pointer transition-all focus:outline-none ${
-                                    issue.status === 'resolved' 
-                                      ? 'bg-[#F3F4F6] border-[#E5E5E5] text-[#6B7280]' 
-                                      : issue.status === 'unresolved'
-                                      ? 'bg-rose-50 border-rose-200 text-rose-700'
-                                      : 'bg-amber-50 border-amber-200 text-amber-700'
-                                  }`}
-                                >
-                                  <option value="pending_review">待验收</option>
-                                  <option value="unresolved">未解决</option>
-                                  <option value="resolved">已解决</option>
-                                </select>
-                              </div>
-                              
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                <button onClick={() => handleEditExample(`context_${selectedContextId}`, issue)} className="p-1 hover:bg-[#F3F4F6] rounded-lg text-[#9CA3AF] hover:text-[#111827]"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" strokeWidth={2} /></svg></button>
-                                <button onClick={() => handleDeleteIssue(issue.id)} className="p-1 hover:bg-rose-50 rounded-lg text-[#9CA3AF] hover:text-rose-600"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth={2} /></svg></button>
-                              </div>
-                            </div>
-                            
-                            <p className={`text-[11px] font-medium leading-relaxed whitespace-pre-wrap ${issue.status === 'resolved' ? 'text-[#9CA3AF] line-through' : issue.status === 'unresolved' ? 'text-rose-600' : 'text-amber-700'}`}>
-                              {issue.text}
-                            </p>
-                            
-                            {issue.images && issue.images.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mt-3">
-                                {issue.images.map((url: string, idx: number) => (
-                                  <div key={idx} className="w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5] cursor-zoom-in hover:opacity-80" onClick={() => setPreviewImage(url)}>
-                                    <img src={url} alt="" className="w-full h-full object-cover" />
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            <div className="mt-2.5 flex items-center justify-end gap-1.5 text-[7px] text-[#9CA3AF] font-bold uppercase tracking-wider">
-                              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth={2.5} /></svg>
-                              <span>{new Date(issue.updatedAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-
-                    {(!executionExamples[`context_${selectedContextId}`] || executionExamples[`context_${selectedContextId}`].length === 0) && !editingExample?.startsWith('new_') && (
-                      <div className="text-center py-12 border-2 border-dashed border-[#F3F4F6] rounded-2xl">
-                        <div className="w-12 h-12 rounded-full bg-[#FAFAFA] flex items-center justify-center mx-auto mb-3 border border-[#E5E5E5]">
-                          <svg className="w-6 h-6 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6" strokeWidth={2} /></svg>
-                        </div>
-                        <button onClick={() => handleEditExample(`context_${selectedContextId}`)} className="text-[11px] text-[#111827] hover:text-[#6B7280] font-black underline">添加首个问题反馈</button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
             </>
           ) : (
             /* Skill Detail View */
@@ -1201,207 +738,22 @@ export default function SkillsPage() {
                       <h4 className="text-[10px] font-black text-[#111827] leading-tight">预期输出</h4>
                       <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Expected Output</span>
                     </div>
-                    <div className="p-6 rounded-2xl bg-[#FAFAFA] border border-[#E5E5E5]">
-                      <p className="text-[12px] font-medium text-[#111827] leading-[1.8] whitespace-pre-line">
-                        {selectedSkill.metadata.expectedOutput}
-                      </p>
-                    </div>
-                    
-                    <div className="mt-8 pt-8 border-t border-[#E5E5E5]">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <div className="flex flex-col">
-                            <h4 className="text-[10px] font-black text-[#111827] leading-tight">问题反馈</h4>
-                            <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Skill Issues & Feedback</span>
-                          </div>
-                        </div>
-                        
-                        {/* Add Button */}
-                        {!editingExample?.startsWith('new_') && (
-                          <button
-                            onClick={() => handleEditExample(currentSkillId)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black text-white uppercase tracking-wider transition-all hover:opacity-90 shadow-sm"
-                            style={{ background: brandGradient }}
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                            </svg>
-                            新增问题
-                          </button>
-                        )}
+                    <div className="space-y-4">
+                      {/* Chinese Version */}
+                      <div className="p-6 rounded-2xl bg-[#FAFAFA] border border-[#E5E5E5]">
+                        <p className="text-[12px] font-medium text-[#111827] leading-[1.8] whitespace-pre-line">
+                          {selectedSkill.metadata.expectedOutput}
+                        </p>
                       </div>
                       
-                      <div className="space-y-3">
-                        {/* New Issue Editor */}
-                        {editingExample === `new_${currentSkillId}` && (
-                          <div 
-                            className="p-4 rounded-2xl border-2 border-[#D194EC]/30 bg-white shadow-sm space-y-3"
-                            onPaste={handlePaste}
-                          >
-                            <textarea
-                              value={tempExample}
-                              onChange={(e) => setTempExample(e.target.value)}
-                              placeholder="描述发现的问题或建议..."
-                              className="w-full p-3 rounded-xl border border-[#F3F4F6] focus:border-[#9A8FEA] focus:outline-none text-[11px] text-[#111827] font-medium leading-relaxed resize-none"
-                              rows={2}
-                              autoFocus
-                            />
-                            
-                            {/* Image Upload Area */}
-                            <div className="flex flex-wrap items-center gap-2">
-                              {tempImages.map((url, idx) => (
-                                <div key={idx} className="relative group w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5]">
-                                  <img src={url} alt="" className="w-full h-full object-cover" />
-                                  <button onClick={() => handleRemoveImage(idx)} className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth={2} /></svg>
-                                  </button>
-                                </div>
-                              ))}
-                              {isUploading && (
-                                <div className="w-14 h-14 rounded-lg border border-[#D194EC]/30 bg-[#FAFAFA] flex items-center justify-center">
-                                  <div className="w-5 h-5 border-2 border-[#9A8FEA] border-t-transparent rounded-full animate-spin"></div>
-                                </div>
-                              )}
-                              <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-[#9A8FEA] flex flex-col items-center justify-center cursor-pointer transition-colors">
-                                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                                <svg className="w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2} /></svg>
-                              </label>
-                              <span className="text-[8px] text-[#9CA3AF] ml-1">Ctrl+V 粘贴图片</span>
-                            </div>
-
-                            <div className="flex items-center gap-2 justify-end">
-                              <button onClick={handleCancelEdit} className="px-3 py-1.5 rounded-lg border border-[#E5E5E5] text-[9px] font-black text-[#6B7280] hover:bg-[#F3F4F6] uppercase">取消</button>
-                              <button 
-                                onClick={() => handleSaveExample(currentSkillId)} 
-                                className="px-4 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 uppercase shadow-sm"
-                                style={{ background: brandGradient }}
-                                disabled={isUploading}
-                              >
-                                提交
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Issues List */}
-                        {executionExamples[currentSkillId]?.map((issue: any) => (
-                          <div key={issue.id} className={`group relative p-4 rounded-2xl border transition-all ${
-                            issue.status === 'resolved' 
-                              ? 'bg-[#F9FAFB] border-[#E5E5E5] opacity-70' 
-                              : issue.status === 'unresolved'
-                              ? 'bg-rose-50/30 border-rose-100'
-                              : 'bg-amber-50/30 border-amber-100'
-                          }`}>
-                            {editingExample === issue.id ? (
-                              <div className="space-y-3" onPaste={handlePaste}>
-                                <textarea
-                                  value={tempExample}
-                                  onChange={(e) => setTempExample(e.target.value)}
-                                  className="w-full p-3 rounded-xl border border-[#D194EC]/30 focus:border-[#9A8FEA] focus:outline-none text-[11px] text-[#111827] font-medium leading-relaxed resize-none"
-                                  rows={2}
-                                  autoFocus
-                                />
-                                <div className="flex flex-wrap items-center gap-2">
-                                  {tempImages.map((url, idx) => (
-                                    <div key={idx} className="relative group w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5]">
-                                      <img src={url} alt="" className="w-full h-full object-cover" />
-                                      <button onClick={() => handleRemoveImage(idx)} className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth={2} /></svg>
-                                      </button>
-                                    </div>
-                                  ))}
-                                  {isUploading && (
-                                    <div className="w-14 h-14 rounded-lg border border-[#D194EC]/30 bg-[#FAFAFA] flex items-center justify-center">
-                                      <div className="w-5 h-5 border-2 border-[#9A8FEA] border-t-transparent rounded-full animate-spin"></div>
-                                    </div>
-                                  )}
-                                  <label className="w-14 h-14 rounded-lg border-2 border-dashed border-[#E5E5E5] hover:border-[#9A8FEA] flex flex-col items-center justify-center cursor-pointer transition-colors">
-                                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                                    <svg className="w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" strokeWidth={2} /></svg>
-                                  </label>
-                                  <span className="text-[8px] text-[#9CA3AF] ml-1">Ctrl+V 粘贴图片</span>
-                                </div>
-                                <div className="flex items-center gap-2 justify-end">
-                                  <button onClick={handleCancelEdit} className="px-3 py-1.5 rounded-lg border border-[#E5E5E5] text-[9px] font-black text-[#6B7280] hover:bg-[#F3F4F6] uppercase">取消</button>
-                                  <button 
-                                    onClick={() => handleSaveExample(currentSkillId)} 
-                                    className="px-4 py-1.5 rounded-lg text-white text-[9px] font-black hover:opacity-90 uppercase shadow-sm"
-                                    style={{ background: brandGradient }}
-                                    disabled={isUploading}
-                                  >
-                                    保存
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                <div className="flex items-start justify-between gap-4 mb-2">
-                                  <div className="flex items-center gap-2">
-                                    {/* Status indicator dot: 未解决=红色, 待验收=黄色, 已解决=无 */}
-                                    {issue.status === 'unresolved' && (
-                                      <div className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0"></div>
-                                    )}
-                                    {issue.status === 'pending_review' && (
-                                      <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></div>
-                                    )}
-                                    {/* Status dropdown */}
-                                    <select
-                                      value={issue.status || 'pending_review'}
-                                      onChange={(e) => handleStatusChange(issue, currentSkillId, e.target.value as any)}
-                                      className={`text-[9px] font-black uppercase tracking-tight py-1 px-2 rounded-lg border cursor-pointer transition-all focus:outline-none ${
-                                        issue.status === 'resolved' 
-                                          ? 'bg-[#F3F4F6] border-[#E5E5E5] text-[#6B7280]' 
-                                          : issue.status === 'unresolved'
-                                          ? 'bg-rose-50 border-rose-200 text-rose-700'
-                                          : 'bg-amber-50 border-amber-200 text-amber-700'
-                                      }`}
-                                    >
-                                      <option value="pending_review">待验收</option>
-                                      <option value="unresolved">未解决</option>
-                                      <option value="resolved">已解决</option>
-                                    </select>
-                                  </div>
-                                  
-                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                    <button onClick={() => handleEditExample(currentSkillId, issue)} className="p-1 hover:bg-[#F3F4F6] rounded-lg text-[#9CA3AF] hover:text-[#111827]"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" strokeWidth={2} /></svg></button>
-                                    <button onClick={() => handleDeleteIssue(issue.id)} className="p-1 hover:bg-rose-50 rounded-lg text-[#9CA3AF] hover:text-rose-600"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth={2} /></svg></button>
-                                  </div>
-                                </div>
-                                
-                                <p className={`text-[11px] font-medium leading-relaxed whitespace-pre-wrap ${issue.status === 'resolved' ? 'text-[#9CA3AF] line-through' : issue.status === 'unresolved' ? 'text-rose-600' : 'text-amber-700'}`}>
-                                  {issue.text}
-                                </p>
-                                
-                                {issue.images && issue.images.length > 0 && (
-                                  <div className="flex flex-wrap gap-2 mt-3">
-                                    {issue.images.map((url: string, idx: number) => (
-                                      <div key={idx} className="w-14 h-14 rounded-lg overflow-hidden border border-[#E5E5E5] cursor-zoom-in hover:opacity-80" onClick={() => setPreviewImage(url)}>
-                                        <img src={url} alt="" className="w-full h-full object-cover" />
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}{" "}
-                                <div className="mt-2.5 flex items-center justify-end gap-1.5 text-[7px] text-[#9CA3AF] font-bold uppercase tracking-wider">
-                                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth={2.5} /></svg>
-                                  <span>{new Date(issue.updatedAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        ))}
-
-                        {(!executionExamples[currentSkillId] || executionExamples[currentSkillId].length === 0) && !editingExample?.startsWith('new_') && (
-                          <div className="text-center py-12 border-2 border-dashed border-[#F3F4F6] rounded-2xl">
-                            <div className="w-12 h-12 rounded-full bg-[#FAFAFA] flex items-center justify-center mx-auto mb-3 border border-[#E5E5E5]">
-                              <svg className="w-6 h-6 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6" strokeWidth={2} /></svg>
-                            </div>
-                            <button onClick={() => handleEditExample(currentSkillId)} className="text-[11px] text-[#111827] hover:text-[#6B7280] font-black underline">添加首个问题反馈</button>
-                          </div>
-                        )}
-                      </div>
+                      {/* English Version */}
+                      {selectedSkill.metadata.expectedOutputEn && (
+                        <div className="p-6 rounded-2xl bg-white border border-[#E5E5E5]">
+                          <p className="text-[12px] font-medium text-[#374151] leading-[1.8] whitespace-pre-line">
+                            {selectedSkill.metadata.expectedOutputEn}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -1532,29 +884,6 @@ export default function SkillsPage() {
                 <span className="text-[7px] opacity-70 uppercase tracking-wider">Close</span>
               </button>
             </div>
-          </div>
-        </div>
-      )}
-      {/* Image Preview Modal */}
-      {previewImage && (
-        <div 
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4 cursor-zoom-out"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
-            <img 
-              src={previewImage} 
-              alt="Preview" 
-              className="max-w-full max-h-full object-contain shadow-2xl animate-in zoom-in-95 duration-200"
-            />
-            <button 
-              className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
-              onClick={() => setPreviewImage(null)}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>
         </div>
       )}

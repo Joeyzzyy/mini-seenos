@@ -86,6 +86,11 @@ For any "Opportunity" or "Underperformer" URL, your report MUST include:
 • TDK 优化建议：针对"机会象限"页面，提供 2-3 个改写后的高转化标题/描述变体
 • 索引状态检查：0 展示页面的技术健康检查（最后抓取时间、索引状态）
 • 可执行优化蓝图：针对每个象限的具体行动建议（保护、优化、扩展或修剪）`,
+    expectedOutputEn: `• Four-quadrant traffic analysis: classify pages into Stars (high impressions high clicks), Opportunities (high impressions low clicks), Niche Winners (low impressions high clicks), Underperformers (low impressions low clicks)
+• Key URL deep audit: EEAT scores and technical diagnostics for 3-5 representative pages in each quadrant
+• TDK optimization recommendations: for "Opportunities quadrant" pages, provide 2-3 rewritten high-conversion title/description variants
+• Indexing status check: technical health check for zero-impression pages (last crawl time, index status)
+• Actionable optimization blueprint: specific action recommendations for each quadrant (protect, optimize, expand, or prune)`,
     changeDescription: '重磅升级：集成 GSC 索引检查、四象限流量分析及 SEO Auditor 深度审计。支持每个象限 3-5 个页面的中/英双语内容诊断，提供 TDK 改写示例及 EEAT 评分。',
     playbook: {
       trigger: {

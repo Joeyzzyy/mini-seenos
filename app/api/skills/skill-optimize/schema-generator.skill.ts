@@ -60,6 +60,16 @@ BEST PRACTICES:
 • Gap 分析：与 Google 富媒体结果要求的差距
 • 实施指南：具体的代码插入位置（通常在 </head> 前）
 • 最佳实践建议：确保所有必需属性完整`,
+    expectedOutputEn: `• Complete JSON-LD structured data code block
+• Automatic page type detection:
+  - Homepage: Organization + WebSite schema
+  - Content pages: Article / FAQPage / VideoObject
+  - Business pages: LocalBusiness / Product / Service
+• Existing Schema audit report: identify missing or incomplete markup
+• Competitor rich results analysis: compare rich media displays in SERP
+• Gap analysis: gaps with Google rich results requirements
+• Implementation guide: specific code insertion location (usually before </head>)
+• Best practice recommendations: ensure all required properties are complete`,
     playbook: {
       trigger: {
         type: 'form',

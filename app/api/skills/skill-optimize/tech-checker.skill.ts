@@ -74,6 +74,12 @@ Your final output must be structured as a Technical Specification:
 • GSC 索引真相：Google 爬虫实际记录的内容状态
 • 源码级审计：DOM 大小、阻塞渲染资源、脚本膨胀分析
 • "修复清单"：包含具体代码片段或服务器端指令的优化方案（如"为脚本 X 添加 defer 属性"）`,
+    expectedOutputEn: `• Core Web Vitals status: LCP, CLS, FID performance scores for mobile and desktop
+• Link health report: all discovered 404, 500 errors and slow redirects
+• Infrastructure checklist: HTTPS, Canonical, Hreflang, Robots consistency verification
+• GSC indexing truth: actual content status recorded by Google crawlers
+• Source-level audit: DOM size, render-blocking resources, script bloat analysis
+• "Fix list": optimization solutions with specific code snippets or server-side instructions (e.g., "add defer attribute to script X")`,
     changeDescription: '能力定义：集成 PageSpeed Insights (Core Web Vitals)、HTTP 状态码检测及源码级基建审计。专注解决抓取瓶颈、加载性能及 404/重定向等硬技术问题。',
     playbook: {
       trigger: {

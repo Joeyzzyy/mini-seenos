@@ -39,6 +39,7 @@ export interface Skill {
     status?: string;
     solution?: string; // What problems this skill solves (Chinese description)
     expectedOutput?: string; // Expected output description (Chinese)
+    expectedOutputEn?: string; // Expected output description (English)
     whatThisSkillWillDo?: string[]; // List of actions this skill will perform
     whatArtifactsWillBeGenerated?: string[]; // List of artifacts/outputs generated
     demoUrl?: string;  // A showcase URL for this skill

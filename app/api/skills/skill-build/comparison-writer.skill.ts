@@ -188,6 +188,14 @@ COMPARISON WRITING PRINCIPLES:
 • 最佳适用场景建议
 • 最终推荐和决策指南
 • 2 张专业配图（特色图和对比信息图）`,
+    expectedOutputEn: `• Complete comparison page HTML file
+• Executive summary table: Product | Best For | Price Range | Rating
+• Detailed comparison table: item-by-item comparison of 10-15 key features
+• In-depth review of each product (500-700 words/product)
+• Pros and cons analysis (3-5 pros, 2-3 cons/product)
+• Best use case recommendations
+• Final recommendations and decision guide
+• 2 professional images (featured image and comparison infographic)`,
     changeDescription: '专项处理竞品对比、优缺点分析等决策型内容。',
     playbook: {
       trigger: {

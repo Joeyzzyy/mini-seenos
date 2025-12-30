@@ -61,6 +61,11 @@ You are a Senior SEO Authority Strategist. Your goal is to audit a site's backli
 • 增长趋势分析：最近 3-12 个月的历史数据对比表格
 • 增长速度评估：对比近期月份与之前月份的增长情况
 • 战略建议：基于数据的 3 条可执行的权威提升步骤`,
+    expectedOutputEn: `• Authority snapshot: current backlink count, referring domains, authority score (0-100)
+• Link quality analysis: Follow vs Nofollow link ratio
+• Growth trend analysis: historical data comparison table for recent 3-12 months
+• Growth velocity assessment: comparison of recent months vs previous months
+• Strategic recommendations: 3 actionable authority-building steps based on data`,
     playbook: {
       trigger: {
         type: 'form',

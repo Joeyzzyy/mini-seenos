@@ -190,6 +190,20 @@ LISTICLE WRITING PRINCIPLES:
 • 如何选择指南
 • 最终推荐
 • 2 张列表主题配图`,
+    expectedOutputEn: `• Complete listicle article HTML page
+• Engaging introduction (200-300 words)
+• Quick comparison table: Rank | Name | Best For | Price | Rating
+• 5-15 detailed list items, each including:
+  - Numbered heading
+  - Overview (50-75 words)
+  - Key features (5-7 points)
+  - Pricing information
+  - Pros and cons analysis
+  - Best use case scenarios
+  - Rating/review
+• How to choose guide
+• Final recommendations
+• 2 list-themed images`,
     changeDescription: '优化清单、合集类内容的排版与展示。',
     playbook: {
       trigger: {

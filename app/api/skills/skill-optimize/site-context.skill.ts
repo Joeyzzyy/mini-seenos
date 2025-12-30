@@ -46,6 +46,12 @@ KEY RULES:
 • 持久化存储确认：数据已保存到"站点上下文"侧边栏
 • 上下文就绪通知：其他 skill（如内部链接优化器）现可使用该数据
 • 容量警告：如果 URL 数量超过 500，会提示并停止处理`,
+    expectedOutputEn: `• Sitemap parsing results: number of successfully retrieved URLs
+• URL classification list: page list grouped by type (blog, product, case studies, etc.)
+• Site architecture visualization: hierarchical display of URL structure
+• Persistent storage confirmation: data saved to "Site Context" sidebar
+• Context ready notification: other skills (such as internal link optimizer) can now use this data
+• Capacity warning: if URL count exceeds 500, will prompt and stop processing`,
   },
 };
 

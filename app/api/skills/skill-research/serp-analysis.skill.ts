@@ -67,6 +67,11 @@ NOTE: Be objective and data-driven. Use the exact headers and content found by t
 • 核心主题提取：前 10 名页面共同覆盖的主题
 • 内容密度分析：平均字数、段落数、图片数
 • 差异化建议：你的内容如何脱颖而出的具体角度`,
+    expectedOutputEn: `• Google Top 10 page list (title, URL, domain authority)
+• H1-H3 heading structure comparison table (heading hierarchy of all pages)
+• Core topic extraction: themes commonly covered by top 10 pages
+• Content density analysis: average word count, paragraph count, image count
+• Differentiation recommendations: specific angles for your content to stand out`,
     renamingInfo: 'SERP Analyst → SERP Analysis',
     changeDescription: '深度分析搜索结果大纲结构与内容密度。',
     playbook: {

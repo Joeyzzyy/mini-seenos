@@ -123,6 +123,13 @@ RULES:
 • 3-5 个权威外部来源链接
 • 2 张专业配图（概念性或数据驱动）
 • 与站点品牌完全集成（页眉/页脚/样式隔离）`,
+    expectedOutputEn: `• Complete HTML page file (2000-3000+ words)
+• Professional multi-column desktop layout with table of contents and reading progress bar
+• 400-600 word in-depth expert-level content for each major section
+• 2-3 naturally embedded internal links
+• 3-5 authoritative external source links
+• 2 professional images (conceptual or data-driven)
+• Fully integrated with site branding (header/footer/style isolation)`,
     renamingInfo: 'Content Writer → Blog Writer',
     changeDescription: '强调该能力专注于长文博客的“端到端”全自动生产流水线。',
     playbook: {

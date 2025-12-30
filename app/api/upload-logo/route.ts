@@ -5,8 +5,7 @@ import { cookies } from 'next/headers';
 export async function POST(request: NextRequest) {
   try {
     // Use service role to allow uploads from this API route
-    // This allows both authenticated users (for site logos) and 
-    // public/colleague uploads (for skill issues)
+    // This allows both authenticated users (for site logos) and public uploads
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,

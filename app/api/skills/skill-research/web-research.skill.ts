@@ -114,6 +114,11 @@ Always provide the download link for the Word document to the user at the end.`,
 • 关键词机会表格：包含搜索量、难度（KD）、CPC 和趋势数据
 • 关键词差距分析：竞争对手排名但你缺失的高价值关键词
 • 战略性内容建议：具体的主题、页面类型和角度推荐`,
+    expectedOutputEn: `• Current site content focus analysis (based on 5-10 crawled pages)
+• Competitor domain list (auto-discovered or user-provided)
+• Keyword opportunities table: including search volume, difficulty (KD), CPC, and trend data
+• Keyword gap analysis: high-value keywords where competitors rank but you're missing
+• Strategic content recommendations: specific topics, page types, and angle suggestions`,
     playbook: {
       trigger: {
         type: 'form',

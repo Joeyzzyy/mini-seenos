@@ -84,20 +84,6 @@ CREATE POLICY "Users can access own content" ON content_items
 CREATE POLICY "Users can access own gsc" ON gsc_integrations
   FOR ALL USING (auth.uid() = user_id);
 
--- 7. 创建 skill_issues 表（问题反馈）
-CREATE TABLE IF NOT EXISTS skill_issues (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  skill_id TEXT NOT NULL,
-  issue_text TEXT,
-  image_urls TEXT[],
-  is_resolved BOOLEAN DEFAULT FALSE,
-  status TEXT DEFAULT 'pending_review', -- pending_review, unresolved, resolved
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- skill_issues 不需要 RLS，因为是全局共享的
-
 -- 8. 创建 user_domains 表（用户绑定的域名）
 CREATE TABLE IF NOT EXISTS user_domains (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -407,6 +407,11 @@ You have full browser automation capabilities:
 • 功能对比矩阵：你的产品 vs 竞品的功能覆盖对比
 • 市场定位分析：价格-功能象限图、目标客群差异
 • 战略机会与威胁：可执行的差异化建议和风险预警`,
+    expectedOutputEn: `• Competitor list (10-20 direct competitors with website URLs)
+• Pricing comparison table: pricing tiers, feature limits, and free trial details for each competitor
+• Feature comparison matrix: your product vs competitors' feature coverage
+• Market positioning analysis: price-feature quadrant chart, target audience differences
+• Strategic opportunities and threats: actionable differentiation recommendations and risk alerts`,
     changeDescription: '支持竞品发现、网站深度抓取及自动化 Word 报告生成。',
     playbook: {
       trigger: {

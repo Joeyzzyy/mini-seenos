@@ -190,6 +190,18 @@ GUIDE WRITING PRINCIPLES:
 • 专家提示和最佳实践
 • 下一步行动建议
 • 2 张说明性配图`,
+    expectedOutputEn: `• Complete tutorial guide page
+• Clear learning outcomes statement
+• Prerequisites and required resources checklist
+• 5-15 numbered detailed steps, each including:
+  - Clear action verbs
+  - Detailed instructions
+  - Expected results
+  - Warnings or tip boxes
+• Common questions and troubleshooting section (5-7 questions)
+• Expert tips and best practices
+• Next steps recommendations
+• 2 explanatory images`,
     changeDescription: '专注于长篇教程、操作指南等权威性资源的生产。',
     playbook: {
       trigger: {
