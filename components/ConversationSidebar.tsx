@@ -236,7 +236,7 @@ export default function ConversationSidebar({
       <div className="p-4 shrink-0">
         <Link href="/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
           <Image 
-            src="/logo.svg" 
+            src="/product-logo.webp" 
             alt="Mini Seenos Logo" 
             width={32} 
             height={32}
@@ -571,6 +571,19 @@ export default function ConversationSidebar({
             <path d="M12 2L2 7l10 5 10-5-10-5z" />
             <path d="M2 17l10 5 10-5" />
             <path d="M2 12l10 5 10-5" />
+          </svg>
+        </Link>
+        
+        {/* Feedbacks Link */}
+        <Link
+          href="/feedbacks"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center p-2 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-all flex-shrink-0"
+          title="Message Feedbacks"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
           </svg>
         </Link>
         

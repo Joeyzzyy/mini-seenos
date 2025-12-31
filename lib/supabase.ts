@@ -112,6 +112,17 @@ export interface SiteContext {
   updated_at: string;
 }
 
+export interface MessageFeedback {
+  id: string;
+  message_id: string;
+  user_id: string;
+  conversation_id: string;
+  feedback_type: 'like' | 'dislike';
+  reason: string;
+  message_content: string | null;
+  created_at: string;
+}
+
 // Helper function to deeply clean tool invocations and remove large data
 // Helper functions
 export async function saveMessage(
@@ -745,5 +756,54 @@ export async function getFileContent(fileId: string): Promise<{ content: string;
     filename: fileRecord.filename,
     fileType: fileRecord.file_type,
   };
+}
+
+// Message Feedback functions
+export async function saveMessageFeedback(
+  messageId: string,
+  userId: string,
+  conversationId: string,
+  feedbackType: 'like' | 'dislike',
+  reason: string,
+  messageContent: string | null = null
+) {
+  const { data, error } = await supabase
+    .from('message_feedback')
+    .insert({
+      message_id: messageId,
+      user_id: userId,
+      conversation_id: conversationId,
+      feedback_type: feedbackType,
+      reason,
+      message_content: messageContent,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as MessageFeedback;
+}
+
+export async function getMessageFeedbacks(messageId: string) {
+  const { data, error } = await supabase
+    .from('message_feedback')
+    .select('*')
+    .eq('message_id', messageId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as MessageFeedback[];
+}
+
+export async function getUserMessageFeedback(messageId: string, userId: string) {
+  const { data, error } = await supabase
+    .from('message_feedback')
+    .select('*')
+    .eq('message_id', messageId)
+    .eq('user_id', userId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
+  return data as MessageFeedback | null;
 }
 

@@ -9,9 +9,9 @@ export const metadata: Metadata = {
   title: "Mini Seenos",
   description: "Mini Seenos - SEO Agent with Gemini AI and Semrush integration",
   icons: {
-    icon: '/logo.svg',
-    shortcut: '/logo.svg',
-    apple: '/logo.svg',
+    icon: '/tab-logo.webp',
+    shortcut: '/tab-logo.webp',
+    apple: '/tab-logo.webp',
   },
 };
 

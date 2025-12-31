@@ -51,8 +51,8 @@ export default function LandingPage() {
       <div className="relative z-10 w-full max-w-2xl px-8 flex flex-col items-center">
         {/* Logo */}
         <div className="mb-16 animate-fade-in-bottom opacity-0">
-          <Link href="/" target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-[28px] bg-white shadow-xl border border-[#F3F4F6] flex items-center justify-center group hover:scale-105 transition-transform duration-500">
-            <Image src="/logo.svg" alt="Logo" width={48} height={48} className="group-hover:rotate-12 transition-transform duration-500" />
+          <Link href="/" target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-[28px] bg-white shadow-xl border border-[#F3F4F6] flex items-center justify-center group hover:scale-105 transition-transform duration-500 overflow-hidden">
+            <Image src="/product-logo.webp" alt="Logo" width={48} height={48} className="group-hover:rotate-12 transition-transform duration-500 rounded-xl" />
           </Link>
         </div>
 

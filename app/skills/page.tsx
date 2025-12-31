@@ -233,7 +233,7 @@ export default function SkillsPage() {
         <div className="flex items-center gap-12 h-full">
           <Link href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-[#F3F4F6] group-hover:scale-110 transition-transform shrink-0">
-              <Image src="/logo.svg" alt="Logo" width={24} height={24} />
+              <Image src="/product-logo.webp" alt="Logo" width={24} height={24} />
             </div>
             <div className="hidden md:block">
               <h1 className="text-sm font-black text-[#111827] uppercase tracking-tighter">Mini Seenos</h1>

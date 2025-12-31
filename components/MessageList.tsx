@@ -5,6 +5,8 @@ import Image from 'next/image';
 import MarkdownMessage from './MarkdownMessage';
 import ToolCallsSummary from './ToolCallsSummary';
 import FilePreviewModal from './FilePreviewModal';
+import MessageFeedbackModal from './MessageFeedbackModal';
+import { supabase } from '@/lib/supabase';
 import type { FileRecord, ContentItem } from '@/lib/supabase';
 
 interface MessageListProps {
@@ -18,6 +20,7 @@ interface MessageListProps {
   onPreviewFile?: (file: FileRecord) => void;
   onPreviewContentItem?: (itemId: string) => void;
   onRetry?: () => void;
+  onShowToast?: (message: string) => void;
 }
 
 export default function MessageList({ 
@@ -30,10 +33,52 @@ export default function MessageList({
   onUploadSuccess,
   onPreviewFile,
   onPreviewContentItem,
-  onRetry
+  onRetry,
+  onShowToast
 }: MessageListProps) {
   const [previewingFile, setPreviewingFile] = useState<{url: string, filename: string} | null>(null);
+  const [feedbackModal, setFeedbackModal] = useState<{
+    isOpen: boolean;
+    messageId: string;
+    feedbackType: 'like' | 'dislike' | null;
+  }>({
+    isOpen: false,
+    messageId: '',
+    feedbackType: null,
+  });
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [userFeedbacks, setUserFeedbacks] = useState<Record<string, 'like' | 'dislike'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load user feedbacks for assistant messages
+  useEffect(() => {
+    if (!userId || !conversationId) return;
+
+    const loadFeedbacks = async () => {
+      const assistantMessages = messages.filter(m => m.role === 'assistant');
+      const feedbacks: Record<string, 'like' | 'dislike'> = {};
+
+      for (const msg of assistantMessages) {
+        try {
+          const response = await fetch(
+            `/api/message-feedback?messageId=${msg.id}&userId=${userId}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            if (data.feedback) {
+              feedbacks[msg.id] = data.feedback.feedback_type;
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load feedback for message:', msg.id, error);
+        }
+      }
+
+      setUserFeedbacks(feedbacks);
+    };
+
+    loadFeedbacks();
+  }, [messages, userId, conversationId]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -73,11 +118,70 @@ export default function MessageList({
     return () => cancelAnimationFrame(rafId);
   }, [messages, isLoading]);
 
+  const handleFeedbackClick = (messageId: string, feedbackType: 'like' | 'dislike') => {
+    setFeedbackModal({
+      isOpen: true,
+      messageId,
+      feedbackType,
+    });
+  };
+
+  const handleFeedbackSubmit = async (reason: string) => {
+    if (!feedbackModal.messageId || !feedbackModal.feedbackType || !userId || !conversationId) return;
+
+    setSubmittingFeedback(true);
+    try {
+      const message = messages.find(m => m.id === feedbackModal.messageId);
+      const messageContent = message?.content || null;
+
+      const response = await fetch('/api/message-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messageId: feedbackModal.messageId,
+          userId,
+          conversationId,
+          feedbackType: feedbackModal.feedbackType,
+          reason,
+          messageContent,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit feedback');
+      }
+
+      // Update local state
+      setUserFeedbacks(prev => ({
+        ...prev,
+        [feedbackModal.messageId]: feedbackModal.feedbackType!,
+      }));
+
+      setFeedbackModal({ isOpen: false, messageId: '', feedbackType: null });
+      
+      // Show success toast
+      if (onShowToast) {
+        onShowToast('Feedback submitted successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to submit feedback:', error);
+      
+      // Show error toast
+      if (onShowToast) {
+        onShowToast('Failed to submit feedback. Please try again later.');
+      }
+    } finally {
+      setSubmittingFeedback(false);
+    }
+  };
+
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center py-20">
         <Image 
-          src="/logo.svg" 
+          src="/product-logo.webp" 
           alt="Mini Seenos Logo" 
           width={96} 
           height={96}
@@ -289,6 +393,40 @@ export default function MessageList({
                 </div>
               </div>
             )}
+
+            {/* Feedback buttons for assistant messages */}
+            {message.role === 'assistant' && !message.content?.startsWith('Error:') && !message.content?.startsWith('❌ Error:') && userId && (
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
+                <button
+                  onClick={() => handleFeedbackClick(message.id, 'like')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    userFeedbacks[message.id] === 'like'
+                      ? 'bg-[#ECFDF5] text-[#10B981] border border-[#10B981]'
+                      : 'bg-white text-[#6B7280] border border-[#E5E5E5] hover:bg-[#F9FAFB]'
+                  }`}
+                  title="Like this response"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                  </svg>
+                  Like
+                </button>
+                <button
+                  onClick={() => handleFeedbackClick(message.id, 'dislike')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    userFeedbacks[message.id] === 'dislike'
+                      ? 'bg-[#FEF2F2] text-[#EF4444] border border-[#EF4444]'
+                      : 'bg-white text-[#6B7280] border border-[#E5E5E5] hover:bg-[#F9FAFB]'
+                  }`}
+                  title="Dislike this response"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
+                  </svg>
+                  Dislike
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ))}
@@ -312,6 +450,15 @@ export default function MessageList({
           filename={previewingFile.filename}
         />
       )}
+
+      {/* Message Feedback Modal */}
+      <MessageFeedbackModal
+        isOpen={feedbackModal.isOpen}
+        feedbackType={feedbackModal.feedbackType}
+        onClose={() => setFeedbackModal({ isOpen: false, messageId: '', feedbackType: null })}
+        onSubmit={handleFeedbackSubmit}
+        isLoading={submittingFeedback}
+      />
     </>
   );
 }

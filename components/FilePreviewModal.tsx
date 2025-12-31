@@ -129,7 +129,7 @@ export default function FilePreviewModal({
           {loading ? (
             <div className="flex items-center justify-center h-full bg-[#FAFAFA]">
               <Image 
-                src="/logo.svg" 
+                src="/product-logo.webp" 
                 alt="Loading..." 
                 width={96} 
                 height={96}

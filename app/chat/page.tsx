@@ -1466,7 +1466,7 @@ export default function ChatPage() {
               <div className="text-center">
                 <div className="mb-8">
                   <Image 
-                    src="/logo.svg" 
+                    src="/product-logo.webp" 
                     alt="Mini Seenos Logo" 
                     width={96} 
                     height={96}
@@ -1482,7 +1482,7 @@ export default function ChatPage() {
             <div className="flex-1 flex items-center justify-center relative">
               <div className="flex flex-col items-center gap-4">
                 <Image 
-                  src="/logo.svg" 
+                  src="/product-logo.webp" 
                   alt="Loading..." 
                   width={96} 
                   height={96}
@@ -1507,6 +1507,7 @@ export default function ChatPage() {
                         loadFiles(currentConversation.id);
                       }
                     }}
+                    onShowToast={(message) => setToast({ isOpen: true, message })}
                     onRetry={() => {
                       if (messages.length > 0) {
                         // Find the last user message to resubmit

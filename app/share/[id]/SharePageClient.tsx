@@ -34,7 +34,7 @@ export default function SharePageClient({ conversation, messages, files }: Share
       <header className="h-16 border-b border-[#F3F4F6] bg-white sticky top-0 z-10 flex items-center px-6">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-[#F3F4F6]">
-            <Image src="/logo.svg" alt="Logo" width={20} height={20} />
+            <Image src="/product-logo.webp" alt="Logo" width={20} height={20} />
           </div>
           <div className="flex flex-col min-w-0">
             <h1 className="text-sm font-bold text-[#111827] truncate">
