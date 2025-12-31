@@ -287,6 +287,45 @@ export default function ToolCallsSummary({
             ))}
           </div>
         )}
+
+        {/* DEBUG: Detailed Input Arguments */}
+        {args && Object.keys(args).length > 0 && (
+          <div className="ml-2 pl-3 border-l border-dashed border-[#E5E7EB] space-y-1 py-1">
+            <div className="flex items-center gap-1.5 mb-1">
+              <svg className="w-3 h-3 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              <span className="text-[8px] font-black text-[#9CA3AF] uppercase tracking-wider">Input Parameters</span>
+            </div>
+            <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded p-2 max-h-[200px] overflow-y-auto thin-scrollbar">
+              <pre className="text-[9px] text-[#374151] font-mono whitespace-pre-wrap break-words leading-relaxed">
+                {JSON.stringify(args, null, 2)}
+              </pre>
+            </div>
+          </div>
+        )}
+
+        {/* DEBUG: Detailed Output Result */}
+        {result && !isRunning && (
+          <div className="ml-2 pl-3 border-l border-dashed border-[#E5E7EB] space-y-1 py-1">
+            <div className="flex items-center gap-1.5 mb-1">
+              <svg className="w-3 h-3 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-[8px] font-black text-[#9CA3AF] uppercase tracking-wider">Output Result</span>
+              {result.success !== undefined && (
+                <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded ${result.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  {result.success ? '✓ SUCCESS' : '✗ FAILED'}
+                </span>
+              )}
+            </div>
+            <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded p-2 max-h-[200px] overflow-y-auto thin-scrollbar">
+              <pre className="text-[9px] text-[#374151] font-mono whitespace-pre-wrap break-words leading-relaxed">
+                {JSON.stringify(result, null, 2)}
+              </pre>
+            </div>
+          </div>
+        )}
       </div>
     );
   };

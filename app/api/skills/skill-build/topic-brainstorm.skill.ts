@@ -1,6 +1,9 @@
 import { Skill } from '../types';
 import { web_search } from '../tools/research/tavily-web-search.tool';
 import { keyword_overview } from '../tools/seo/semrush-keyword-overview.tool';
+import { detect_site_topics } from '../tools/content/detect-site-topics.tool';
+import { check_topic_duplication } from '../tools/content/check-topic-duplication.tool';
+import { find_topic_gaps } from '../tools/content/find-topic-gaps.tool';
 
 export const topicBrainstormSkill: Skill = {
   id: 'topic-brainstorm',
@@ -17,15 +20,44 @@ CORE OBJECTIVE:
 - STRUCTURAL DEPTH: Suggest "Pillar Pages" and their supporting "Cluster Pages" to create a robust content ecosystem.
 
 WORKFLOW (ALL STEPS IN ONE TURN):
-1. NICHE RESEARCH: Use 'web_search' to understand the competitive landscape and intents.
-2. EXPANSIVE BRAINSTORMING: Suggest 3-5 high-potential Topic Clusters (Pillar + 5-8 Cluster Pages).
-3. SEO DATA MINING (MANDATORY): For the primary keyword of EACH Pillar theme, you MUST call 'keyword_overview' immediately.
-4. FINAL STRATEGIC ROADMAP: Present your suggested clusters WITH the retrieved SEO metrics (Volume, KD, CPC) for each pillar keyword.
+0. SITE CONTENT ANALYSIS (MANDATORY FIRST STEP):
+   - ALWAYS start by calling 'detect_site_topics' to understand existing content structure
+   - Review the topic hubs, coverage analysis, and existing keywords
+   - Call 'find_topic_gaps' to identify strategic content opportunities
+   - This prevents suggesting duplicate topics and ensures strategic alignment
 
-NOTE: Your response is incomplete and a failure of this skill if it does not contain real SEO metrics from 'keyword_overview'.`,
+1. NICHE RESEARCH: Use 'web_search' to understand the competitive landscape and intents.
+
+2. EXPANSIVE BRAINSTORMING: Suggest 3-5 high-potential Topic Clusters (Pillar + 5-8 Cluster Pages).
+   - Focus on topics that fill identified gaps
+   - Complement existing strong hubs with supporting content
+   - Expand weak hubs with foundational content
+
+3. DUPLICATION CHECK (MANDATORY):
+   - BEFORE finalizing topics, call 'check_topic_duplication' with all proposed topic titles
+   - Filter out any topics with high conflicts
+   - Only proceed with safe or low-warning topics
+   - For conflicting topics, suggest differentiated angles
+
+4. SEO DATA MINING (MANDATORY): For the primary keyword of EACH Pillar theme (after duplication check), you MUST call 'keyword_overview' immediately.
+
+5. FINAL STRATEGIC ROADMAP: Present your suggested clusters WITH:
+   - Retrieved SEO metrics (Volume, KD, CPC) for each pillar keyword
+   - Duplication check results
+   - Gap analysis insights
+   - Prioritization based on existing content structure
+
+CRITICAL RULES:
+- NEVER skip step 0 - understanding existing content is essential
+- NEVER suggest topics that already exist (use check_topic_duplication)
+- ALWAYS align suggestions with identified gaps
+- Your response is incomplete if it lacks: existing content analysis, duplication checks, AND SEO metrics`,
   tools: {
     web_search,
     keyword_overview,
+    detect_site_topics,
+    check_topic_duplication,
+    find_topic_gaps,
   },
   enabled: true,
   metadata: {

@@ -1,6 +1,7 @@
 import { Skill } from '../types';
 import { fetch_sitemap_urls } from '../tools/seo/seo-sitemap-fetcher.tool';
 import { save_site_context } from '../tools/seo/supabase-site-context-save.tool';
+import { detect_site_topics } from '../tools/content/detect-site-topics.tool';
 
 export const siteContextSkill: Skill = {
   id: 'site-context',
@@ -23,15 +24,25 @@ CORE WORKFLOW:
    - Set 'type' to 'sitemap'.
    - Set 'content' to a JSON-stringified OBJECT containing both the flat 'urls' array AND the 'categorizedUrls' object from the tool result.
    - Example content: JSON.stringify({ urls: [...], categorizedUrls: {...} })
-4. ESTABLISH ON-SITE CONTEXT:
-   - Once saved, this data will be visible in the "On Site Context" sidebar and available for skills like 'Internal Linking Optimizer'.
+4. DETECT TOPIC HUBS (detect_site_topics) - MANDATORY:
+   - IMMEDIATELY after saving sitemap, call 'detect_site_topics'
+   - Pass the sitemap data (urls and categorizedUrls) to the tool
+   - This will analyze and organize content into topic hubs
+   - The enhanced data will be automatically saved back to database
+   - This step is CRITICAL - it ensures users see organized, categorized sitemap data
+5. ESTABLISH ON-SITE CONTEXT:
+   - Once completed, the enhanced sitemap data (with topic hubs) will be visible in "On Site Context" sidebar
+   - Data is now ready for other skills like 'Internal Linking Optimizer', 'Topic Brainstorm', 'Page Planner'
 
 KEY RULES:
 - If 'fetch_sitemap_urls' returns a sitemap index (multiple .xml files), inform the user and ask which specific sitemap they want to analyze.
-- ALWAYS call 'save_site_context' after a successful fetch.`,
+- ALWAYS call 'save_site_context' after a successful fetch.
+- ALWAYS call 'detect_site_topics' after saving sitemap - this is NOT optional.
+- The workflow must be: fetch → save → detect → report to user.`,
   tools: {
     fetch_sitemap_urls,
     save_site_context,
+    detect_site_topics,
   },
   enabled: true,
   metadata: {

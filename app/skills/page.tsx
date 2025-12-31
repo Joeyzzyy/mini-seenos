@@ -1,11 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Toast from '@/components/Toast';
 
-export default function SkillsPage() {
+function SkillsPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  
   const [skills, setSkills] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>('research');
@@ -22,6 +27,18 @@ export default function SkillsPage() {
   });
 
   const brandGradient = 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)';
+
+  // Update URL with current state
+  const updateURL = (tab?: string, skillId?: string, toolId?: string) => {
+    const params = new URLSearchParams();
+    
+    if (tab) params.set('tab', tab);
+    if (skillId) params.set('skill', skillId);
+    if (toolId) params.set('tool', toolId);
+    
+    const newURL = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newURL, { scroll: false });
+  };
 
   // Field label translation map (English -> Chinese)
   const fieldLabelMap: Record<string, string> = {
@@ -120,7 +137,12 @@ export default function SkillsPage() {
 
   const [selectedContextId, setSelectedContextId] = useState<string>('logo');
 
+  // Initialize from URL once when component mounts
   useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    const skillParam = searchParams.get('skill');
+    const toolParam = searchParams.get('tool');
+    
     fetch('/api/skills')
       .then(res => res.json())
       .then(data => {
@@ -128,8 +150,27 @@ export default function SkillsPage() {
         // Filter out system category skills
         const filteredSkills = skillsData.filter((s: any) => s.metadata?.category !== 'system');
         setSkills(filteredSkills);
-        if (filteredSkills.length > 0) {
-          // Initialize with first skill of research phase if available
+        
+        // Only set state from URL params on initial load
+        if (tabParam) {
+          setActiveTab(tabParam);
+        }
+        
+        if (skillParam) {
+          const skillExists = filteredSkills.find((s: any) => s.id === skillParam);
+          if (skillExists) {
+            setSelectedSkillId(skillParam);
+            // If tool param exists, open the tool modal (skip URL update to avoid loop)
+            if (toolParam) {
+              openToolModal(toolParam, skillParam, true);
+            }
+          } else if (filteredSkills.length > 0) {
+            // Fallback to first skill if URL skill doesn't exist
+            const firstResearchSkill = filteredSkills.find((s: any) => s.metadata?.category === 'research');
+            setSelectedSkillId(firstResearchSkill?.id || filteredSkills[0].id);
+          }
+        } else if (filteredSkills.length > 0) {
+          // Initialize with first skill of research phase if no URL params
           const firstResearchSkill = filteredSkills.find((s: any) => s.metadata?.category === 'research');
           if (firstResearchSkill) {
             setSelectedSkillId(firstResearchSkill.id);
@@ -143,7 +184,7 @@ export default function SkillsPage() {
         console.error('Failed to fetch skills:', err);
         setLoading(false);
       });
-  }, []);
+  }, []); // Empty dependency array - only run once on mount
 
   const currentSkillId = selectedSkillId || (skills.length > 0 ? skills[0].id : '');
   
@@ -176,7 +217,12 @@ export default function SkillsPage() {
     });
   };
 
-  const openToolModal = async (toolId: string, skillId: string) => {
+  const openToolModal = async (toolId: string, skillId: string, skipURLUpdate = false) => {
+    // Only update URL if not called from URL initialization
+    if (!skipURLUpdate) {
+      updateURL(activeTab, skillId, toolId);
+    }
+    
     setToolModal({
       isOpen: true,
       toolId,
@@ -216,6 +262,9 @@ export default function SkillsPage() {
   };
 
   const closeToolModal = () => {
+    // Remove tool parameter from URL when closing
+    updateURL(activeTab, selectedSkillId);
+    
     setToolModal({
       isOpen: false,
       toolId: '',
@@ -245,14 +294,19 @@ export default function SkillsPage() {
               <button
                 key={tab.id}
                 onClick={() => {
-                  setActiveTab(tab.id);
                   const skillsInTab = skills.filter(s => {
                     const cat = s.metadata?.category || 'Others';
                     if (tab.id === 'system') return cat === 'system';
                     return cat === tab.id;
                   });
-                  if (skillsInTab.length > 0) {
-                    setSelectedSkillId(skillsInTab[0].id);
+                  const firstSkillId = skillsInTab.length > 0 ? skillsInTab[0].id : '';
+                  
+                  setActiveTab(tab.id);
+                  if (firstSkillId) {
+                    setSelectedSkillId(firstSkillId);
+                    updateURL(tab.id, firstSkillId);
+                  } else {
+                    updateURL(tab.id);
                   }
                 }}
                 className="relative px-6 h-16 flex items-center transition-all group"
@@ -344,7 +398,10 @@ export default function SkillsPage() {
                   return (
             <button 
                       key={skill.id}
-                      onClick={() => setSelectedSkillId(skill.id)}
+                      onClick={() => {
+                        setSelectedSkillId(skill.id);
+                        updateURL(activeTab, skill.id);
+                      }}
                       className={`w-full text-left p-4 rounded-xl transition-all relative group ${
                         currentSkillId === skill.id 
                           ? 'bg-[#FAFAFA] shadow-sm border border-[#E5E5E5] text-[#111827]' 
@@ -859,5 +916,20 @@ export default function SkillsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SkillsPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-4 border-[#9A8FEA] border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-sm text-[#6B7280]">加载技能中...</p>
+        </div>
+      </div>
+    }>
+      <SkillsPageContent />
+    </Suspense>
   );
 }

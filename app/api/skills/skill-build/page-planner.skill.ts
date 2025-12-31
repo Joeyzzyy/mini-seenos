@@ -4,6 +4,9 @@ import { search_serp } from '../tools/seo/serper-search-serp.tool';
 import { analyze_serp_structure } from '../tools/seo/serper-analyze-serp-structure.tool';
 import { save_content_item } from '../tools/content/supabase-content-save-item.tool';
 import { keyword_overview } from '../tools/seo/semrush-keyword-overview.tool';
+import { detect_site_topics } from '../tools/content/detect-site-topics.tool';
+import { check_topic_duplication } from '../tools/content/check-topic-duplication.tool';
+import { find_topic_gaps } from '../tools/content/find-topic-gaps.tool';
 
 export const pagePlannerSkill: Skill = {
   id: 'page-planner',
@@ -15,10 +18,23 @@ CORE OBJECTIVE:
 Design a structured set of pages (Pillar + Supporting) that will dominate a specific topic. Each page must be data-backed and have a clear content blueprint.
 
 WORKFLOW:
+0. SITE CONTENT ANALYSIS (MANDATORY FIRST STEP):
+   - ALWAYS start by calling 'detect_site_topics' to understand existing content structure
+   - Review topic hubs and coverage to inform cluster design
+   - Call 'find_topic_gaps' to ensure the cluster fills strategic gaps
+   - This prevents duplicate clusters and ensures strategic alignment
+
 1. DEFINE CLUSTER STRUCTURE:
    - Identify the "Pillar Page" (the core high-level authority page).
    - Identify 3-5 "Supporting Pages" (Cluster pages that target long-tail aspects and link back to the pillar).
-2. PAGE TYPE CLASSIFICATION:
+   - Ensure cluster complements existing content structure
+
+2. DUPLICATION CHECK (BEFORE DETAILED PLANNING):
+   - Call 'check_topic_duplication' with all proposed page titles
+   - Filter out conflicting pages or adjust angles to differentiate
+   - Only proceed with safe topics
+
+3. PAGE TYPE CLASSIFICATION:
    - For each page, determine the most suitable page_type from: blog, landing_page, comparison, guide, listicle
    - GUIDELINES:
      * 'blog' → Informational, news, or thought leadership content
@@ -28,19 +44,19 @@ WORKFLOW:
      * 'listicle' → "Top 10 X", "Best Y", list-based content
    - Pillar pages are typically 'guide' or 'landing_page' depending on intent
    - Supporting pages should match the search intent of their target keywords
-3. TDK & KEYWORD DEFINITION:
+4. TDK & KEYWORD DEFINITION:
    - Define the Title, Description, and Target Keyword (TDK) for EACH page in the cluster.
-4. INTERNAL LINKING STRATEGY (HUB & SPOKE):
+5. INTERNAL LINKING STRATEGY (HUB & SPOKE):
    - Design a logical internal linking map.
    - MANDATORY: Every Supporting Page (Cluster) MUST link back to the Pillar Page using its primary keyword as anchor text.
    - RECOMMENDED: The Pillar Page should link to all Supporting Pages to distribute authority.
-5. DATA VALIDATION:
+6. DATA VALIDATION:
    - For every target keyword defined, you MUST call 'keyword_overview' to retrieve real SEO metrics (Volume, KD, CPC).
-6. COMPETITIVE BLUEPRINTING:
+7. COMPETITIVE BLUEPRINTING:
    - For the most important pages (especially the Pillar), call 'search_serp' or 'analyze_serp_structure' to see what successful pages look like.
    - Based on SERP findings, determine a preliminary outline (H1-H3) for the core pages.
    - SERP analysis will help you determine the correct page_type (look at what's ranking).
-7. USER REVIEW & DATABASE SYNC:
+8. USER REVIEW & DATABASE SYNC:
    - You MUST present the full cluster plan in a structured **Markdown TABLE**.
    - **MANDATORY TABLE COLUMNS**: | Role | Page Title | Page Type | TDK (SEO Title, Meta Desc, Keyword) | Metrics (Vol/KD/CPC) | Internal Links (Link To) | Priority |
    - Even if you auto-save the items, you are FORBIDDEN from omitting this table in your chat response.
@@ -56,6 +72,9 @@ NOTE: The table is your "Master Blueprint". Internal linking is the glue of the 
     analyze_serp_structure,
     save_content_item,
     keyword_overview,
+    detect_site_topics,
+    check_topic_duplication,
+    find_topic_gaps,
   },
   enabled: true,
   metadata: {
