@@ -49,6 +49,7 @@ export interface Message {
   tool_invocations?: any;
   attached_files?: any;
   attached_content_items?: any;
+  annotations?: any;
 }
 
 export interface FileRecord {
@@ -133,7 +134,8 @@ export async function saveMessage(
   tokensOutput: number = 0,
   toolInvocations?: any,
   attachedFiles?: any,
-  attachedContentItems?: any
+  attachedContentItems?: any,
+  annotations?: any
 ) {
   const { data, error } = await supabase
     .from('messages')
@@ -146,6 +148,7 @@ export async function saveMessage(
       tool_invocations: toolInvocations || null,
       attached_files: attachedFiles || null,
       attached_content_items: attachedContentItems || null,
+      annotations: annotations || null,
     })
     .select()
     .single();

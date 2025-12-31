@@ -33,6 +33,8 @@ IMPORTANT:
 - DO NOT call assemble_html_page until all images are generated
 - Supports advanced controls like aspect ratio, quality, transparency, and reference images`,
   parameters: z.object({
+    user_id: z.string().describe('The current user ID from system context'),
+    conversation_id: z.string().optional().describe('The current conversation ID from system context'),
     prompts: z.array(z.object({
       prompt: z.string().describe('Precise visual description. Use same language as user query.'),
       title: z.string().optional().describe('Short title for the image asset'),
@@ -43,9 +45,10 @@ IMPORTANT:
       placeholder_id: z.string().describe('A unique ID like "hero_image"')
     })).describe('List of image configurations to generate'),
   }),
-  execute: async ({ prompts }) => {
+  execute: async ({ user_id, conversation_id, prompts }) => {
     try {
       console.log('[deerapi_generate_images] Received prompts:', JSON.stringify(prompts, null, 2));
+      console.log('[deerapi_generate_images] User ID:', user_id, 'Conversation ID:', conversation_id);
       
       // DeerAPI API key - must be configured in .env.local
       const apiKey = process.env.DEERAPI_API_KEY;
@@ -183,6 +186,38 @@ ${p.source_image_urls && p.source_image_urls.length > 0 ? `Reference visual styl
             .getPublicUrl(storagePath);
           
           console.log('[deerapi_generate_images] Image uploaded to:', publicUrl);
+
+          // Save file record to database
+          const { data: fileRecord, error: dbError } = await supabase
+            .from('files')
+            .insert({
+              user_id: user_id,
+              conversation_id: conversation_id || null,
+              filename: filename,
+              original_filename: filename,
+              file_type: 'image',
+              mime_type: mimeType,
+              file_size: sizeInBytes,
+              storage_path: storagePath,
+              public_url: publicUrl,
+              metadata: {
+                placeholderId: p.placeholder_id,
+                title: p.title,
+                aspect_ratio: p.aspect_ratio,
+                quality: p.quality,
+                provider: 'deerapi',
+                isGenerated: true,
+                generatedAt: new Date().toISOString()
+              }
+            })
+            .select()
+            .single();
+
+          if (dbError) {
+            console.error('[deerapi_generate_images] Database error (image still uploaded):', dbError);
+          } else {
+            console.log('[deerapi_generate_images] File record saved with ID:', fileRecord.id);
+          }
 
           // ✅ Return ONLY metadata (no base64!) to prevent token overflow
           return {

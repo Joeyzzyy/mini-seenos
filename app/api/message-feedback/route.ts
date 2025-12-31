@@ -96,6 +96,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Validate messageId is a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(messageId)) {
+      // Return empty result for non-UUID messageIds (like "msg-xxx" or "error-xxx")
+      return NextResponse.json({ feedback: null });
+    }
+
     const supabase = getServiceSupabase();
 
     if (userId) {

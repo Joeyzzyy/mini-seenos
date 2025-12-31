@@ -240,7 +240,7 @@ export default function ConversationSidebar({
             alt="Mini Seenos Logo" 
             width={32} 
             height={32}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain rounded-xl"
           />
         </Link>
       </div>

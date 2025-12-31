@@ -1,5 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import { createClient } from '@supabase/supabase-js';
 
 /**
  * Google Gemini Image Generation Tool (v2.1 Precision)
@@ -32,6 +33,8 @@ IMPORTANT:
 - DO NOT call assemble_html_page until all images are generated
 - Supports advanced controls like aspect ratio, quality, transparency, and reference images`,
   parameters: z.object({
+    user_id: z.string().describe('The current user ID from system context'),
+    conversation_id: z.string().optional().describe('The current conversation ID from system context'),
     prompts: z.array(z.object({
       prompt: z.string().describe('Precise visual description. Use same language as user query.'),
       title: z.string().optional().describe('Short title for the image asset'),
@@ -42,10 +45,17 @@ IMPORTANT:
       placeholder_id: z.string().describe('A unique ID like "hero_image"')
     })).describe('List of image configurations to generate'),
   }),
-  execute: async ({ prompts }) => {
+  execute: async ({ user_id, conversation_id, prompts }) => {
     try {
       console.log('[generate_images] Received prompts:', JSON.stringify(prompts, null, 2));
+      console.log('[generate_images] User ID:', user_id, 'Conversation ID:', conversation_id);
+      
       const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.AZURE_OPENAI_API_KEY;
+      
+      // Initialize Supabase client for uploading
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
       
       // Check if API key is configured
       if (!apiKey) {
@@ -128,13 +138,74 @@ ${p.source_image_urls && p.source_image_urls.length > 0 ? `Reference visual styl
           const inlineData = imagePart.inlineData || imagePart.inline_data;
           const base64Content = inlineData.data;
           const sizeInBytes = Math.floor((base64Content.length * 3) / 4);
+          const filename = `generated-${p.placeholder_id}-${Date.now()}.png`;
+          const mimeType = inlineData.mimeType || inlineData.mime_type || 'image/png';
 
+          console.log('[generate_images] Image generated successfully for placeholder:', p.placeholder_id);
+
+          // Upload to Supabase immediately to get public URL
+          const buffer = Buffer.from(base64Content, 'base64');
+          const storagePath = `system/${filename}`;
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('files')
+            .upload(storagePath, buffer, {
+              contentType: mimeType,
+              upsert: false,
+            });
+          
+          if (uploadError) {
+            console.error('[generate_images] Upload error:', uploadError);
+            throw new Error(`Failed to upload image: ${uploadError.message}`);
+          }
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('files')
+            .getPublicUrl(storagePath);
+          
+          console.log('[generate_images] Image uploaded to:', publicUrl);
+
+          // Save file record to database
+          const { data: fileRecord, error: dbError } = await supabase
+            .from('files')
+            .insert({
+              user_id: user_id,
+              conversation_id: conversation_id || null,
+              filename: filename,
+              original_filename: filename,
+              file_type: 'image',
+              mime_type: mimeType,
+              file_size: sizeInBytes,
+              storage_path: storagePath,
+              public_url: publicUrl,
+              metadata: {
+                placeholderId: p.placeholder_id,
+                title: p.title,
+                aspect_ratio: targetRatio,
+                quality: p.quality,
+                background: p.background,
+                provider: 'google-gemini',
+                isGenerated: true,
+                generatedAt: new Date().toISOString()
+              }
+            })
+            .select()
+            .single();
+
+          if (dbError) {
+            console.error('[generate_images] Database error (image still uploaded):', dbError);
+          } else {
+            console.log('[generate_images] File record saved with ID:', fileRecord.id);
+          }
+
+          // Return ONLY metadata (no base64!) to prevent token overflow
           return {
-            filename: `generated-${p.placeholder_id}-${Date.now()}.png`,
+            filename: filename,
             placeholderId: p.placeholder_id,
-            mimeType: inlineData.mimeType || inlineData.mime_type || 'image/png',
-            needsUpload: true,
-            content: base64Content, 
+            mimeType: mimeType,
+            publicUrl: publicUrl,
+            public_url: publicUrl,
+            needsUpload: false,
             size: sizeInBytes,
             style: p.quality === 'high' ? 'professional' : 'standard',
             status: 'success',
@@ -142,7 +213,9 @@ ${p.source_image_urls && p.source_image_urls.length > 0 ? `Reference visual styl
               title: p.title,
               aspect_ratio: targetRatio,
               quality: p.quality,
-              background: p.background
+              background: p.background,
+              provider: 'google-gemini',
+              storagePath: storagePath
             }
           };
         } catch (innerError: any) {

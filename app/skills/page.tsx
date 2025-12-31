@@ -233,7 +233,7 @@ export default function SkillsPage() {
         <div className="flex items-center gap-12 h-full">
           <Link href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-[#F3F4F6] group-hover:scale-110 transition-transform shrink-0">
-              <Image src="/product-logo.webp" alt="Logo" width={24} height={24} />
+              <Image src="/product-logo.webp" alt="Logo" width={24} height={24} className="rounded-xl" />
             </div>
             <div className="hidden md:block">
               <h1 className="text-sm font-black text-[#111827] uppercase tracking-tighter">Mini Seenos</h1>
@@ -417,14 +417,9 @@ export default function SkillsPage() {
               {/* Context Info Column */}
               <div className="flex-1 flex flex-col bg-white">
                 <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                    </svg>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-black text-[#111827] leading-tight">资产说明</span>
-                      <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Context Description</span>
-                    </div>
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-black text-[#111827] leading-tight">资产说明</span>
+                    <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Context Description</span>
                   </div>
                 </div>
                 <div className="p-8 overflow-y-auto flex-1 thin-scrollbar space-y-8">
@@ -479,18 +474,13 @@ export default function SkillsPage() {
           ) : (
             /* Skill Detail View */
             <>
-            {/* Input & Value Proposition Column */}
-            <div className="w-[25%] flex flex-col border-r border-[#F3F4F6] bg-white">
-              <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
+            {/* Value Proposition & Expected Input Column */}
+            <div className="w-[30%] flex flex-col border-r border-[#F3F4F6] bg-white">
+              <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center">
                 <div className="flex flex-col">
-                  <span className="text-[11px] font-black text-[#111827] leading-tight">输入与价值</span>
-                  <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Input & Value Proposition</span>
+                  <span className="text-[11px] font-black text-[#111827] leading-tight">价值阐述和输入预期</span>
+                  <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Value Proposition & Expected Input</span>
                 </div>
-              </div>
               </div>
               <div className="p-8 overflow-y-auto flex-1 thin-scrollbar space-y-10">
               <div>
@@ -642,123 +632,103 @@ export default function SkillsPage() {
             </div>
           </div>
 
-            {/* Logic Inside Column */}
-          <div className="w-[35%] flex flex-col border-r border-[#F3F4F6] bg-white">
-              <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
+            {/* Right Column - Logic Inside & Execution Results */}
+          <div className="flex-1 flex flex-col bg-white">
+              <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center">
                 <div className="flex flex-col">
-                  <span className="text-[11px] font-black text-[#111827] leading-tight">内部逻辑</span>
-                  <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Logic Inside</span>
-                </div>
+                  <span className="text-[11px] font-black text-[#111827] leading-tight">内部逻辑和输出预期</span>
+                  <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Logic Inside & Expected Output</span>
                 </div>
               </div>
-              
-              {/* System Prompt Section - 50% height */}
-              <div className="h-1/2 flex flex-col border-b border-[#F3F4F6]">
-                <div className="p-6 pb-3">
-                  <div className="flex flex-col mb-3">
-                    <h4 className="text-[10px] font-black text-[#111827] leading-tight">系统提示词</h4>
-                    <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">System Prompt</span>
-                  </div>
+            <div className="flex-1 overflow-y-auto p-8 thin-scrollbar space-y-8">
+              {/* System Prompt Section */}
+              <div>
+                <div className="flex flex-col mb-4">
+                  <h4 className="text-[10px] font-black text-[#111827] leading-tight">系统提示词</h4>
+                  <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">System Prompt</span>
                 </div>
-                <div className="flex-1 overflow-y-auto thin-scrollbar px-6 pb-6">
+                <div className="max-h-[250px] overflow-y-auto thin-scrollbar p-6 rounded-2xl bg-[#FAFAFA] border border-[#E5E5E5]">
                   <div className="font-mono text-[11px] leading-[1.8] text-[#374151] whitespace-pre-wrap selection:bg-[#D194EC]/20">
                     {selectedSkill?.systemPrompt || 'The core instruction for this skill defines how the AI agent processes information.'}
                   </div>
                 </div>
               </div>
-                
-              {/* Tools Section - 50% height */}
-              <div className="h-1/2 flex flex-col">
-                <div className="p-6 pb-3">
-                  <div className="flex flex-col mb-3">
-                    <h4 className="text-[10px] font-black text-[#111827] leading-tight">使用的工具</h4>
-                    <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Tools Used</span>
-                  </div>
+
+              {/* Tools Section */}
+              <div>
+                <div className="flex flex-col mb-4">
+                  <h4 className="text-[10px] font-black text-[#111827] leading-tight">使用的工具</h4>
+                  <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Tools Used</span>
                 </div>
-                <div className="flex-1 overflow-y-auto thin-scrollbar px-6 pb-6">
-                  <div className="space-y-2">
-                    {(selectedSkill?.tools || []).map((skillTool: any) => (
-                      <div
-                        key={skillTool.id}
-                        onClick={() => openToolModal(skillTool.id, currentSkillId)}
-                        className="p-3 rounded-xl border border-[#F3F4F6] bg-[#FAFAFA] hover:border-[#111827] hover:shadow-sm transition-all group flex items-start gap-3 cursor-pointer"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <div className="text-[10px] font-black text-[#111827] uppercase tracking-tight truncate">
-                              {skillTool.name}
-                            </div>
-                            <span className="px-1.5 py-0.5 rounded-full bg-white text-[#9CA3AF] text-[7px] font-black uppercase tracking-tighter group-hover:text-[#111827] group-hover:bg-amber-50 transition-colors border border-[#E5E5E5]">
-                              {skillTool.provider}
-                            </span>
+                <div className="space-y-2">
+                  {(selectedSkill?.tools || []).map((skillTool: any) => (
+                    <div
+                      key={skillTool.id}
+                      onClick={() => openToolModal(skillTool.id, currentSkillId)}
+                      className="p-3 rounded-xl border border-[#F3F4F6] bg-[#FAFAFA] hover:border-[#111827] hover:shadow-sm transition-all group flex items-start gap-3 cursor-pointer"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <div className="text-[10px] font-black text-[#111827] uppercase tracking-tight truncate">
+                            {skillTool.name}
                           </div>
-                          <div className="text-[9px] leading-relaxed text-[#6B7280] font-medium line-clamp-1">
-                            {skillTool.description}
-                          </div>
+                          <span className="px-1.5 py-0.5 rounded-full bg-white text-[#9CA3AF] text-[7px] font-black uppercase tracking-tighter group-hover:text-[#111827] group-hover:bg-amber-50 transition-colors border border-[#E5E5E5]">
+                            {skillTool.provider}
+                          </span>
                         </div>
-                        <div className="flex-none self-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <svg className="w-3 h-3 text-[#111827]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
+                        <div className="text-[9px] leading-relaxed text-[#6B7280] font-medium line-clamp-1">
+                          {skillTool.description}
                         </div>
                       </div>
-                    ))}
-                    {(selectedSkill?.tools || []).length === 0 && (
-                      <div className="py-12 text-center border-2 border-dashed border-[#F3F4F6] rounded-2xl bg-white">
-                        <div className="text-[11px] text-[#111827] font-black mb-1">暂无工具配置</div>
-                        <div className="text-[8px] text-[#9CA3AF] uppercase font-medium tracking-wider">No Tools Mapped</div>
+                      <div className="flex-none self-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg className="w-3 h-3 text-[#111827]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  ))}
+                  {(selectedSkill?.tools || []).length === 0 && (
+                    <div className="py-12 text-center border-2 border-dashed border-[#F3F4F6] rounded-2xl bg-white">
+                      <div className="text-[11px] text-[#111827] font-black mb-1">暂无工具配置</div>
+                      <div className="text-[8px] text-[#9CA3AF] uppercase font-medium tracking-wider">No Tools Mapped</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Expected Output Section */}
+              {selectedSkill?.metadata?.expectedOutput ? (
+                <div>
+                  <div className="flex flex-col mb-4">
+                    <h4 className="text-[10px] font-black text-[#111827] leading-tight">预期输出</h4>
+                    <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Expected Output</span>
+                  </div>
+                  <div className="space-y-4">
+                    {/* Chinese Version */}
+                    <div className="p-6 rounded-2xl bg-[#FAFAFA] border border-[#E5E5E5]">
+                      <p className="text-[12px] font-medium text-[#111827] leading-[1.8] whitespace-pre-line">
+                        {selectedSkill.metadata.expectedOutput}
+                      </p>
+                    </div>
+                    
+                    {/* English Version */}
+                    {selectedSkill.metadata.expectedOutputEn && (
+                      <div className="p-6 rounded-2xl bg-white border border-[#E5E5E5]">
+                        <p className="text-[12px] font-medium text-[#374151] leading-[1.8] whitespace-pre-line">
+                          {selectedSkill.metadata.expectedOutputEn}
+                        </p>
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
-          </div>
-
-            {/* Right Column - Reserved for Execution Results */}
-          <div className="flex-1 flex flex-col bg-[#FCFCFC]">
-              <div className="px-6 h-[52px] bg-[#FAFAFA] border-b border-[#F3F4F6] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="flex flex-col">
-                  <span className="text-[11px] font-black text-[#111827] leading-tight">执行结果</span>
-                  <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Execution Results</span>
-                </div>
-                </div>
-              </div>
-            <div className="flex-1 overflow-y-auto p-8 thin-scrollbar">
-                {selectedSkill?.metadata?.expectedOutput ? (
-                  <div>
-                    <div className="flex flex-col mb-4">
-                      <h4 className="text-[10px] font-black text-[#111827] leading-tight">预期输出</h4>
-                      <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Expected Output</span>
-                    </div>
-                    <div className="space-y-4">
-                      {/* Chinese Version */}
-                      <div className="p-6 rounded-2xl bg-[#FAFAFA] border border-[#E5E5E5]">
-                        <p className="text-[12px] font-medium text-[#111827] leading-[1.8] whitespace-pre-line">
-                          {selectedSkill.metadata.expectedOutput}
-                        </p>
-                      </div>
-                      
-                      {/* English Version */}
-                      {selectedSkill.metadata.expectedOutputEn && (
-                        <div className="p-6 rounded-2xl bg-white border border-[#E5E5E5]">
-                          <p className="text-[12px] font-medium text-[#374151] leading-[1.8] whitespace-pre-line">
-                            {selectedSkill.metadata.expectedOutputEn}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+              ) : (
+                <div>
+                  <div className="flex flex-col mb-4">
+                    <h4 className="text-[10px] font-black text-[#111827] leading-tight">预期输出</h4>
+                    <span className="text-[7px] text-[#9CA3AF] font-medium uppercase tracking-wider">Expected Output</span>
                   </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="w-12 h-12 rounded-full bg-[#FAFAFA] flex items-center justify-center mx-auto mb-3 border border-[#E5E5E5]">
+                  <div className="text-center py-12 border-2 border-dashed border-[#F3F4F6] rounded-2xl bg-[#FAFAFA]/50">
+                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mx-auto mb-3 border border-[#E5E5E5]">
                       <svg className="w-6 h-6 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
@@ -767,7 +737,8 @@ export default function SkillsPage() {
                       预期输出待补充 / Output Description Pending
                     </p>
                   </div>
-                )}
+                </div>
+              )}
               </div>
           </div>
             </>

@@ -225,6 +225,7 @@ export async function POST(req: Request) {
     const conversationId = data?.conversationId;
     const activeSkillId = data?.activeSkillId;
     const attachedContentItems = data?.attachedContentItems || [];
+    const referenceImageUrl = data?.referenceImageUrl || null;
     
     // Import database functions
     const { getFileContent } = await import('@/lib/supabase');
@@ -613,7 +614,22 @@ CRITICAL: FINAL RESPONSE (MANDATORY)
 - Example: "✅ Page generated successfully! [View Live Page](URL) - The page includes X sections with Y images and follows the ${attachedContentItems?.[0]?.page_type || 'blog'} layout."
 ====================`;
 
-    const fullSystemPrompt = baseSystemPrompt + contentItemsContext + autoSkillInstructions + executionInstruction;
+    // Add reference image instruction if provided
+    const referenceImageInstruction = referenceImageUrl ? `
+
+====================
+REFERENCE IMAGE FOR GENERATION
+====================
+The user has uploaded a reference image for image generation: ${referenceImageUrl}
+
+IMPORTANT:
+- When calling 'deerapi_generate_images' or 'generate_images', include this URL in the 'source_image_urls' parameter
+- Use this reference image to maintain visual style consistency across generated images
+- The reference image should guide the style, composition, or aesthetic of the generated images
+====================
+` : '';
+
+    const fullSystemPrompt = baseSystemPrompt + contentItemsContext + autoSkillInstructions + referenceImageInstruction + executionInstruction;
     
     console.log('[System Prompt] Base length:', baseSystemPrompt.length, 'characters');
     console.log('[System Prompt] Content items context length:', contentItemsContext.length, 'characters');

@@ -59,6 +59,12 @@ export default function MessageList({
       const feedbacks: Record<string, 'like' | 'dislike'> = {};
 
       for (const msg of assistantMessages) {
+        // Skip messages with non-UUID IDs (like "msg-xxx" or "error-xxx")
+        if (!msg.id || !msg.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+          console.log('Skipping feedback load for non-UUID message:', msg.id);
+          continue;
+        }
+
         try {
           const response = await fetch(
             `/api/message-feedback?messageId=${msg.id}&userId=${userId}`
@@ -183,9 +189,9 @@ export default function MessageList({
         <Image 
           src="/product-logo.webp" 
           alt="Mini Seenos Logo" 
-          width={96} 
-          height={96}
-          className="mx-auto animate-subtle-shake"
+          width={64} 
+          height={64}
+          className="mx-auto animate-subtle-shake rounded-xl"
         />
       </div>
     );
@@ -200,17 +206,35 @@ export default function MessageList({
             message.role === 'user' ? 'items-end' : 'items-start'
           }`}
         >
-          {/* Display attached files and content items - independent from message */}
+          {/* Display attached files, content items, and reference image - independent from message */}
           {message.role === 'user' && (() => {
             const attachedFiles = message.attachedFiles || 
               (Array.isArray(message.annotations) && message.annotations.find((a: any) => a.type === 'attached_files')?.data);
             const attachedContentItems = message.attachedContentItems ||
               (Array.isArray(message.annotations) && message.annotations.find((a: any) => a.type === 'attached_content_items')?.data);
+            const referenceImageUrl = message.referenceImageUrl ||
+              (Array.isArray(message.annotations) && message.annotations.find((a: any) => a.type === 'reference_image')?.data);
             
-            if ((!attachedFiles || attachedFiles.length === 0) && (!attachedContentItems || attachedContentItems.length === 0)) return null;
+            if ((!attachedFiles || attachedFiles.length === 0) && 
+                (!attachedContentItems || attachedContentItems.length === 0) && 
+                !referenceImageUrl) return null;
 
             return (
             <div className="flex flex-wrap gap-2 max-w-[85%] px-4">
+              {/* Reference Image */}
+              {referenceImageUrl && (
+                <div className="w-full mb-2">
+                  <div className="inline-flex flex-col gap-1 bg-white border border-[#E5E5E5] rounded-lg p-2">
+                    <span className="text-xs font-medium text-[#6B7280]">Reference Image</span>
+                    <img 
+                      src={referenceImageUrl} 
+                      alt="Reference" 
+                      className="max-w-[200px] max-h-[200px] object-cover rounded border border-[#E5E5E5]"
+                    />
+                  </div>
+                </div>
+              )}
+              
               {/* Attached Files */}
               {attachedFiles && attachedFiles.map((attachedFile: any, idx: number) => {
                 // Find the full file record to get public_url

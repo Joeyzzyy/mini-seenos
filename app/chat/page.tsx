@@ -121,6 +121,7 @@ export default function ChatPage() {
   const [toast, setToast] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: '' });
   const [isArtifactsOpen, setIsArtifactsOpen] = useState(false);
   const [isDomainsOpen, setIsDomainsOpen] = useState(false);
+  const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
 
   // Chat hook
   const { messages, input, handleInputChange, handleSubmit, append, isLoading, setMessages, setInput, stop } = useChat({
@@ -887,6 +888,7 @@ export default function ChatPage() {
           toolInvocations: cleanedToolInvocations,
           attachedFiles: m.attached_files,
           attachedContentItems: m.attached_content_items,
+          annotations: m.annotations,
         };
       });
 
@@ -1202,10 +1204,24 @@ export default function ChatPage() {
       targetKeyword: item.target_keyword,
     }));
     
-    // Clear input and attached items immediately for better UX
+    // Clear input, attached items, and reference image immediately for better UX
     setInput('');
     setAttachedFileIds([]);
     setAttachedContentItemIds([]);
+    const currentReferenceImageUrl = referenceImageUrl;
+    setReferenceImageUrl(null);
+    
+    // Build annotations array for both database and UI
+    const annotations = [];
+    if (attachedFilesData.length > 0) {
+      annotations.push({ type: 'attached_files', data: attachedFilesData });
+    }
+    if (attachedContentItemsData.length > 0) {
+      annotations.push({ type: 'attached_content_items', data: attachedContentItemsData });
+    }
+    if (currentReferenceImageUrl) {
+      annotations.push({ type: 'reference_image', data: currentReferenceImageUrl });
+    }
     
     if (conversationToUse && user) {
       const estimatedInputTokens = Math.ceil(messageContent.length / 4);
@@ -1218,21 +1234,13 @@ export default function ChatPage() {
         0,
         undefined,
         attachedFilesData.length > 0 ? attachedFilesData : undefined,
-        attachedContentItemsData.length > 0 ? attachedContentItemsData : undefined
+        attachedContentItemsData.length > 0 ? attachedContentItemsData : undefined,
+        annotations.length > 0 ? annotations : undefined
       ).then(() => {
         loadTokenStats(conversationToUse.id);
       }).catch(error => {
         console.error('Failed to save message:', error);
       });
-    }
-    
-      // Use append to add message with attached context immediately visible in UI
-    const annotations = [];
-    if (attachedFilesData.length > 0) {
-      annotations.push({ type: 'attached_files', data: attachedFilesData });
-    }
-    if (attachedContentItemsData.length > 0) {
-      annotations.push({ type: 'attached_content_items', data: attachedContentItemsData });
     }
     
     console.log('[handleCustomSubmit] Calling append with message:', messageContent.substring(0, 50));
@@ -1249,6 +1257,7 @@ export default function ChatPage() {
         data: {
           attachedFiles: attachedFilesData,
           attachedContentItems: attachedContentItemsData,
+          referenceImageUrl: currentReferenceImageUrl,
           userId: user?.id || null,
           conversationId: conversationToUse?.id || null,
         } as any,
@@ -1468,9 +1477,9 @@ export default function ChatPage() {
                   <Image 
                     src="/product-logo.webp" 
                     alt="Mini Seenos Logo" 
-                    width={96} 
-                    height={96}
-                    className="mx-auto animate-subtle-shake"
+                    width={64} 
+                    height={64}
+                    className="mx-auto animate-subtle-shake rounded-xl"
                   />
                 </div>
                 <div className="flex justify-center">
@@ -1484,9 +1493,9 @@ export default function ChatPage() {
                 <Image 
                   src="/product-logo.webp" 
                   alt="Loading..." 
-                  width={96} 
-                  height={96}
-                  className="animate-subtle-shake"
+                  width={64} 
+                  height={64}
+                  className="animate-subtle-shake rounded-xl"
                 />
                 <p className="text-sm text-gray-500 font-medium animate-pulse">Loading your workspace...</p>
               </div>
@@ -1578,6 +1587,8 @@ export default function ChatPage() {
                 tokenStats={tokenStats}
                 apiStats={apiStats}
                 skills={skills}
+                referenceImageUrl={referenceImageUrl}
+                conversationId={currentConversation?.id}
                 onInputChange={handleInputChange}
                 onSubmit={handleCustomSubmit}
                 onStop={handleStop}
@@ -1586,6 +1597,12 @@ export default function ChatPage() {
                 onAttachContentItem={handleAttachContentItem}
                 onRemoveContentItem={handleRemoveContentItem}
                 onPlaybookClick={(skill) => setActivePlaybook(skill)}
+                onReferenceImageChange={setReferenceImageUrl}
+                onUploadSuccess={() => {
+                  if (currentConversation) {
+                    loadFiles(currentConversation.id);
+                  }
+                }}
               />
             </>
           )}

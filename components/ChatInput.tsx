@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import TokenStats from './TokenStats';
 import ActionHints from './ActionHints';
+import { supabase } from '@/lib/supabase';
 import type { FileRecord, ContentItem } from '@/lib/supabase';
 
 interface ChatInputProps {
@@ -15,6 +16,8 @@ interface ChatInputProps {
   tokenStats: { inputTokens: number; outputTokens: number };
   apiStats: { tavilyCalls: number; semrushCalls: number; serperCalls: number };
   skills: any[];
+  referenceImageUrl: string | null;
+  conversationId?: string | null;
   onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onStop: () => void;
@@ -23,6 +26,8 @@ interface ChatInputProps {
   onAttachContentItem: (itemId: string) => void;
   onRemoveContentItem: (itemId: string) => void;
   onPlaybookClick: (skill: any) => void;
+  onReferenceImageChange: (url: string | null) => void;
+  onUploadSuccess?: () => void;
 }
 
 export default function ChatInput({
@@ -35,6 +40,8 @@ export default function ChatInput({
   tokenStats,
   apiStats,
   skills,
+  referenceImageUrl,
+  conversationId,
   onInputChange,
   onSubmit,
   onStop,
@@ -43,10 +50,68 @@ export default function ChatInput({
   onAttachContentItem,
   onRemoveContentItem,
   onPlaybookClick,
+  onReferenceImageChange,
+  onUploadSuccess,
 }: ChatInputProps) {
   const [isComposing, setIsComposing] = useState(false);
   const [showFileSelector, setShowFileSelector] = useState(false);
   const [selectorTab, setSelectorTab] = useState<'files' | 'content'>('content');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (conversationId) {
+        formData.append('conversationId', conversationId);
+      }
+
+      // Get session token
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: HeadersInit = {};
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      const response = await fetch('/api/upload-reference-image', {
+        method: 'POST',
+        body: formData,
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const data = await response.json();
+      onReferenceImageChange(data.url);
+      
+      // Notify parent to refresh files list
+      if (onUploadSuccess) {
+        onUploadSuccess();
+      }
+    } catch (error) {
+      console.error('Image upload error:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onInputChange(e);
@@ -82,6 +147,34 @@ export default function ChatInput({
     <footer className="bg-white relative z-10 flex-shrink-0">
       <div className="w-full max-w-5xl mx-auto px-4 py-4">
         <form onSubmit={onSubmit}>
+          {/* Reference image preview */}
+          {referenceImageUrl && (
+            <div className="mb-3">
+              <div className="inline-flex items-center gap-2 bg-[#F3F4F6] border border-[#E5E5E5] rounded-lg p-2">
+                <img 
+                  src={referenceImageUrl} 
+                  alt="Reference" 
+                  className="w-16 h-16 object-cover rounded"
+                />
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-[#374151]">Reference Image</span>
+                  <span className="text-xs text-[#6B7280]">Will be used for image generation</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onReferenceImageChange(null)}
+                  className="ml-2 text-[#6B7280] hover:text-[#EF4444] transition-colors cursor-pointer"
+                  title="Remove reference image"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Attached files & items display */}
           {(attachedFileIds.length > 0 || attachedContentItemIds.length > 0) && (
             <div className="flex flex-wrap gap-2 mb-3">
@@ -142,6 +235,42 @@ export default function ChatInput({
             
             {/* Left controls - Bottom side */}
             <div className="absolute left-3 bottom-4 flex items-center gap-2">
+              {/* Image upload button */}
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingImage || isLoading}
+                  className={`w-7 h-7 rounded-full border transition-all flex items-center justify-center cursor-pointer ${
+                    uploadingImage
+                      ? 'bg-[#F3F4F6] border-[#E5E5E5] text-[#9CA3AF]'
+                      : referenceImageUrl
+                      ? 'bg-[#10B981] border-[#10B981] text-white shadow-sm'
+                      : 'bg-[#FAFAFA] border-[#E5E5E5] text-[#6B7280] hover:bg-[#F3F4F6]'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  title="Upload reference image for generation"
+                >
+                  {uploadingImage ? (
+                    <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+
               <div className="relative">
                 <button
                   type="button"
