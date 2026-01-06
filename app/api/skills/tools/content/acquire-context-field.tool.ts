@@ -182,23 +182,36 @@ If no team information found, return empty array: []`,
   'faq': {
     targetPages: ['/faq', '/faqs', '/help', '/support', '/frequently-asked-questions', '/', '/help-center', '/knowledge-base', '/questions', '/common-questions'],
     extractionMethod: 'ai',
-    aiPrompt: `Extract FAQ (Frequently Asked Questions) from this content.
-Look for Q&A sections, FAQ pages, or common questions answered.
+    aiPrompt: `You are analyzing a webpage to extract FAQ (Frequently Asked Questions).
 
-IMPORTANT: Return ONLY a valid JSON array with this exact structure:
+SEARCH FOR THESE PATTERNS:
+1. Section headings: "FAQ", "Frequently Asked Questions", "Common Questions"
+2. Question patterns: "What is...", "How do I...", "Can I...", "Why...", "When..."
+3. Q&A pairs in any format (collapsible sections, lists, paragraphs)
+4. Help center or support content in Q&A format
+
+INSTRUCTIONS:
+- Extract ALL question-answer pairs you find
+- Questions often start with: What, How, Can, Why, When, Where, Is, Do, Does
+- Answers follow the question (may be in collapsed sections)
+- Look through the ENTIRE content, including homepage sections
+
+OUTPUT FORMAT - Return ONLY this JSON array, nothing else:
 [
-  {"question": "Question text here", "answer": "Complete answer text here"}
+  {"question": "Full question text?", "answer": "Complete answer text here."},
+  {"question": "Next question?", "answer": "Next answer."}
 ]
 
-Rules:
-- Extract ALL FAQs found on the page (aim for 10-30 items)
-- Keep question text concise but complete
-- Include full answer text (can be multiple paragraphs)
-- If answer is very long (500+ words), summarize key points
-- Maintain the original order if possible
-- If no FAQs found, return: []
+RULES:
+- Return 5-30 FAQ items if found
+- Keep questions as written (include the "?")
+- Keep full answers (1-3 paragraphs each)
+- If answer is very long (500+ words), summarize to 200-300 words
+- Return [] ONLY if you genuinely find NO FAQ content anywhere
+- Do NOT wrap in markdown code blocks like \`\`\`json
+- Do NOT add any text before or after the JSON array
 
-Do NOT include any text before or after the JSON array.`,
+Start analyzing now:`,
     dbType: 'faq',
   },
   'social-proof': {
@@ -368,14 +381,9 @@ Return ONLY the tone phrase, nothing else.`;
           break;
 
         case 'hero-section':
-          // Try regex first
-          extractedData = extractHeroSection(pageData.html);
-          
-          // If regex extraction failed (all empty), use AI
-          const hasContent = extractedData.headline || extractedData.subheadline || extractedData.callToAction;
-          if (!hasContent) {
-            console.log('[acquire_context_field] Hero regex failed, using AI analysis');
-            const heroPrompt = `Analyze this website's homepage content and extract the HERO SECTION information.
+          // Use AI to analyze hero section
+          console.log('[acquire_context_field] Using AI to analyze hero section');
+          const heroPrompt = `Analyze this website's homepage content and extract the HERO SECTION information.
 
 The hero section is usually the first prominent section visitors see, typically containing:
 - A main headline (H1 or large text)
@@ -396,30 +404,40 @@ ${pageData.text.substring(0, 4000)}
 
 Return ONLY valid JSON, no explanation.`;
 
+          try {
+            const { text: heroResult } = await generateText({
+              model: azure(process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4.1'),
+              prompt: heroPrompt,
+              maxTokens: 500,
+            });
+            
+            // Try to parse JSON
+            const trimmed = heroResult?.trim() || '{}';
             try {
-              const { text: heroResult } = await generateText({
-                model: azure(process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4.1'),
-                prompt: heroPrompt,
-                maxTokens: 500,
-              });
-              
-              // Try to parse JSON
-              const trimmed = heroResult?.trim() || '{}';
-              try {
-                const parsed = JSON.parse(trimmed.replace(/```json\n?/g, '').replace(/```\n?/g, ''));
-                extractedData = {
-                  headline: parsed.headline || '',
-                  subheadline: parsed.subheadline || '',
-                  callToAction: parsed.callToAction || '',
-                  metrics: parsed.metrics || '',
-                  fullText: '',
-                };
-              } catch (e) {
-                console.log('[acquire_context_field] Failed to parse hero AI response');
-              }
+              const parsed = JSON.parse(trimmed.replace(/```json\n?/g, '').replace(/```\n?/g, ''));
+              extractedData = {
+                headline: parsed.headline || '',
+                subheadline: parsed.subheadline || '',
+                callToAction: parsed.callToAction || '',
+                metrics: parsed.metrics || '',
+              };
             } catch (e) {
-              console.log('[acquire_context_field] Hero AI analysis failed');
+              console.log('[acquire_context_field] Failed to parse hero AI response');
+              extractedData = {
+                headline: '',
+                subheadline: '',
+                callToAction: '',
+                metrics: '',
+              };
             }
+          } catch (e) {
+            console.log('[acquire_context_field] Hero AI analysis failed');
+            extractedData = {
+              headline: '',
+              subheadline: '',
+              callToAction: '',
+              metrics: '',
+            };
           }
           
           await saveToDatabase(userId, projectId, config.dbType, JSON.stringify(extractedData));
@@ -532,16 +550,30 @@ Return ONLY valid JSON, no explanation.`;
           const faqDiscoveredPages = await discoverRelevantPages('faq', origin, pageData.html);
           console.log(`[acquire_context_field] Discovered ${faqDiscoveredPages.length} pages for FAQ:`, faqDiscoveredPages);
           
-          let faqBestPageData = pageData;
+          // 尝试多个页面并聚合 FAQ 内容
+          let faqPageTexts: string[] = [];
+          let faqSourcePage = '/';
           
-          // 尝试每个发现的页面
-          for (const discoveredPage of faqDiscoveredPages) {
+          // 首先尝试首页（很多网站在首页有 FAQ 区域）
+          faqPageTexts.push(pageData.text.substring(0, 30000));
+          console.log(`[acquire_context_field] Including homepage for FAQ (${pageData.text.length} chars)`);
+          
+          // 然后尝试每个发现的 FAQ 页面
+          for (const discoveredPage of faqDiscoveredPages.slice(0, 3)) {
             const result = await getPageData(discoveredPage);
-            if (result.success && result.text && result.text.length > faqBestPageData.text.length) {
-              faqBestPageData = { html: result.html!, text: result.text };
-              console.log(`[acquire_context_field] Using ${discoveredPage} for FAQ`);
+            if (result.success && result.text) {
+              faqPageTexts.push(result.text.substring(0, 20000));
+              console.log(`[acquire_context_field] Added ${discoveredPage} for FAQ (${result.text.length} chars)`);
+              if (result.text.length > pageData.text.length) {
+                faqSourcePage = new URL(discoveredPage).pathname;
+              }
             }
           }
+          
+          // 合并所有页面的文本
+          const combinedFaqText = faqPageTexts.join('\n\n--- NEXT PAGE ---\n\n').substring(0, 50000);
+          const faqBestPageData = { html: pageData.html, text: combinedFaqText };
+          console.log(`[acquire_context_field] Combined FAQ text length: ${combinedFaqText.length} chars from ${faqPageTexts.length} pages`);
           
           // FAQ 需要更多 tokens 和内容来提取完整列表
           extractedData = await analyzeWithAI(
@@ -549,12 +581,15 @@ Return ONLY valid JSON, no explanation.`;
             faqBestPageData.text, 
             origin,
             {
-              maxTokens: 4000,        // FAQ 通常需要更多 tokens（提升到 4000）
-              maxContentChars: 20000  // 允许更长的输入内容（提升到 20000）
+              maxTokens: 6000,        // FAQ 可能很多，需要更多 tokens
+              maxContentChars: 40000  // 允许分析更长的页面内容
             }
           );
           
           // 验证和修复 FAQ 数据
+          console.log('[acquire_context_field] FAQ AI response type:', typeof extractedData);
+          console.log('[acquire_context_field] FAQ AI response preview:', JSON.stringify(extractedData).substring(0, 200));
+          
           if (extractedData) {
             // 确保返回的是数组
             if (!Array.isArray(extractedData)) {
@@ -565,11 +600,13 @@ Return ONLY valid JSON, no explanation.`;
                 // 尝试解析字符串为 JSON
                 try {
                   extractedData = JSON.parse(extractedData);
+                  console.log('[acquire_context_field] Successfully parsed FAQ string to array');
                 } catch (e) {
-                  console.log('[acquire_context_field] Failed to parse FAQ string as JSON');
+                  console.log('[acquire_context_field] Failed to parse FAQ string as JSON:', e);
                   extractedData = [];
                 }
               } else {
+                console.log('[acquire_context_field] FAQ data is not array, setting to empty');
                 extractedData = [];
               }
             }
@@ -1209,21 +1246,98 @@ function extractBrandAssets(html: string, origin: string): any {
     if (!secondaryColor && brandColors.length > 1) secondaryColor = brandColors[1];
   }
 
-  // Fonts - Google Fonts & system fonts
+  // Fonts - 区分标题字体和正文字体
+  console.log('[extractBrandAssets] Starting font extraction...');
+  
+  // 1. 从 Google Fonts 提取
   const fontMatches = html.match(/fonts\.googleapis\.com\/css2?\?family=([^"'&\s]+)/gi) || [];
-  const fonts = fontMatches.map(m => {
+  const googleFonts = fontMatches.map(m => {
     const family = m.match(/family=([^"'&\s:]+)/)?.[1] || '';
     return decodeURIComponent(family).replace(/\+/g, ' ');
   }).filter(f => f.length > 0);
-  const uniqueFonts = [...new Set(fonts)];
+  const uniqueGoogleFonts = [...new Set(googleFonts)];
+  console.log(`[extractBrandAssets] Found ${uniqueGoogleFonts.length} Google Fonts:`, uniqueGoogleFonts);
 
-  // Also check for font-family in CSS
-  if (uniqueFonts.length === 0) {
-    const fontFamilyMatch = html.match(/font-family:\s*["']?([^;,"']+)/i);
-    if (fontFamilyMatch) {
-      uniqueFonts.push(fontFamilyMatch[1].trim());
+  // 2. 从 CSS 中提取特定选择器的字体
+  let headingFont = null;
+  let bodyFont = null;
+  
+  // 尝试匹配标题字体 (h1, h2, h3, heading)
+  const headingFontPatterns = [
+    /h1[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /h2[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /h3[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /\.heading[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /\.title[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /--font-heading:\s*["']?([^;,"'\}]+)/i,
+    /--heading-font:\s*["']?([^;,"'\}]+)/i,
+  ];
+  
+  for (const pattern of headingFontPatterns) {
+    const match = html.match(pattern);
+    if (match) {
+      const font = match[1].trim().split(',')[0].replace(/["']/g, '').trim();
+      if (!font.includes('system') && !font.includes('sans-serif') && !font.includes('serif') && !font.includes('monospace')) {
+        headingFont = font;
+        console.log(`[extractBrandAssets] Found heading font from CSS: ${font}`);
+        break;
+      }
     }
   }
+  
+  // 尝试匹配正文字体 (body, p, base, root)
+  const bodyFontPatterns = [
+    /body[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /:root[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /\*[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /html[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /p[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /\.text[^{]*\{[^}]*font-family:\s*["']?([^;,"'\}]+)/is,
+    /--font-body:\s*["']?([^;,"'\}]+)/i,
+    /--body-font:\s*["']?([^;,"'\}]+)/i,
+    /--font-sans:\s*["']?([^;,"'\}]+)/i,
+  ];
+  
+  for (const pattern of bodyFontPatterns) {
+    const match = html.match(pattern);
+    if (match) {
+      const font = match[1].trim().split(',')[0].replace(/["']/g, '').trim();
+      if (!font.includes('system') && !font.includes('sans-serif') && !font.includes('serif') && !font.includes('monospace')) {
+        bodyFont = font;
+        console.log(`[extractBrandAssets] Found body font from CSS: ${font}`);
+        break;
+      }
+    }
+  }
+  
+  // 3. 如果从 CSS 没找到，使用 Google Fonts 列表推断
+  if (!headingFont && uniqueGoogleFonts.length > 0) {
+    headingFont = uniqueGoogleFonts[0];
+    console.log(`[extractBrandAssets] Using first Google Font for heading: ${headingFont}`);
+  }
+  if (!bodyFont && uniqueGoogleFonts.length > 1) {
+    bodyFont = uniqueGoogleFonts[1];
+    console.log(`[extractBrandAssets] Using second Google Font for body: ${bodyFont}`);
+  } else if (!bodyFont && uniqueGoogleFonts.length > 0) {
+    // 如果只有一个字体，标题和正文可能用同一个
+    bodyFont = uniqueGoogleFonts[0];
+    console.log(`[extractBrandAssets] Using same Google Font for both: ${bodyFont}`);
+  }
+  
+  // 4. 最后的 fallback：从全局 font-family 提取
+  if (!headingFont && !bodyFont) {
+    const fontFamilyMatch = html.match(/font-family:\s*["']?([^;,"']+)/i);
+    if (fontFamilyMatch) {
+      const font = fontFamilyMatch[1].trim().split(',')[0].replace(/["']/g, '').trim();
+      if (!font.includes('system-ui')) {
+        bodyFont = font;
+        headingFont = font;
+        console.log(`[extractBrandAssets] Using global font-family: ${font}`);
+      }
+    }
+  }
+  
+  console.log(`[extractBrandAssets] Final fonts - Heading: ${headingFont || 'null'}, Body: ${bodyFont || 'null'}`);
 
   // Metadata
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
@@ -1280,9 +1394,9 @@ function extractBrandAssets(html: string, origin: string): any {
     metaTitle,      // Full <title> tag content
     metaKeywords,   // Meta keywords
     // tone will be added by AI analysis in brand-assets case
-    headingFont: uniqueFonts[0] || null,
-    bodyFont: uniqueFonts[1] || uniqueFonts[0] || null,
-    fonts: uniqueFonts,
+    headingFont,    // 标题字体（从 h1/h2 或第一个 Google Font）
+    bodyFont,       // 正文字体（从 body/p 或第二个 Google Font）
+    fonts: uniqueGoogleFonts,  // 所有 Google Fonts
     brandName,
     metaDescription,
     ogImage,
@@ -1648,13 +1762,22 @@ function classifyPages(urls: string[], origin: string): any {
 
   for (const url of urls) {
     try {
-      const pathname = new URL(url).pathname;
+      // Ensure we have a full URL
+      let fullUrl: string;
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        fullUrl = url;
+      } else {
+        // Relative path, prepend origin
+        fullUrl = origin + (url.startsWith('/') ? url : '/' + url);
+      }
+      
+      const pathname = new URL(fullUrl).pathname;
       if (blogPatterns.some(p => p.test(pathname))) {
-        blogPages.push(url);
+        blogPages.push(fullUrl);
       } else if (landingPatterns.some(p => p.test(pathname))) {
-        landingPages.push(url);
+        landingPages.push(fullUrl);
       } else if (keyPatterns.some(p => p.test(pathname)) || pathname.split('/').filter(Boolean).length <= 1) {
-        keyPages.push(url);
+        keyPages.push(fullUrl);
       }
     } catch (e) {
       continue;

@@ -12,11 +12,20 @@ import type { TrustCompanySectionProps } from './types';
 function extractLeadershipText(jsonString: string | null | undefined): string {
   if (!jsonString) return '';
   
+  // If it's already plain text, return it
+  const trimmed = jsonString.trim();
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('[') && !trimmed.startsWith('"')) {
+    return jsonString;
+  }
+  
   try {
     const parsed = JSON.parse(jsonString);
     
     // If it's a string, return directly
     if (typeof parsed === 'string') return parsed;
+    
+    // If it's null or undefined
+    if (parsed === null || parsed === undefined) return '';
     
     // If it's an empty array, return empty
     if (Array.isArray(parsed) && parsed.length === 0) return '';
@@ -25,16 +34,49 @@ function extractLeadershipText(jsonString: string | null | undefined): string {
     if (Array.isArray(parsed)) {
       return parsed.map((member, index) => {
         if (typeof member === 'string') return `${index + 1}. ${member}`;
-        if (member.name && member.role) {
-          const parts = [member.name, member.role];
-          if (member.bio) parts.push(member.bio);
-          return parts.join(' - ');
+        if (typeof member === 'object' && member !== null) {
+          // Handle structured team member: { name: "...", role: "...", bio: "..." }
+          if (member.name && member.role) {
+            const parts = [member.name, member.role];
+            if (member.bio) parts.push(member.bio);
+            return parts.join(' - ');
+          }
+          // Handle other object structures
+          const values = Object.values(member).filter(v => typeof v === 'string' && v.trim().length > 0);
+          if (values.length > 0) {
+            return `${index + 1}. ${values.join(' - ')}`;
+          }
         }
         return JSON.stringify(member);
       }).join('\n\n');
     }
     
-    return jsonString;
+    // If it's an object with a team/leadership array property
+    if (typeof parsed === 'object') {
+      if (parsed.team && Array.isArray(parsed.team)) {
+        return extractLeadershipText(JSON.stringify(parsed.team));
+      }
+      if (parsed.leadership && Array.isArray(parsed.leadership)) {
+        return extractLeadershipText(JSON.stringify(parsed.leadership));
+      }
+      if (parsed.members && Array.isArray(parsed.members)) {
+        return extractLeadershipText(JSON.stringify(parsed.members));
+      }
+      
+      // Extract any string values from the object
+      const stringValues = Object.values(parsed)
+        .filter(v => typeof v === 'string' && v.trim().length > 0);
+      
+      if (stringValues.length > 0) {
+        if (stringValues.length === 1) {
+          return stringValues[0] as string;
+        }
+        return stringValues.join('\n\n');
+      }
+    }
+    
+    // Last resort: pretty print JSON
+    return JSON.stringify(parsed, null, 2);
   } catch {
     return jsonString;
   }
@@ -68,7 +110,7 @@ export default function TrustCompanySection({
   // Extract readable text for leadership team
   const leadershipTeamText = useMemo(() => 
     extractLeadershipText(leadershipTeamContext?.content), 
-    [leadershipTeamContext]
+    [leadershipTeamContext?.content]
   );
 
   return (

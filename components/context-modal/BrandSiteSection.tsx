@@ -149,8 +149,10 @@ export default function BrandSiteSection({
   setPrimaryColor,
   secondaryColor,
   setSecondaryColor,
-  typography,
-  setTypography,
+  headingFont,
+  setHeadingFont,
+  bodyFont,
+  setBodyFont,
   tone,
   setTone,
   languages,
@@ -392,31 +394,46 @@ export default function BrandSiteSection({
         />
       </div>
 
-      {/* Typography & Languages */}
-      <div className="space-y-4 pl-7 mb-6 pt-6 border-t border-[#F3F4F6]">
-        <h4 className="text-sm font-semibold text-[#111827]">Typography & Languages</h4>
+      {/* Typography */}
+      <div ref={typographyRef} className="space-y-4 pl-7 mb-6 pt-6 border-t border-[#F3F4F6]">
+        <h4 className="text-sm font-semibold text-[#111827]">Typography</h4>
         <div className="grid grid-cols-2 gap-4">
-          <div ref={typographyRef}>
-            <label className="block text-xs font-medium text-[#374151] mb-1.5">Font Family</label>
+          <div>
+            <label className="block text-xs font-medium text-[#374151] mb-1.5">Heading Font</label>
             <input
               type="text"
-              value={typography}
-              onChange={(e) => setTypography(e.target.value)}
+              value={headingFont}
+              onChange={(e) => setHeadingFont(e.target.value)}
+              placeholder="e.g., Montserrat, Poppins"
+              className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+            />
+            <p className="text-[10px] text-[#9CA3AF] mt-1">Font used for headings (H1, H2, etc.)</p>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#374151] mb-1.5">Body Font</label>
+            <input
+              type="text"
+              value={bodyFont}
+              onChange={(e) => setBodyFont(e.target.value)}
               placeholder="e.g., Inter, Roboto, Open Sans"
               className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
             />
-          </div>
-          <div ref={languagesRef}>
-            <label className="block text-xs font-medium text-[#374151] mb-1.5">Languages</label>
-            <input
-              type="text"
-              value={languages}
-              onChange={(e) => setLanguages(e.target.value)}
-              placeholder="e.g., English, Spanish, French"
-              className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
-            />
+            <p className="text-[10px] text-[#9CA3AF] mt-1">Font used for body text and paragraphs</p>
           </div>
         </div>
+      </div>
+
+      {/* Languages */}
+      <div ref={languagesRef} className="space-y-4 pl-7 mb-6 pt-6 border-t border-[#F3F4F6]">
+        <h4 className="text-sm font-semibold text-[#111827]">Languages</h4>
+        <input
+          type="text"
+          value={languages}
+          onChange={(e) => setLanguages(e.target.value)}
+          placeholder="e.g., en, zh, es (comma-separated)"
+          className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+        />
+        <p className="text-[10px] text-[#9CA3AF]">Supported languages on the website</p>
       </div>
 
       {/* Header & Footer */}

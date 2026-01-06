@@ -77,7 +77,7 @@ export default function ConversationSidebar({
   const getFieldCount = (category: string): { acquired: number; total: number } => {
     const fieldMappings: Record<string, string[]> = {
       'brand-site': ['meta-info', 'logo', 'colors', 'typography', 'tone', 'languages', 'header', 'footer', 'sitemap'],
-      'hero-section': ['hero-section'],
+      'hero-section': ['hero-headline', 'hero-subheadline', 'hero-cta', 'hero-media', 'hero-metrics'],
       'pages': ['key-pages', 'landing-pages', 'blog-resources'],
       'business-context': ['problem-statement', 'who-we-serve', 'use-cases', 'industries', 'products-services'],
       'trust-company': ['social-proof', 'leadership-team', 'about-us', 'faq', 'contact-info'],
@@ -134,6 +134,20 @@ export default function ConversationSidebar({
       } catch {
         // If not valid JSON, treat as regular string and check if it has content
         return hasStringValue(content);
+      }
+    };
+
+    const hasSpecificJsonField = (content: string | null | undefined, fieldName: string): boolean => {
+      if (!content || !content.trim()) return false;
+      try {
+        const parsed = JSON.parse(content);
+        if (typeof parsed === 'object' && parsed !== null) {
+          const v = (parsed as any)[fieldName];
+          return !!v && String(v).trim().length > 0;
+        }
+        return false;
+      } catch {
+        return false;
       }
     };
     
@@ -194,6 +208,16 @@ export default function ConversationSidebar({
         return hasStringValue(siteContexts.find(ctx => ctx.type === 'landing-pages')?.content);
       case 'blog-resources':
         return hasStringValue(siteContexts.find(ctx => ctx.type === 'blog-resources')?.content);
+      case 'hero-headline':
+        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'headline');
+      case 'hero-subheadline':
+        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'subheadline');
+      case 'hero-cta':
+        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'callToAction');
+      case 'hero-media':
+        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'media');
+      case 'hero-metrics':
+        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'metrics');
       // Category-level checks for simplified sidebar
       // STRICT: All fields must be filled for the red dot to disappear
       case 'brand-site':

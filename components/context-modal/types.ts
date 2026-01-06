@@ -50,8 +50,10 @@ export interface BrandSiteSectionProps extends SectionProps {
   setSecondaryColor: (v: string) => void;
   
   // Typography & Tone
-  typography: string;
-  setTypography: (v: string) => void;
+  headingFont: string;
+  setHeadingFont: (v: string) => void;
+  bodyFont: string;
+  setBodyFont: (v: string) => void;
   tone: string;
   setTone: (v: string) => void;
   languages: string;

@@ -397,7 +397,7 @@ export default function ProjectChatPage() {
 
     // Ensure domain has protocol
     const fullUrl = domain.startsWith('http') ? domain : `https://${domain}`;
-    const prompt = `Acquire complete site context for ${fullUrl}. Use acquire_context_field to extract each field one by one: brand-assets, hero-section, contact-info, sitemap, page-classification, problem-statement, who-we-serve, use-cases, products-services, about-us, faq, social-proof. Report progress after each field.`;
+    const prompt = `Please analyze ${fullUrl} and extract comprehensive site information: brand assets (logo, colors, fonts), hero section, contact information, sitemap, page categories, core problems addressed, target audience, use cases, products & services, company background, FAQs, and social proof. Extract each section and report progress.`;
     
     console.log(`[Auto-Initiate] Sending context acquisition request for: ${fullUrl}`);
     

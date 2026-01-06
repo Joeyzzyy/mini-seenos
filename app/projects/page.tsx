@@ -69,8 +69,8 @@ export default function ProjectsPage() {
       setProjects([project, ...projects]);
       setNewDomain('');
       setIsAdding(false);
-      // Optional: Automatically redirect to the new project
-      // router.push(`/chat/${project.id}`);
+      // Automatically redirect to the new project
+      router.push(`/chat/${project.id}`);
     } catch (error) {
       console.error('Failed to create project:', error);
       alert('Failed to create project. Please try again.');
@@ -125,7 +125,7 @@ export default function ProjectsPage() {
           </div>
           <button 
             onClick={() => setIsAdding(true)}
-            className="px-4 py-2 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-sm"
+            className="px-4 py-2 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -149,7 +149,7 @@ export default function ProjectsPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !newDomain.trim()}
-                className="px-6 py-3 bg-black text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all disabled:opacity-50"
+                className="px-6 py-3 bg-black text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? 'Adding...' : 'Add Project'}
               </button>
@@ -159,7 +159,7 @@ export default function ProjectsPage() {
                   setIsAdding(false);
                   setNewDomain('');
                 }}
-                className="px-6 py-3 bg-gray-100 text-gray-600 rounded-2xl text-sm font-bold hover:bg-gray-200 transition-all"
+                className="px-6 py-3 bg-gray-100 text-gray-600 rounded-2xl text-sm font-bold hover:bg-gray-200 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -185,7 +185,7 @@ export default function ProjectsPage() {
             </p>
             <button 
               onClick={() => setIsAdding(true)}
-              className="px-6 py-3 bg-black text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              className="px-6 py-3 bg-black text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
               Add My First Project
             </button>
@@ -196,7 +196,7 @@ export default function ProjectsPage() {
               <Link 
                 key={project.id}
                 href={`/chat/${project.id}`}
-                className="group p-6 bg-white border border-[#F3F4F6] rounded-[28px] shadow-sm hover:shadow-xl hover:border-transparent transition-all duration-500 relative overflow-hidden flex flex-col justify-between min-h-[180px]"
+                className="group p-6 bg-white border border-[#F3F4F6] rounded-[28px] shadow-sm hover:shadow-xl hover:border-transparent transition-all duration-500 relative overflow-hidden flex flex-col justify-between min-h-[180px] cursor-pointer"
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" style={{ background: brandGradient }} />
                 
@@ -212,7 +212,7 @@ export default function ProjectsPage() {
                       e.stopPropagation();
                       setDeletingProject(project);
                     }}
-                    className="p-2 text-[#9CA3AF] hover:text-[#EF4444] hover:bg-red-50 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100"
+                    className="p-2 text-[#9CA3AF] hover:text-[#EF4444] hover:bg-red-50 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100 cursor-pointer"
                     title="Delete Project"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -111,12 +111,18 @@ export default function SocialProofEditor({
   const testimonialsArray = Array.isArray(data.testimonials) ? data.testimonials : [];
   const testimonialsText = typeof data.testimonials === 'string' ? data.testimonials : '';
 
-  // Check if we have external reviews
-  const externalReviews = data.externalReviews || [];
+  // Check if we have external reviews - filter out ones without actual data
+  const externalReviews = (data.externalReviews || []).filter(review => {
+    // Only include if it has actual review data (rating, awards, or found: true)
+    return review.rating || 
+           (review.awards && review.awards.length > 0) || 
+           review.reviewCount ||
+           (review as any).found === true;
+  });
 
   return (
     <div className="space-y-5">
-      {/* External Platform Reviews */}
+      {/* External Platform Reviews - only show if we have actual review data */}
       {externalReviews.length > 0 && (
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4">
           <label className="block text-xs font-semibold text-[#6B7280] mb-3 flex items-center gap-2">

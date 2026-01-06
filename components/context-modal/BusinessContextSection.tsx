@@ -8,43 +8,148 @@ import type { BusinessContextSectionProps } from './types';
 function extractTextFromJSON(jsonString: string | null | undefined): string {
   if (!jsonString) return '';
   
+  // If it's already a plain string without JSON, return it
+  const trimmed = jsonString.trim();
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('[') && !trimmed.startsWith('"')) {
+    return jsonString;
+  }
+  
   try {
     const parsed = JSON.parse(jsonString);
     
     // Handle different JSON structures
     if (typeof parsed === 'string') return parsed;
     
-    // For problem_statement or single field objects
-    if (parsed.problem_statement) return parsed.problem_statement;
-    if (parsed.audience) return parsed.audience;
-    if (parsed.content) return parsed.content;
+    // Handle null or undefined
+    if (parsed === null || parsed === undefined) return '';
     
-    // For arrays (like industries)
+    // For problem_statement or single field objects (check and return immediately)
+    if (parsed.problem_statement && typeof parsed.problem_statement === 'string') {
+      return parsed.problem_statement.trim();
+    }
+    if (parsed.audience && typeof parsed.audience === 'string') {
+      return parsed.audience.trim();
+    }
+    if (parsed.content && typeof parsed.content === 'string') {
+      return parsed.content.trim();
+    }
+    if (parsed.text && typeof parsed.text === 'string') {
+      return parsed.text.trim();
+    }
+    if (parsed.description && typeof parsed.description === 'string') {
+      return parsed.description.trim();
+    }
+    
+    // For about-us format: { companyStory, missionVision, coreValues }
+    if (parsed.companyStory || parsed.missionVision || parsed.coreValues) {
+      const sections: string[] = [];
+      
+      if (parsed.companyStory) {
+        sections.push(`Company Story:\n${parsed.companyStory}`);
+      }
+      if (parsed.missionVision) {
+        sections.push(`Mission & Vision:\n${parsed.missionVision}`);
+      }
+      if (parsed.coreValues && Array.isArray(parsed.coreValues)) {
+        sections.push(`Core Values:\n${parsed.coreValues.map((v: string, i: number) => `${i + 1}. ${v}`).join('\n')}`);
+      }
+      
+      return sections.join('\n\n');
+    }
+    
+    // For arrays (like industries, use cases)
     if (Array.isArray(parsed)) {
       return parsed.map((item, index) => {
         if (typeof item === 'string') return `${index + 1}. ${item}`;
-        if (item.Industry && item.Description) {
-          return `${item.Industry}: ${item.Description}`;
+        if (typeof item === 'object' && item !== null) {
+          // Handle industry format: { Industry: "...", Description: "..." }
+          if (item.Industry && item.Description) {
+            return `${item.Industry}: ${item.Description}`;
+          }
+          // Handle use case format: { name: "...", description: "..." }
+          if (item.name && item.description) {
+            return `${index + 1}. ${item.name}: ${item.description}`;
+          }
+          // Handle single-key objects like: { "Education": "description..." }
+          const keys = Object.keys(item);
+          if (keys.length === 1) {
+            const key = keys[0];
+            const value = item[key];
+            if (typeof value === 'string') {
+              return `${key}:\n${value}`;
+            }
+          }
+          // Handle simple objects with multiple fields
+          const entries = Object.entries(item).filter(([k, v]) => typeof v === 'string');
+          if (entries.length > 0) {
+            if (entries.length === 1) {
+              return `${index + 1}. ${entries[0][1]}`;
+            }
+            return `${index + 1}. ${entries.map(([k, v]) => v).join(' - ')}`;
+          }
         }
         return JSON.stringify(item);
       }).join('\n\n');
     }
     
     // For use_cases object with arrays
-    if (parsed.use_cases && Array.isArray(parsed.use_cases)) {
-      return parsed.use_cases.map((useCase: string, index: number) => 
-        `${index + 1}. ${useCase}`
-      ).join('\n\n');
+    if (parsed.use_cases) {
+      if (Array.isArray(parsed.use_cases)) {
+        return parsed.use_cases.map((useCase: any, index: number) => {
+          if (typeof useCase === 'string') return `${index + 1}. ${useCase}`;
+          if (typeof useCase === 'object' && useCase !== null) {
+            if (useCase.name && useCase.description) {
+              return `${index + 1}. ${useCase.name}: ${useCase.description}`;
+            }
+            const values = Object.values(useCase).filter(v => typeof v === 'string');
+            if (values.length > 0) {
+              return `${index + 1}. ${values.join(' - ')}`;
+            }
+          }
+          return `${index + 1}. ${JSON.stringify(useCase)}`;
+        }).join('\n\n');
+      } else if (typeof parsed.use_cases === 'string') {
+        return parsed.use_cases;
+      }
     }
     
-    // Fallback: try to extract all string values
-    const allText = Object.values(parsed)
-      .filter(v => typeof v === 'string')
-      .join('\n\n');
+    // For industries object
+    if (parsed.industries) {
+      if (Array.isArray(parsed.industries)) {
+        return parsed.industries.map((industry: any, index: number) => {
+          if (typeof industry === 'string') return `${index + 1}. ${industry}`;
+          if (typeof industry === 'object' && industry !== null) {
+            const values = Object.values(industry).filter(v => typeof v === 'string');
+            if (values.length > 0) {
+              return `${index + 1}. ${values.join(' - ')}`;
+            }
+          }
+          return `${index + 1}. ${JSON.stringify(industry)}`;
+        }).join('\n\n');
+      } else if (typeof parsed.industries === 'string') {
+        return parsed.industries;
+      }
+    }
     
-    return allText || jsonString;
+    // Fallback: try to extract all string values from object
+    if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+      const stringValues = Object.values(parsed)
+        .filter(v => typeof v === 'string' && v.trim().length > 0);
+      
+      if (stringValues.length > 0) {
+        // If there's only one string value, return it directly
+        if (stringValues.length === 1) {
+          return stringValues[0] as string;
+        }
+        // Otherwise, join them with line breaks
+        return stringValues.join('\n\n');
+      }
+    }
+    
+    // Last resort: return pretty-printed JSON
+    return JSON.stringify(parsed, null, 2);
   } catch {
-    // If not JSON, return as is
+    // If not valid JSON, return as is
     return jsonString;
   }
 }
@@ -77,27 +182,27 @@ export default function BusinessContextSection({
   // Extract readable text from JSON
   const problemStatementText = useMemo(() => 
     extractTextFromJSON(problemStatementContext?.content), 
-    [problemStatementContext]
+    [problemStatementContext?.content]
   );
   
   const whoWeServeText = useMemo(() => 
     extractTextFromJSON(whoWeServeContext?.content), 
-    [whoWeServeContext]
+    [whoWeServeContext?.content]
   );
   
   const useCasesText = useMemo(() => 
     extractTextFromJSON(useCasesContext?.content), 
-    [useCasesContext]
+    [useCasesContext?.content]
   );
   
   const industriesText = useMemo(() => 
     extractTextFromJSON(industriesContext?.content), 
-    [industriesContext]
+    [industriesContext?.content]
   );
   
   const productsServicesText = useMemo(() => 
     extractTextFromJSON(productsServicesContext?.content), 
-    [productsServicesContext]
+    [productsServicesContext?.content]
   );
 
   return (

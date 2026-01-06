@@ -55,16 +55,6 @@ export default function UrlListEditor({
   const hasMore = urls.length > displayLimit;
   const displayUrls = isExpanded ? urls : urls.slice(0, displayLimit);
 
-  // Extract path from URL for cleaner display
-  const getDisplayPath = (url: string): string => {
-    try {
-      const parsed = new URL(url);
-      return parsed.pathname === '/' ? '/' : parsed.pathname;
-    } catch {
-      return url;
-    }
-  };
-
   if (isEditing) {
     return (
       <div className="space-y-2">
@@ -146,7 +136,7 @@ export default function UrlListEditor({
                   className="text-sm text-[#374151] hover:text-[#9A8FEA] truncate flex-1"
                   title={url}
                 >
-                  {getDisplayPath(url)}
+                  {url}
                 </a>
                 <svg 
                   className="w-3.5 h-3.5 text-[#9CA3AF] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" 

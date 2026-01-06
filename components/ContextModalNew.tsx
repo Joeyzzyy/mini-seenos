@@ -70,7 +70,8 @@ export default function ContextModalNew({
   const [faviconDarkUrl, setFaviconDarkUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#9A8FEA');
   const [secondaryColor, setSecondaryColor] = useState('#FF5733');
-  const [typography, setTypography] = useState('');
+  const [headingFont, setHeadingFont] = useState('');
+  const [bodyFont, setBodyFont] = useState('');
   const [tone, setTone] = useState('');
   const [languages, setLanguages] = useState('');
   const [headerConfig, setHeaderConfig] = useState<any>(null);
@@ -169,7 +170,8 @@ export default function ContextModalNew({
 
         setPrimaryColor(ctx.primary_color || '#9A8FEA');
         setSecondaryColor(ctx.secondary_color || '#FF5733');
-        setTypography(ctx.heading_font || '');
+        setHeadingFont(ctx.heading_font || '');
+        setBodyFont(ctx.body_font || '');
         setTone(ctx.tone || '');
         setLanguages(ctx.languages || '');
       }
@@ -295,8 +297,8 @@ export default function ContextModalNew({
           faviconDarkUrl: finalFaviconDarkUrl,
           primaryColor,
           secondaryColor,
-          headingFont: typography,
-          bodyFont: typography,
+          headingFont,
+          bodyFont,
           tone,
           languages,
         }),
@@ -392,6 +394,20 @@ export default function ContextModalNew({
       }
     };
 
+    const hasSpecificJsonField = (content: string | null | undefined, fieldName: string): boolean => {
+      if (!content || !content.trim()) return false;
+      try {
+        const parsed = JSON.parse(content);
+        if (typeof parsed === 'object' && parsed !== null) {
+          const v = (parsed as any)[fieldName];
+          return typeof v === 'string' ? v.trim().length > 0 : !!v;
+        }
+        return false;
+      } catch {
+        return false;
+      }
+    };
+
     const context = siteContexts.find(ctx => {
       const typeMap: Record<string, string> = {
         'meta-info': 'logo',
@@ -404,6 +420,11 @@ export default function ContextModalNew({
         'footer': 'footer',
         'sitemap': 'sitemap',
         'hero-section': 'hero-section',
+        'hero-headline': 'hero-section',
+        'hero-subheadline': 'hero-section',
+        'hero-cta': 'hero-section',
+        'hero-media': 'hero-section',
+        'hero-metrics': 'hero-section',
         'key-pages': 'key-website-pages',
         'landing-pages': 'landing-pages',
         'blog-resources': 'blog-resources',
@@ -447,6 +468,16 @@ export default function ContextModalNew({
       case 'footer':
       case 'sitemap':
         return hasJsonContent(context.content);
+      case 'hero-headline':
+        return hasSpecificJsonField(context.content, 'headline');
+      case 'hero-subheadline':
+        return hasSpecificJsonField(context.content, 'subheadline');
+      case 'hero-cta':
+        return hasSpecificJsonField(context.content, 'callToAction');
+      case 'hero-media':
+        return hasSpecificJsonField(context.content, 'media');
+      case 'hero-metrics':
+        return hasSpecificJsonField(context.content, 'metrics');
       default:
         return hasJsonContent(context.content);
     }
@@ -482,14 +513,13 @@ export default function ContextModalNew({
       icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>,
       expanded: expandedNavHeroSection,
       setExpanded: setExpandedNavHeroSection,
-      checkKey: 'hero-section',
-      fieldKeys: ['hero-section'],
+      fieldKeys: ['hero-headline', 'hero-subheadline', 'hero-cta', 'hero-media', 'hero-metrics'],
       children: [
-        { label: 'Headline', ref: heroSectionRef, checkKey: 'hero-section' },
-        { label: 'Subheadline', ref: heroSectionRef, checkKey: 'hero-section' },
-        { label: 'Call to Action', ref: heroSectionRef, checkKey: 'hero-section' },
-        { label: 'Media', ref: heroSectionRef, checkKey: 'hero-section' },
-        { label: 'Metrics', ref: heroSectionRef, checkKey: 'hero-section' },
+        { label: 'Headline', ref: heroSectionRef, checkKey: 'hero-headline' },
+        { label: 'Subheadline', ref: heroSectionRef, checkKey: 'hero-subheadline' },
+        { label: 'Call to Action', ref: heroSectionRef, checkKey: 'hero-cta' },
+        { label: 'Media', ref: heroSectionRef, checkKey: 'hero-media' },
+        { label: 'Metrics', ref: heroSectionRef, checkKey: 'hero-metrics' },
       ]
     },
     {
@@ -616,7 +646,6 @@ export default function ContextModalNew({
                                 {acquiredCount}/{totalCount}
                               </span>
                             )}
-                            {group.checkKey && !hasContextValue(group.checkKey) && <RedDot />}
                       </button>
                       {group.expanded && (
                             <div className="ml-5 mt-1 space-y-0.5">
@@ -681,8 +710,10 @@ export default function ContextModalNew({
                     setPrimaryColor={setPrimaryColor}
                     secondaryColor={secondaryColor}
                     setSecondaryColor={setSecondaryColor}
-                    typography={typography}
-                    setTypography={setTypography}
+                    headingFont={headingFont}
+                    setHeadingFont={setHeadingFont}
+                    bodyFont={bodyFont}
+                    setBodyFont={setBodyFont}
                     tone={tone}
                     setTone={setTone}
                     languages={languages}

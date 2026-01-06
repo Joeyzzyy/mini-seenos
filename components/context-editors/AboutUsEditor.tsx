@@ -22,7 +22,18 @@ export default function AboutUsEditor({
     if (initialContent) {
       try {
         const parsed = JSON.parse(initialContent);
-        setAboutData(parsed);
+        
+        // Handle coreValues: convert array to string if needed
+        let coreValuesString = parsed.coreValues || '';
+        if (Array.isArray(parsed.coreValues)) {
+          coreValuesString = parsed.coreValues.map((v: string, i: number) => `${i + 1}. ${v}`).join('\n');
+        }
+        
+        setAboutData({
+          companyStory: parsed.companyStory || '',
+          missionVision: parsed.missionVision || '',
+          coreValues: coreValuesString,
+        });
       } catch (e) {
         console.error('Failed to parse about us content:', e);
       }
