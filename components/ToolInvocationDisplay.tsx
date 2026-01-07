@@ -46,6 +46,57 @@ export default function ToolInvocationDisplay({ toolInvocation }: ToolInvocation
     if (result.filename && result.content && result.mimeType) {
       return <FileDownloadCard result={result} />;
     }
+
+    // Check if this is an HTML report result - render in iframe using base64 content
+    if (toolName === 'markdown_to_html_report' && result.success && result.content && result.mimeType === 'text/html') {
+      // Decode base64 content with proper UTF-8 handling
+      // atob() returns Latin-1, need to convert to UTF-8 for Chinese/unicode support
+      const binaryString = atob(result.content);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const htmlContent = new TextDecoder('utf-8').decode(bytes);
+      
+      // Create a blob URL for opening in new tab (with UTF-8 charset)
+      const blob = new Blob([bytes], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      
+      return (
+        <div className="bg-white border border-[#E5E5E5] rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 3h18v18H3zM12 8v8M8 12h8" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">📊 Interactive Report</h4>
+                <p className="text-[10px] text-white/70">{result.filename} • {result.charts_generated || 0} charts</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => window.open(blobUrl, '_blank')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white text-xs font-medium transition-colors cursor-pointer"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
+              </svg>
+              Open Full Screen
+            </button>
+          </div>
+          <div className="relative bg-[#fafafa] w-full" style={{ height: '500px' }}>
+            <iframe 
+              srcDoc={htmlContent}
+              className="w-full h-full border-0"
+              title="Interactive Report"
+              sandbox="allow-scripts"
+            />
+          </div>
+        </div>
+      );
+    }
     
     // Check if this is a planning result
     if (result.plan && result.plan.steps) {

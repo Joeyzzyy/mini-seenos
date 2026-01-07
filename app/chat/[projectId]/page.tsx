@@ -306,6 +306,9 @@ export default function ProjectChatPage() {
     }
   };
 
+  // Track if project has been initialized to prevent re-initialization on auth state changes
+  const projectInitializedRef = useRef<string | null>(null);
+
   // Auth & Project state
   useEffect(() => {
     if (!projectId) return;
@@ -313,7 +316,11 @@ export default function ProjectChatPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        initProject(session.user.id);
+        // Only initialize if not already initialized for this project
+        if (projectInitializedRef.current !== projectId) {
+          initProject(session.user.id);
+          projectInitializedRef.current = projectId;
+        }
       } else {
         router.push('/');
       }
@@ -322,7 +329,12 @@ export default function ProjectChatPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser(session.user);
-        initProject(session.user.id);
+        // Only initialize if not already initialized for this project
+        // This prevents re-initialization on token refresh
+        if (projectInitializedRef.current !== projectId) {
+          initProject(session.user.id);
+          projectInitializedRef.current = projectId;
+        }
       } else {
         router.push('/');
       }

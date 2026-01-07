@@ -43,7 +43,24 @@ export default function FileDownloadCard({ result, files = [], toolName, compact
       link.click();
       document.body.removeChild(link);
     } else if (result.content) {
-      const blob = new Blob([result.content], { type: result.mimeType });
+      // Content is Base64 encoded - need to decode it first
+      let blob: Blob;
+      try {
+        // Decode base64 to binary (preserves UTF-8 encoding)
+        const binaryString = atob(result.content);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        // Add charset=utf-8 for text files to ensure proper encoding
+        const mimeWithCharset = result.mimeType?.startsWith('text/') 
+          ? `${result.mimeType};charset=utf-8` 
+          : result.mimeType;
+        blob = new Blob([bytes], { type: mimeWithCharset });
+      } catch {
+        // If decoding fails, assume it's already plain text
+        blob = new Blob([result.content], { type: result.mimeType });
+      }
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;

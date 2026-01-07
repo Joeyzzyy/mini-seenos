@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import Image from 'next/image';
 import MarkdownMessage from './MarkdownMessage';
 import ToolCallsSummary from './ToolCallsSummary';
 import GeneratedFiles from './GeneratedFiles';
@@ -185,17 +184,7 @@ export default function MessageList({
   };
 
   if (messages.length === 0) {
-    return (
-      <div className="flex-1 flex items-center justify-center py-20">
-        <Image 
-          src="/product-logo.webp" 
-          alt="Mini Seenos Logo" 
-          width={64} 
-          height={64}
-          className="mx-auto animate-subtle-shake rounded-xl"
-        />
-      </div>
-    );
+    return <div className="flex-1" />;
   }
 
   return (

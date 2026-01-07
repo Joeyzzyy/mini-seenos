@@ -8,6 +8,7 @@ import { fileOperationsSkill } from './skill-system/file-operations.skill';
 // Research Skills
 import { webResearchSkill } from './skill-research/web-research.skill';
 import { competitorAnalysisSkill } from './skill-research/competitor-analysis.skill';
+import { competitorGrowthEngineAuditSkill } from './skill-research/competitor-growth-engine-audit.skill';
 import { contentGapAnalysisSkill } from './skill-research/content-gap-analysis.skill';
 import { serpAnalysisSkill } from './skill-research/serp-analysis.skill';
 
@@ -115,6 +116,7 @@ skillRegistry.register(conversationTrackingSkill);
 skillRegistry.register(fileOperationsSkill);
 skillRegistry.register(webResearchSkill);
 skillRegistry.register(competitorAnalysisSkill);
+skillRegistry.register(competitorGrowthEngineAuditSkill);
 skillRegistry.register(contentGapAnalysisSkill);
 skillRegistry.register(serpAnalysisSkill);
 skillRegistry.register(topicBrainstormSkill);
