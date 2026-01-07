@@ -1,5 +1,11 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client for server-side operations
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 /**
  * Markdown to HTML Report Tool
@@ -859,33 +865,103 @@ export const markdown_to_html_report = tool({
     markdown_content: z.string().describe('The Markdown content to convert'),
     title: z.string().describe('The title of the report'),
     filename: z.string().optional().describe('Output filename (without extension). Defaults to report-{timestamp}'),
-    project_id: z.string().optional().describe('Project ID for file storage'),
+    user_id: z.string().optional().describe('User ID for file storage'),
+    conversation_id: z.string().optional().describe('Conversation ID for file association'),
   }),
-  execute: async ({ markdown_content, title, filename, project_id }) => {
+  execute: async ({ markdown_content, title, filename, user_id, conversation_id }) => {
     console.log(`[markdown_to_html_report] Converting markdown to HTML report: ${title}`);
     
     try {
       const { html: contentHtml, chartScripts } = markdownToHtmlWithCharts(markdown_content, title);
       const fullHtml = generateHtmlPage(contentHtml, chartScripts, title);
       
-      const safeFilename = filename || `report-${Date.now()}`;
+      const safeFilename = filename || `seo-report-${Date.now()}`;
       const htmlFilename = `${safeFilename}.html`;
       
-      // 转换为 base64，与 markdown_to_docx 保持一致的返回格式
+      // 转换为 Buffer
       const htmlBuffer = Buffer.from(fullHtml, 'utf-8');
       
       console.log(`[markdown_to_html_report] HTML report created: ${htmlFilename}, size: ${htmlBuffer.length} bytes, charts: ${chartScripts.length}`);
 
-      // 返回与 markdown_to_docx 相同的格式，让 GeneratedFiles 和 FileDownloadCard 正确处理
+      // 直接上传到 Supabase Storage（像 generate_images 那样）
+      let publicUrl = '';
+      let fileId = '';
+      
+      if (user_id) {
+        try {
+          const timestamp = Date.now();
+          const storagePath = `${user_id}/${timestamp}-${htmlFilename}`;
+          
+          console.log(`[markdown_to_html_report] Uploading to Supabase: ${storagePath}`);
+          
+          const { error: uploadError } = await supabase.storage
+            .from('files')
+            .upload(storagePath, htmlBuffer, {
+              contentType: 'text/html;charset=utf-8',
+              upsert: false,
+            });
+          
+          if (uploadError) {
+            console.error('[markdown_to_html_report] Upload error:', uploadError);
+            // 继续执行，返回 base64 content 作为备选
+          } else {
+            const { data: { publicUrl: url } } = supabase.storage
+              .from('files')
+              .getPublicUrl(storagePath);
+            
+            publicUrl = url;
+            console.log(`[markdown_to_html_report] Uploaded to: ${publicUrl}`);
+            
+            // 保存文件记录到数据库
+            const { data: fileRecord, error: dbError } = await supabase
+              .from('files')
+              .insert({
+                user_id: user_id,
+                conversation_id: conversation_id || null,
+                filename: htmlFilename,
+                original_filename: htmlFilename,
+                file_type: 'report',
+                mime_type: 'text/html',
+                file_size: htmlBuffer.length,
+                storage_path: storagePath,
+                public_url: publicUrl,
+                metadata: {
+                  title,
+                  charts_count: chartScripts.length,
+                  generated_at: new Date().toISOString(),
+                  type: 'seo_report'
+                }
+              })
+              .select()
+              .single();
+            
+            if (dbError) {
+              console.error('[markdown_to_html_report] Database error:', dbError);
+            } else {
+              fileId = fileRecord.id;
+              console.log(`[markdown_to_html_report] File record saved: ${fileId}`);
+            }
+          }
+        } catch (uploadErr: any) {
+          console.error('[markdown_to_html_report] Upload failed:', uploadErr);
+        }
+      }
+
+      // 返回结果
       return {
         success: true,
         filename: htmlFilename,
-        content: htmlBuffer.toString('base64'),
+        content: htmlBuffer.toString('base64'), // 仍然返回 base64 用于预览
         size: htmlBuffer.length,
         mimeType: 'text/html',
-        needsUpload: true,
+        publicUrl: publicUrl || undefined,
+        public_url: publicUrl || undefined,
+        fileId: fileId || undefined,
+        needsUpload: !publicUrl, // 如果已上传则不需要
         charts_generated: chartScripts.length,
-        message: `✅ HTML report generated with ${chartScripts.length} interactive charts!`,
+        message: publicUrl 
+          ? `✅ HTML report generated and saved with ${chartScripts.length} interactive charts!`
+          : `✅ HTML report generated with ${chartScripts.length} interactive charts!`,
         metadata: {
           title,
           charts_count: chartScripts.length,

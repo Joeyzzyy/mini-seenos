@@ -678,7 +678,10 @@ Example table headers that work well:
 
 ## Output
 - **markdown_to_docx**: Generate Word report
+  - MUST pass: user_id, conversation_id from context
 - **markdown_to_html_report**: 🆕 Generate interactive HTML report with charts
+  - MUST pass: user_id, conversation_id from context
+  - This ensures the file is saved to the artifact list!
 
 # RECOMMENDED FLOW
 
