@@ -32,7 +32,6 @@ import {
   getSEOProjectById
 } from '@/lib/supabase';
 import type { Conversation, FileRecord, ContentItem, ContentProject, SiteContext, SEOProject } from '@/lib/supabase';
-import type { OffsiteContext } from '@/components/context-modal/types';
 import { User } from '@supabase/supabase-js';
 import AuthButton from '@/components/AuthButton';
 import ConversationSidebar from '@/components/ConversationSidebar';
@@ -44,10 +43,8 @@ import ContentDrawer from '@/components/ContentDrawer';
 import GSCIntegrationStatus from '@/components/GSCIntegrationStatus';
 import DomainsModal from '@/components/DomainsModal';
 import ContextModalNew from '@/components/ContextModalNew';
-import PlaybookTrigger from '@/components/PlaybookTrigger';
 import Toast from '@/components/Toast';
 import TopBar from '@/components/TopBar';
-import SkillsAndArtifactsSidebar from '@/components/SkillsAndArtifactsSidebar';
 import ConversationsDropdown from '@/components/ConversationsDropdown';
 
 interface Skill {
@@ -81,76 +78,6 @@ interface Skill {
   };
 }
 
-// Extract current tasks from messages (looking for create_plan tool)
-function extractCurrentTasks(messages: any[]): Array<{
-  step_number: number;
-  description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
-}> {
-  let planSteps: any[] = [];
-  let completedSteps: number[] = [];
-  let hasFinishedExecution = false;
-  
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
-    if (msg.role === 'assistant' && msg.toolInvocations) {
-      const allToolsFinished = msg.toolInvocations.every(
-        (inv: any) => inv.state === 'result' || (inv.result && !inv.state)
-      );
-      if (i === messages.length - 1 && allToolsFinished) {
-        hasFinishedExecution = true;
-      }
-      
-      for (const inv of msg.toolInvocations) {
-        if (inv.toolName === 'create_plan' && inv.args?.steps && planSteps.length === 0) {
-          planSteps = inv.args.steps.map((step: any, index: number) => {
-            if (typeof step === 'string') {
-              return { step_number: index + 1, description: step };
-            }
-            return {
-              step_number: step.step_number || index + 1,
-              description: step.description || step.title || step
-            };
-          });
-        }
-        
-        if (inv.toolName === 'update_task_status' && inv.args?.completed_steps) {
-          completedSteps = [...new Set([...completedSteps, ...inv.args.completed_steps])];
-        }
-      }
-    }
-  }
-  
-  if (planSteps.length === 0) return [];
-  
-  if (hasFinishedExecution && completedSteps.length > 0) {
-    return planSteps.map((step) => ({
-      step_number: step.step_number,
-      description: step.description,
-      status: 'completed' as const
-    }));
-  }
-  
-  const currentStepNumber = completedSteps.length > 0 ? Math.max(...completedSteps) + 1 : 1;
-  
-  return planSteps.map((step) => {
-    const stepNum = step.step_number;
-    let status: 'pending' | 'in_progress' | 'completed' | 'failed' = 'pending';
-    
-    if (completedSteps.includes(stepNum)) {
-      status = 'completed';
-    } else if (stepNum === currentStepNumber) {
-      status = 'in_progress';
-    }
-    
-    return {
-      step_number: stepNum,
-      description: step.description,
-      status
-    };
-  });
-}
-
 export default function ProjectChatPage() {
   const params = useParams();
   const projectId = params.projectId as string;
@@ -177,7 +104,8 @@ export default function ProjectChatPage() {
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [contentProjects, setContentProjects] = useState<ContentProject[]>([]);
   const [siteContexts, setSiteContexts] = useState<SiteContext[]>([]);
-  const [offsiteContext, setOffsiteContext] = useState<OffsiteContext | null>(null);
+  const [deletingCluster, setDeletingCluster] = useState<{ id: string; name: string } | null>(null);
+  const [deletingContentItem, setDeletingContentItem] = useState<{ id: string; name: string } | null>(null);
   const [tokenStats, setTokenStats] = useState({ inputTokens: 0, outputTokens: 0 });
   const [apiStats, setApiStats] = useState({ tavilyCalls: 0, semrushCalls: 0, serperCalls: 0 });
   const [deletingConversationId, setDeletingConversationId] = useState<string | null>(null);
@@ -190,13 +118,12 @@ export default function ProjectChatPage() {
   const [attachedFileIds, setAttachedFileIds] = useState<string[]>([]);
   const [attachedContentItemIds, setAttachedContentItemIds] = useState<string[]>([]);
   const [selectedContentItem, setSelectedContentItem] = useState<ContentItem | null>(null);
-  const [activePlaybook, setActivePlaybook] = useState<Skill | null>(null);
   const [toast, setToast] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: '' });
   const [isArtifactsOpen, setIsArtifactsOpen] = useState(false);
   const [isDomainsOpen, setIsDomainsOpen] = useState(false);
   const [isGSCOpen, setIsGSCOpen] = useState(false);
   const [isContextModalOpen, setIsContextModalOpen] = useState(false);
-  const [contextModalInitialTab, setContextModalInitialTab] = useState<'onsite' | 'offsite' | 'knowledge'>('onsite');
+  const [contextModalInitialTab, setContextModalInitialTab] = useState<'onsite' | 'knowledge'>('onsite');
   const [isConversationsListOpen, setIsConversationsListOpen] = useState(false);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
   const [editingChatTitle, setEditingChatTitle] = useState(false);
@@ -367,9 +294,6 @@ export default function ProjectChatPage() {
         loadKnowledgeFiles()
       ]);
 
-      // Load offsite context
-      await loadOffsiteContext();
-
       // Check if context is empty and auto-initiate via skill
       // Check for 'logo' type which is our main brand context indicator
       const hasBrandContext = contexts.some(c => c.type === 'logo');
@@ -405,7 +329,7 @@ export default function ProjectChatPage() {
     if (!conversationToUse) {
       try {
         console.log('[Auto-Initiate] Creating new conversation for context analysis...');
-        conversationToUse = await createConversation(userId, projectId, `Context Analysis: ${domain}`);
+        conversationToUse = await createConversation(userId, projectId, `Alternative Page Planning: ${domain}`);
         setConversations([conversationToUse]);
         updateCurrentConversation(conversationToUse);
       } catch (error) {
@@ -418,13 +342,90 @@ export default function ProjectChatPage() {
 
     // Ensure domain has protocol
     const fullUrl = domain.startsWith('http') ? domain : `https://${domain}`;
-    const prompt = `Please analyze ${fullUrl} and extract comprehensive site information: brand assets (logo, colors, fonts), hero section, contact information, sitemap, page categories, core problems addressed, target audience, use cases, products & services, company background, FAQs, and social proof. Extract each section and report progress.`;
+    const prompt = `[Auto-initiated by system]
+
+I'm starting the Alternative Page planning process for ${fullUrl}. You MUST complete ALL THREE PHASES in ONE continuous execution without stopping or asking for confirmation. Do not pause between phases - execute them sequentially in a single response.
+
+## EXECUTION RULES:
+- Complete ALL phases in ONE go - do not wait for user confirmation
+- Execute phases sequentially: Phase 1 → Phase 2 → Phase 3
+- Do not stop or ask "should I continue?" - just proceed automatically
+- Report completion only after ALL phases are done
+
+## PHASE 1: Brand Assets Collection (use 'acquire_context_field' tool)
+Collect and save the following brand assets to the database:
+- 'brand-assets' → Logo, colors, fonts, metadata
+- 'about-us' → Company story, mission, values  
+- 'products-services' → Product/service offerings
+- 'who-we-serve' → Target audience
+- 'contact-info' → Email, phone, social links
+- 'faq' → Frequently asked questions
+- 'social-proof' → Testimonials, reviews, awards
+
+Execute these in parallel batches for efficiency. Each field call requires: url="${fullUrl}", userId, projectId.
+
+## PHASE 2: Competitor Research & Saving (CRITICAL: use ONLY 'save_site_context' tool)
+After analyzing the website, identify and save at least 10 competitors to the BRAND ASSETS database:
+
+**CRITICAL INSTRUCTIONS:**
+- You MUST use the 'save_site_context' tool (NOT 'save_content_item' or 'save_content_items_batch')
+- This saves to site_contexts table (Brand Assets), NOT to content_items table
+- DO NOT create a content page or save to any cluster/project
+- This is part of Brand Assets collection, just like logo, colors, etc.
+
+Steps:
+1. Research competitors in the same industry/market as ${fullUrl}
+2. Find competitors offering similar products/services
+3. Use web search or your knowledge to find at least 10 competitors
+4. For each competitor, collect:
+   - Competitor name (company/product name)
+   - Competitor website URL (full URL with https://)
+5. Call 'save_site_context' tool ONCE with ALL competitors:
+   - type: 'competitors' (exactly this string)
+   - content: JSON string of array format: [{"name": "Competitor Name", "url": "https://competitor.com"}, ...]
+   - userId: (pass the userId from your context)
+   - projectId: (pass the projectId from your context)
+   
+   Example content format (must be valid JSON string):
+   [{"name": "Competitor 1", "url": "https://competitor1.com"}, {"name": "Competitor 2", "url": "https://competitor2.com"}, ...]
+
+**VERY IMPORTANT:**
+- You must find and save at least 10 competitors
+- Use web search if needed to find relevant competitors
+- DO NOT use save_content_item or save_content_items_batch - those save to content library, not brand assets
+- The competitors list should appear in Brand Assets modal, not in Page Blueprint section
+
+## PHASE 3: Page Planning (use 'keyword_overview', 'search_serp', 'save_content_item' tools)
+After competitors are saved:
+1. For each competitor, search "[Competitor] alternative" keyword data
+2. Design alternative page strategies with:
+   - Page title and target keyword
+   - Key differentiators to highlight
+   - Target audience segments
+3. Generate detailed content outlines (H1, H2, H3) and save to content library
+
+## CRITICAL EXECUTION INSTRUCTIONS:
+- Execute ALL THREE phases in ONE continuous response
+- Do NOT stop after Phase 1 or Phase 2 - continue immediately to the next phase
+- Do NOT ask for user confirmation - proceed automatically
+- Complete Phase 1 → immediately proceed to Phase 2 → immediately proceed to Phase 3
+- Only report final completion after ALL phases are done
+
+Start executing Phase 1 now, then immediately continue to Phase 2 and Phase 3 without stopping.`;
     
     console.log(`[Auto-Initiate] Sending context acquisition request for: ${fullUrl}`);
     
-    // Wait for state to settle, then trigger the skill
+    // Save the auto-initiated message to database FIRST
+    try {
+      await saveMessage(conversationToUse.id, 'user', prompt, Math.ceil(prompt.length / 4), 0);
+      console.log('[Auto-Initiate] User message saved to database');
+    } catch (saveError) {
+      console.error('[Auto-Initiate] Failed to save user message:', saveError);
+    }
+    
+    // Wait for state to settle, then trigger without specific skill (let AI use multiple skills)
     setTimeout(() => {
-      console.log('[Auto-Initiate] Calling append with site-context skill...');
+      console.log('[Auto-Initiate] Calling append for brand assets + page planning...');
       append(
         { role: 'user', content: prompt } as any,
         {
@@ -432,7 +433,8 @@ export default function ProjectChatPage() {
             userId: userId,
             conversationId: conversationToUse!.id,
             projectId: projectId,
-            activeSkillId: 'site-context',
+            // Don't set activeSkillId - let AI use multiple skills as needed
+            isAutoInitiated: true,
           } as any,
         }
       ).then(() => {
@@ -497,30 +499,37 @@ export default function ProjectChatPage() {
     }
   };
 
+  const handleDeleteCluster = async () => {
+    if (!deletingCluster || !user) return;
+    try {
+      await deleteContentProject(deletingCluster.id);
+      setContentProjects(prev => prev.filter(p => p.id !== deletingCluster.id));
+      setContentItems(prev => prev.filter(i => i.project_id !== deletingCluster.id));
+      setDeletingCluster(null);
+    } catch (error) {
+      console.error('Failed to delete cluster:', error);
+      alert('Failed to delete cluster. Please try again.');
+    }
+  };
+
+  const handleDeleteContentItem = async () => {
+    if (!deletingContentItem || !user) return;
+    try {
+      await deleteContentItem(deletingContentItem.id);
+      setContentItems(prev => prev.filter(i => i.id !== deletingContentItem.id));
+      setDeletingContentItem(null);
+    } catch (error) {
+      console.error('Failed to delete content item:', error);
+      alert('Failed to delete item. Please try again.');
+    }
+  };
+
   const loadSiteContexts = async (userId: string) => {
     try {
       const contexts = await getSiteContexts(userId, projectId);
       setSiteContexts(contexts);
     } catch (error) {
       console.error('Failed to load site contexts:', error);
-    }
-  };
-
-  const loadOffsiteContext = async () => {
-    if (!projectId) return;
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const headers: HeadersInit = {};
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
-      const response = await fetch(`/api/offsite-contexts?projectId=${projectId}`, { headers });
-      if (response.ok) {
-        const result = await response.json();
-        setOffsiteContext(result.data);
-      }
-    } catch (error) {
-      console.error('Failed to load offsite context:', error);
     }
   };
 
@@ -719,32 +728,6 @@ export default function ProjectChatPage() {
     });
   };
 
-  const handlePlaybookSubmit = async (message: string, useNewConversation: boolean) => {
-    if (!user) return;
-    let conversationToUse = currentConversation;
-    if (useNewConversation || !conversationToUse) {
-      conversationToUse = await createConversation(user.id, projectId);
-      setConversations([conversationToUse, ...conversations]);
-      updateCurrentConversation(conversationToUse);
-      setMessages([]);
-    }
-    
-    if (conversationToUse) {
-      saveMessage(conversationToUse.id, 'user', message, Math.ceil(message.length / 4), 0)
-        .then(() => loadTokenStats(conversationToUse!.id))
-        .catch(err => console.error('Failed to save playbook message:', err));
-
-      append({ role: 'user', content: message } as any, {
-        data: {
-          userId: user.id,
-          conversationId: conversationToUse.id,
-          projectId: projectId,
-          activeSkillId: activePlaybook?.id,
-        } as any,
-      });
-      setActivePlaybook(null);
-    }
-  };
 
   const handleExportLog = () => {
     if (!messages.length) return;
@@ -777,15 +760,12 @@ export default function ProjectChatPage() {
               onEditSiteContext={() => {}}
               onSelectContentItem={(item) => setSelectedContentItem(item)}
               onRefreshContent={() => loadContentItems(user.id)}
-              onDeleteProject={() => {}}
-              onDeleteContentItem={() => {}}
+              onDeleteProject={(id, name) => setDeletingCluster({ id, name })}
+              onDeleteContentItem={(id, name) => setDeletingContentItem({ id, name })}
               onOpenContextModal={(tab) => {
                 setContextModalInitialTab(tab || 'onsite');
                 setIsContextModalOpen(true);
               }}
-              conversationId={currentConversation?.id}
-              currentTasks={extractCurrentTasks(messages)}
-              offsiteContext={offsiteContext}
             />
           </div>
         )}
@@ -846,6 +826,19 @@ export default function ProjectChatPage() {
                       contentItems={contentItems}
                       onUploadSuccess={() => loadFiles(currentConversation?.id || null)}
                       onShowToast={(m) => setToast({ isOpen: true, message: m })}
+                      onPreviewContentItem={async (itemId) => {
+                        try {
+                          const item = await getContentItemById(itemId);
+                          if (item) {
+                            setSelectedContentItem(item);
+                          } else {
+                            setToast({ isOpen: true, message: 'Content item not found' });
+                          }
+                        } catch (error) {
+                          console.error('Failed to load content item:', error);
+                          setToast({ isOpen: true, message: 'Failed to load content item' });
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -861,8 +854,6 @@ export default function ProjectChatPage() {
                   referenceImageUrl={referenceImageUrl}
                   conversationId={currentConversation?.id}
                   projectId={projectId}
-                  tokenStats={tokenStats}
-                  apiStats={apiStats}
                   knowledgeFiles={knowledgeFiles}
                   mentionedFiles={mentionedFiles}
                   onInputChange={handleInputChange}
@@ -872,7 +863,6 @@ export default function ProjectChatPage() {
                   onRemoveFile={(id) => setAttachedFileIds(p => p.filter(x => x !== id))}
                   onAttachContentItem={(id) => setAttachedContentItemIds(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])}
                   onRemoveContentItem={(id) => setAttachedContentItemIds(p => p.filter(x => x !== id))}
-                  onPlaybookClick={(s) => setActivePlaybook(s)}
                   onReferenceImageChange={setReferenceImageUrl}
                   onUploadSuccess={() => loadFiles(currentConversation?.id || null)}
                   onMentionFile={handleMentionFile}
@@ -883,16 +873,6 @@ export default function ProjectChatPage() {
           </main>
         </div>
 
-        {user && (
-          <div className="shrink-0">
-            <SkillsAndArtifactsSidebar
-              skills={skills}
-              files={files}
-              onPlaybookClick={(s) => setActivePlaybook(s)}
-              onDeleteFile={(id, path) => deleteFile(id, path).then(() => loadFiles(currentConversation?.id || null))}
-            />
-          </div>
-        )}
       </div>
 
       {isContextModalOpen && (
@@ -908,17 +888,30 @@ export default function ProjectChatPage() {
 
       <DomainsModal isOpen={isDomainsOpen} onClose={() => setIsDomainsOpen(false)} />
       <ContentDrawer item={selectedContentItem} onClose={() => setSelectedContentItem(null)} />
-      {activePlaybook && (
-        <PlaybookTrigger
-          skill={activePlaybook}
-          userId={user?.id}
-          siteContexts={siteContexts}
-          onCancel={() => setActivePlaybook(null)}
-          onSubmit={handlePlaybookSubmit}
-        />
-      )}
       <Toast isOpen={toast.isOpen} message={toast.message} onClose={() => setToast(p => ({ ...p, isOpen: false }))} />
       {deletingConversationId && <DeleteConfirmModal onConfirm={handleDeleteConversation} onCancel={() => setDeletingConversationId(null)} />}
+      
+      {deletingCluster && (
+        <ConfirmModal
+          title="Delete Cluster"
+          message={`Are you sure you want to delete "${deletingCluster.name}"? This will permanently remove all pages in this cluster.`}
+          confirmText="Delete Cluster"
+          onConfirm={handleDeleteCluster}
+          onCancel={() => setDeletingCluster(null)}
+          isDangerous={true}
+        />
+      )}
+      
+      {deletingContentItem && (
+        <ConfirmModal
+          title="Delete Page"
+          message={`Are you sure you want to delete "${deletingContentItem.name}"? This action cannot be undone.`}
+          confirmText="Delete Page"
+          onConfirm={handleDeleteContentItem}
+          onCancel={() => setDeletingContentItem(null)}
+          isDangerous={true}
+        />
+      )}
     </div>
   );
 }

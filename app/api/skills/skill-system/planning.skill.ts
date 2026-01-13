@@ -74,9 +74,9 @@ Remember: Planning is not optional. It is the gateway to all other tools.`,
     tags: ['planning', 'strategy', 'orchestration'],
     version: '1.0.0',
     priority: 'highest',
-    solution: '解决复杂任务的逻辑分解和资源分配问题。强制执行"先计划后执行"机制，确保 AI 代理在处理任何业务请求之前都有清晰的逐步分解、工具选择和风险评估。',
+    solution: 'Solves logical decomposition and resource allocation for complex tasks. Enforces "plan-first-then-execute" mechanism, ensuring AI agent has clear step-by-step breakdown, tool selection, and risk assessment before handling any business request.',
     demoUrl: '',
-    changeDescription: '作为所有复杂操作的第一步，强制 Agent 在执行前进行逻辑分解。',
+    changeDescription: 'Forces Agent to perform logical decomposition before execution as the first step of all complex operations.',
   },
 };
 

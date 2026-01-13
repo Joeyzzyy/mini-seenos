@@ -36,9 +36,20 @@ function markdownToHtml(markdown: string): string {
   html = html.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
   
   // Images (must come before links to avoid conflicts)
+  // Handle side-by-side images (two consecutive images)
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)\s*!\[([^\]]*)\]\(([^)]+)\)/g, 
+    '<div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8"><img src="$2" alt="$1" class="content-image" /><img src="$4" alt="$3" class="content-image" /></div>'
+  );
+  // Single images
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="content-image" />');
   
-  // Links
+  // CTA Buttons (links with action-oriented text like "Try", "Get Started", "Sign Up", etc.)
+  const ctaPatterns = /\[(Try|Get Started|Sign Up|Start Free|See How|Learn More|Get It Now|Try Now|Start Now|Get Started Free|See Full|Compare Now|Try [^]]+ Now|Get [^]]+ Now)([^\]]*)\]\(([^)]+)\)/gi;
+  html = html.replace(ctaPatterns, (match, action, rest, url) => {
+    return `<a href="${url}" class="inline-block mt-6 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-center">${action}${rest}</a>`;
+  });
+  
+  // Regular Links (not CTAs)
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-indigo-600 font-semibold hover:underline">$1</a>');
   
   // Unordered lists
@@ -78,6 +89,9 @@ export const assemble_html_page = tool({
     page_type: z.enum(['blog', 'landing_page', 'comparison', 'guide', 'listicle']).optional().default('blog').describe('Type of content to apply specific styling'),
     seo_title: z.string().optional().describe('SEO title for meta tag'),
     seo_description: z.string().optional().describe('SEO description for meta tag'),
+    seo_keywords: z.string().optional().describe('SEO keywords for meta tag (comma-separated)'),
+    og_image: z.string().optional().describe('Open Graph image URL for social sharing'),
+    site_url: z.string().optional().describe('Main site URL for canonical and OG tags'),
     sections: z.preprocess(
       (val) => Array.isArray(val) ? val.filter(i => i !== null && typeof i === 'object') : val,
       z.array(z.object({
@@ -96,7 +110,7 @@ export const assemble_html_page = tool({
       }))
     ).optional().describe('Mapping of image placeholder IDs to URLs'),
   }),
-  execute: async ({ item_id, page_title, page_type, seo_title, seo_description, sections, images = [] }) => {
+  execute: async ({ item_id, page_title, page_type, seo_title, seo_description, seo_keywords, og_image, site_url, sections, images = [] }) => {
     // Normalize images
     const normalizedImages = await Promise.all(images.map(async (img) => {
       let publicUrl = img.public_url || img.publicUrl || '';
@@ -425,13 +439,31 @@ ${html.split('\n').map(line => '        ' + line).join('\n')}
   </main>`;
     }
 
+    // Build meta tags
+    const metaTags = [
+      `<meta charset="UTF-8">`,
+      `<meta name="viewport" content="width=device-width, initial-scale=1.0">`,
+      `<title>${escapeHtml(seo_title || page_title)}</title>`,
+      seo_description ? `<meta name="description" content="${escapeHtml(seo_description)}">` : '',
+      seo_keywords ? `<meta name="keywords" content="${escapeHtml(seo_keywords)}">` : '',
+      // Open Graph tags
+      `<meta property="og:title" content="${escapeHtml(seo_title || page_title)}">`,
+      seo_description ? `<meta property="og:description" content="${escapeHtml(seo_description)}">` : '',
+      `<meta property="og:type" content="website">`,
+      og_image ? `<meta property="og:image" content="${escapeHtml(og_image)}">` : '',
+      site_url ? `<meta property="og:url" content="${escapeHtml(site_url)}">` : '',
+      // Twitter Card tags
+      `<meta name="twitter:card" content="summary_large_image">`,
+      `<meta name="twitter:title" content="${escapeHtml(seo_title || page_title)}">`,
+      seo_description ? `<meta name="twitter:description" content="${escapeHtml(seo_description)}">` : '',
+      og_image ? `<meta name="twitter:image" content="${escapeHtml(og_image)}">` : '',
+      site_url ? `<link rel="canonical" href="${escapeHtml(site_url)}">` : '',
+    ].filter(Boolean).join('\n  ');
+
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(seo_title || page_title)}</title>
-  <meta name="description" content="${escapeHtml(seo_description || '')}">
+  ${metaTags}
   <script src="https://cdn.tailwindcss.com"></script>
   <style>${customStyles}</style>
 </head>

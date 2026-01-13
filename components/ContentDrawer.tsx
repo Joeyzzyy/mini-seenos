@@ -143,7 +143,7 @@ export default function ContentDrawer({ item, onClose, onItemUpdated }: ContentD
         style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
       >
         {/* Header - Only show tabs when there's generated content */}
-        <div className={`flex items-center bg-white sticky top-0 z-10 px-4 shrink-0 ${hasGeneratedContent ? 'border-b border-[#F5F5F5]' : ''}`}>
+        <div className={`flex items-center bg-white sticky top-0 z-10 px-6 py-4 shrink-0 ${hasGeneratedContent ? 'border-b border-[#F5F5F5]' : ''}`}>
           {/* Tabs - Only show when there's generated content */}
           {hasGeneratedContent && (
             <div className="flex gap-1 flex-1 items-center">
@@ -225,7 +225,7 @@ export default function ContentDrawer({ item, onClose, onItemUpdated }: ContentD
           )}
 
           {/* Title and close button - expand to fill when no tabs */}
-          <div className={`flex items-center gap-4 ${hasGeneratedContent ? 'px-4 border-l border-[#F5F5F5]' : 'flex-1'} my-2`}>
+          <div className={`flex items-center gap-4 ${hasGeneratedContent ? 'border-l border-[#F5F5F5] pl-6' : 'flex-1'}`}>
             <div className="flex flex-col min-w-0 flex-1">
               <h2 className="text-sm font-bold text-[#111827] truncate mb-0.5 leading-none">{currentItem?.title}</h2>
               <div className="flex items-center gap-2 text-[10px] text-[#9CA3AF] font-medium whitespace-nowrap">
@@ -299,7 +299,7 @@ export default function ContentDrawer({ item, onClose, onItemUpdated }: ContentD
         <div className="flex-1 overflow-hidden flex flex-col">
           {/* Preview Tab Content */}
           {activeTab === 'preview' && (
-            <div className="flex-1 flex flex-col bg-[#F9FAFB] p-4 md:p-6 overflow-hidden">
+            <div className="flex-1 flex flex-col bg-[#F9FAFB] p-6 overflow-hidden">
               {/* Browser Window Mockup */}
               <div className={`flex-1 bg-white border border-[#E5E5E5] overflow-hidden shadow-2xl flex flex-col transition-all duration-500 ease-in-out ${
                 viewMode === 'mobile' 
@@ -407,239 +407,86 @@ export default function ContentDrawer({ item, onClose, onItemUpdated }: ContentD
             </div>
           )}
 
-          {/* Info Tab Content (Details renamed) */}
+          {/* Info Tab Content - Clean & Simple */}
           {activeTab === 'details' && (
-            <div className="flex-1 overflow-y-auto thin-scrollbar bg-[#FAFAFA]">
-              <div className={`mx-auto p-6 space-y-8 ${hasGeneratedContent ? 'max-w-5xl md:p-10 md:space-y-10' : 'max-w-lg'}`}>
-                {/* Info Tab Content */}
-                <div className="bg-white rounded-2xl border border-[#E5E5E5] p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex-1 overflow-y-auto thin-scrollbar">
+              <div className={`p-6 ${hasGeneratedContent ? 'max-w-2xl mx-auto' : ''}`}>
+                
+                {/* Status Bar */}
+                <div className="flex items-center gap-2 text-xs mb-5">
+                  <span className="px-2 py-1 bg-[#F3F4F6] rounded text-[10px] font-medium uppercase text-[#6B7280]">{currentItem?.page_type || 'blog'}</span>
+                  <span className={`px-2 py-1 rounded text-[10px] font-medium ${
+                    currentItem?.status === 'published' ? 'bg-emerald-50 text-emerald-700' : 'bg-[#F3F4F6] text-[#6B7280]'
+                  }`}>
+                    {currentItem?.status || 'draft'}
+                  </span>
+                </div>
+
+                {/* Keyword */}
+                <div className="mb-4">
+                  <p className="text-[10px] text-[#9CA3AF] mb-1">Target Keyword</p>
+                  <p className="text-sm font-medium text-[#111827]">{currentItem?.target_keyword || '-'}</p>
+                </div>
+
+                {/* SEO Title */}
+                {currentItem?.seo_title && (
+                  <div className="mb-4">
+                    <p className="text-[10px] text-[#9CA3AF] mb-1">SEO Title</p>
+                    <p className="text-sm text-[#374151]">{currentItem.seo_title}</p>
+                  </div>
+                )}
+
+                {/* Metrics - Inline */}
+                {currentItem?.keyword_data && (
+                  <div className="flex gap-6 mb-4 py-3 border-y border-[#F3F4F6]">
+                    <div>
+                      <p className="text-[10px] text-[#9CA3AF]">Volume</p>
+                      <p className="text-sm font-medium text-[#111827]">{currentItem.keyword_data.volume?.toLocaleString() || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-[#9CA3AF]">KD</p>
+                      <p className="text-sm font-medium text-[#111827]">{typeof currentItem.keyword_data.kd === 'number' ? `${currentItem.keyword_data.kd}%` : '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-[#9CA3AF]">CPC</p>
+                      <p className="text-sm font-medium text-[#111827]">{typeof currentItem.keyword_data.cpc === 'number' ? `$${currentItem.keyword_data.cpc.toFixed(2)}` : '-'}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Outline - Compact */}
+                {currentItem?.outline && (
+                  <div className="mb-4">
+                    <p className="text-[10px] text-[#9CA3AF] mb-2">Outline</p>
+                    {currentItem.outline.h1 && (
+                      <p className="text-sm font-medium text-[#111827] mb-2">{currentItem.outline.h1}</p>
+                    )}
+                    {currentItem.outline.sections?.map((section: any, idx: number) => (
+                      <p key={idx} className="text-xs text-[#6B7280] py-0.5">• {section.h2}</p>
+                    ))}
+                  </div>
+                )}
+
+                {/* References - Compact */}
+                {currentItem?.reference_urls && currentItem.reference_urls.length > 0 && (
                   <div>
-                    <h2 className="text-2xl font-bold text-[#111827] mb-2">{currentItem?.title}</h2>
-                    <div className="flex flex-wrap items-center gap-3 text-sm">
-                      <span className="px-2.5 py-0.5 bg-[#F3F4F6] text-[#6B7280] rounded-full font-medium uppercase text-[10px] tracking-wider border border-[#E5E5E5]">
-                        {currentItem?.page_type || 'blog'}
-                      </span>
-                      <span className={`px-2.5 py-0.5 rounded-full font-medium uppercase text-[10px] tracking-wider border ${
-                        currentItem?.status === 'ready' ? 'bg-[#F3F4F6] text-[#374151] border-[#E5E5E5]' :
-                        currentItem?.status === 'in_production' ? 'bg-[#111827] text-white border-[#111827]' :
-                        currentItem?.status === 'generated' ? 'bg-[#FAFAFA] text-[#111827] border-[#E5E5E5]' :
-                        currentItem?.status === 'published' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                        'bg-gray-50 text-gray-600 border-gray-100'
-                      }`}>
-                        {currentItem?.status === 'ready' ? 'Ready' : 
-                         currentItem?.status === 'generated' ? 'Generated' : 
-                         currentItem?.status === 'in_production' ? 'Production' :
-                         currentItem?.status === 'published' ? '✓ Published' :
-                         currentItem?.status}
-                      </span>
-                      <span className="text-[#D1D5DB]">|</span>
-                      <span className="text-[#6B7280]">
-                        Created: <span className="text-[#111827] font-medium">{new Date(currentItem?.created_at || '').toLocaleDateString()}</span>
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Priority Display */}
-                  <div className="bg-[#F9FAFB] px-4 py-3 rounded-xl border border-[#F0F0F0] shrink-0">
-                    <label className="block text-[10px] font-bold text-[#9CA3AF] uppercase mb-1.5 tracking-wider">Priority Level</label>
-                    <div className="flex items-center gap-1.5">
-                      {[1, 2, 3, 4, 5].map((p) => (
-                        <div 
-                          key={p}
-                          className={`w-5 h-1.5 rounded-full transition-colors ${
-                            p <= (currentItem?.priority || 0) 
-                              ? (currentItem?.priority || 0) >= 4 ? 'bg-[#111827]' : 'bg-[#6B7280]'
-                              : 'bg-[#E5E5E5]'
-                          }`}
-                        />
-                      ))}
-                      <span className="ml-2 text-xs font-bold text-[#111827]">L{currentItem?.priority || 3}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Grid layout for more info - single column for narrow drawer */}
-                <div className={`grid gap-8 ${hasGeneratedContent ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1'}`}>
-                  <div className={`space-y-8 ${hasGeneratedContent ? 'lg:col-span-7' : ''}`}>
-                    {/* SEO Section */}
-                    <section className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden shadow-sm">
-                      <div className="px-6 py-4 border-b border-[#F5F5F5] bg-[#F9FAFB]">
-                        <h3 className="text-xs font-bold text-[#111827] uppercase tracking-[0.1em]">SEO & Meta Strategy</h3>
-                      </div>
-                      <div className="p-6 space-y-6">
-                        <div>
-                          <label className="block text-[10px] font-bold text-[#9CA3AF] uppercase mb-2">Target Keyword</label>
-                          <div className="relative inline-block">
-                            <span className="text-lg text-[#111827] font-bold">{currentItem?.target_keyword || '-'}</span>
-                            <div className="absolute -bottom-1 left-0 right-0 h-1 rounded-full opacity-60" style={{ background: 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }} />
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-[10px] font-bold text-[#9CA3AF] uppercase mb-2">SEO Title</label>
-                          <div className="text-sm text-[#374151] leading-relaxed font-medium">{currentItem?.seo_title || '-'}</div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-[10px] font-bold text-[#9CA3AF] uppercase mb-2">Meta Description</label>
-                          <div className="text-sm text-[#6B7280] leading-[1.6] bg-[#F8F9FA] p-4 rounded-xl border border-[#F1F3F5]">{currentItem?.seo_description || '-'}</div>
-                        </div>
-
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-[10px] font-bold text-[#9CA3AF] uppercase mb-2">
-                              {currentItem?.published_domain ? 'Published URL' : 'Slug'}
-                            </label>
-                            <div className="text-xs text-[#111827] font-mono bg-[#F3F4F6] px-3 py-1.5 rounded-lg border border-[#E5E5E5] truncate">
-                              {currentItem?.published_domain 
-                                ? `https://${currentItem.published_domain}${currentItem.published_path || ''}/${currentItem.slug}`
-                                : `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${currentItem?.slug || currentItem?.id?.slice(0, 8)}`
-                              }
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-bold text-[#9CA3AF] uppercase mb-2">Estimated Word Count</label>
-                            <div className="text-xs text-[#111827] font-bold bg-[#F3F4F6] px-3 py-1.5 rounded-lg border border-[#E5E5E5] inline-block">{currentItem?.estimated_word_count || '0'} Words</div>
-                          </div>
-                        </div>
-                      </div>
-                    </section>
-
-                    {/* Content Outline */}
-                    <section className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden shadow-sm">
-                      <div className="px-6 py-4 border-b border-[#F5F5F5] bg-[#F9FAFB]">
-                        <h3 className="text-xs font-bold text-[#111827] uppercase tracking-[0.1em]">Content Architecture</h3>
-                      </div>
-                      <div className="p-6 space-y-4">
-                        {currentItem?.outline?.h1 && (
-                          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                            <span className="text-[9px] font-black text-[#9CA3AF] uppercase block mb-1">Pillar H1</span>
-                            <div className="text-base font-bold text-[#111827]">{currentItem.outline.h1}</div>
-                          </div>
-                        )}
-                        
-                        <div className="space-y-3">
-                          {currentItem?.outline?.sections?.map((section: any, idx: number) => (
-                            <div key={idx} className="p-4 bg-white border border-[#E5E5E5] rounded-xl hover:border-[#111827] transition-all group">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <span className="text-[9px] font-black text-[#9CA3AF] uppercase block mb-1 group-hover:text-[#111827] transition-colors">Section H2</span>
-                                  <div className="text-sm font-bold text-[#111827]">{section.h2}</div>
-                                </div>
-                                {section.word_count && (
-                                  <span className="text-[10px] font-bold text-[#6B7280] bg-[#F3F4F6] px-2 py-1 rounded-md group-hover:bg-[#111827] group-hover:text-white transition-colors">
-                                    ~{section.word_count}w
-                                  </span>
-                                )}
-                              </div>
-                              
-                              {section.h3s && section.h3s.length > 0 && (
-                                <div className="mt-3 grid grid-cols-1 gap-1.5 border-t border-[#F9FAFB] pt-3">
-                                  {section.h3s.map((h3: string, h3Idx: number) => (
-                                    <div key={h3Idx} className="text-xs text-[#6B7280] flex items-center gap-2">
-                                      <div className="w-1 h-1 rounded-full bg-[#D1D5DB]"></div>
-                                      {h3}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-
-                  <div className={`space-y-8 ${hasGeneratedContent ? 'lg:col-span-5' : ''}`}>
-                    {/* Metrics Dashboard */}
-                    {currentItem?.keyword_data && (
-                      <section className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-[#F5F5F5] bg-[#F9FAFB]">
-                          <h3 className="text-xs font-bold text-[#111827] uppercase tracking-[0.1em]">Target Opportunity</h3>
-                        </div>
-                        <div className="p-6 grid grid-cols-2 gap-4">
-                          <div className="bg-[#F3F4F6] p-4 rounded-2xl border border-[#E5E5E5]">
-                            <label className="block text-[9px] font-black text-[#9CA3AF] uppercase mb-1">Monthly Vol</label>
-                            <div className="text-xl font-black text-[#111827]">{currentItem.keyword_data.volume?.toLocaleString() || '-'}</div>
-                          </div>
-                          <div className="bg-[#F9FAFB] p-4 rounded-2xl border border-[#E5E5E5] relative overflow-hidden group">
-                            <label className="block text-[9px] font-black text-[#6B7280] uppercase mb-1 relative z-10">Difficulty</label>
-                            <div className="text-xl font-black text-[#111827] relative z-10">{typeof currentItem.keyword_data.kd === 'number' ? `${currentItem.keyword_data.kd}%` : '-'}</div>
-                            <div className="absolute bottom-0 left-0 h-1 transition-all duration-500 group-hover:h-full opacity-5 w-full" style={{ background: 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }} />
-                          </div>
-                          <div className="bg-[#F9FAFB] p-4 rounded-2xl border border-[#E5E5E5] relative overflow-hidden group">
-                            <label className="block text-[9px] font-black text-[#6B7280] uppercase mb-1 relative z-10">Est. CPC</label>
-                            <div className="text-xl font-black text-[#111827] relative z-10">{typeof currentItem.keyword_data.cpc === 'number' ? `$${currentItem.keyword_data.cpc.toFixed(2)}` : '-'}</div>
-                            <div className="absolute bottom-0 left-0 h-1 transition-all duration-500 group-hover:h-full opacity-5 w-full" style={{ background: 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }} />
-                          </div>
-                          <div className="bg-[#F9FAFB] p-4 rounded-2xl border border-[#E5E5E5] relative overflow-hidden group">
-                            <label className="block text-[9px] font-black text-[#6B7280] uppercase mb-1 relative z-10">Competition</label>
-                            <div className="text-xl font-black text-[#111827] relative z-10">{typeof currentItem.keyword_data.competition === 'number' && !isNaN(currentItem.keyword_data.competition) ? `${(currentItem.keyword_data.competition * 100).toFixed(0)}%` : '-'}</div>
-                            <div className="absolute bottom-0 left-0 h-1 transition-all duration-500 group-hover:h-full opacity-5 w-full" style={{ background: 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }} />
-                          </div>
-                        </div>
-                      </section>
-                    )}
-
-                    {/* Linking */}
-                    {currentItem?.internal_links && currentItem.internal_links.length > 0 && (
-                      <section className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-[#F5F5F5] bg-[#F9FAFB]">
-                          <h3 className="text-xs font-bold text-[#111827] uppercase tracking-[0.1em]">Linking Strategy</h3>
-                        </div>
-                        <div className="p-4 space-y-3">
-                          {currentItem.internal_links.map((link: any, idx: number) => (
-                            <div key={idx} className="bg-white border border-[#E5E5E5] rounded-xl p-4 hover:shadow-md transition-shadow group">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-6 h-6 rounded-full bg-[#F3F4F6] flex items-center justify-center transition-colors group-hover:bg-[#111827]">
-                                  <svg className="w-3 h-3 text-[#6B7280] group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                                  </svg>
-                                </div>
-                                <span className="text-[11px] font-black text-[#111827] truncate">TO: {link.target_page}</span>
-                              </div>
-                              <div className="pl-8">
-                                <div className="text-[10px] text-[#6B7280] mb-1">Anchor Text</div>
-                                <div className="text-xs font-bold text-[#111827] px-2 py-1 bg-white rounded border border-[#E5E5E5] inline-block shadow-sm relative overflow-hidden">
-                                  <span className="relative z-10">{link.anchor_text}</span>
-                                  <div className="absolute bottom-0 left-0 right-0 h-0.5 opacity-40" style={{ background: 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }} />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-                    )}
-
-                    {/* Market References */}
-                    {currentItem?.reference_urls && currentItem.reference_urls.length > 0 && (
-                      <section className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-[#F5F5F5] bg-[#F9FAFB]">
-                          <h3 className="text-xs font-bold text-[#111827] uppercase tracking-[0.1em]">Market References</h3>
-                        </div>
-                        <div className="p-4 space-y-2">
-                          {currentItem.reference_urls.map((url, idx) => (
-                            <a 
-                              key={idx} 
-                              href={url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="group block p-3 bg-[#FAFAFA] border border-transparent hover:border-[#E5E5E5] hover:bg-white rounded-xl transition-all"
-                            >
-                              <div className="flex items-center justify-between gap-3">
-                                <span className="text-[11px] text-[#6B7280] truncate font-medium group-hover:text-[#111827]">{url}</span>
-                                <svg className="w-3 h-3 text-[#9CA3AF] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
-                                </svg>
-                              </div>
-                            </a>
-                          ))}
-                        </div>
-                      </section>
+                    <p className="text-[10px] text-[#9CA3AF] mb-2">References ({currentItem.reference_urls.length})</p>
+                    {currentItem.reference_urls.slice(0, 3).map((url, idx) => (
+                      <a 
+                        key={idx} 
+                        href={url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="block text-xs text-[#6B7280] hover:text-[#111827] truncate py-0.5"
+                      >
+                        {url}
+                      </a>
+                    ))}
+                    {currentItem.reference_urls.length > 3 && (
+                      <p className="text-[10px] text-[#9CA3AF] mt-1">+{currentItem.reference_urls.length - 3} more</p>
                     )}
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import MarkdownMessage from './MarkdownMessage';
 import ToolCallsSummary from './ToolCallsSummary';
 import GeneratedFiles from './GeneratedFiles';
@@ -49,6 +50,9 @@ export default function MessageList({
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
   const [userFeedbacks, setUserFeedbacks] = useState<Record<string, 'like' | 'dislike'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const hasAutoRefreshedRef = useRef(false);
+  const wasRunningRef = useRef(false);
 
   // Load user feedbacks for assistant messages
   useEffect(() => {
@@ -85,6 +89,41 @@ export default function MessageList({
 
     loadFeedbacks();
   }, [messages, userId, conversationId]);
+
+  // Auto-refresh when all tools complete
+  useEffect(() => {
+    if (isLoading || hasAutoRefreshedRef.current) return;
+    
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage || lastMessage.role !== 'assistant' || !lastMessage.toolInvocations) return;
+    
+    // Filter out excluded tools
+    const excludedToolNames = new Set(['create_conversation_tracker', 'add_task_to_tracker', 'update_task_status', 'create_plan']);
+    const displayInvocations = lastMessage.toolInvocations.filter(
+      (inv: any) => !excludedToolNames.has(inv.toolName) &&
+        !(inv.result?.metadata?.isTracker || inv.result?.filename?.includes('conversation-tracker-'))
+    );
+    
+    if (displayInvocations.length === 0) return;
+    
+    const isRunningAny = displayInvocations.some((inv: any) => inv.state === 'call');
+    const completedCount = displayInvocations.filter(
+      (inv: any) => inv.state === 'result' || (!inv.state && inv.result)
+    ).length;
+    const totalCount = displayInvocations.length;
+    const allCompleted = !isRunningAny && completedCount === totalCount && totalCount > 0;
+    
+    // If was running and now all completed, trigger refresh
+    if (wasRunningRef.current && allCompleted && !hasAutoRefreshedRef.current) {
+      hasAutoRefreshedRef.current = true;
+      // Wait a bit for UI to update (collapse animation), then refresh
+      setTimeout(() => {
+        router.refresh();
+      }, 1500);
+    }
+    
+    wasRunningRef.current = isRunningAny;
+  }, [messages, isLoading, router]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -345,12 +384,15 @@ export default function MessageList({
           <div
             className={`max-w-[85%] min-w-0 ${
               message.role === 'user'
-                ? 'bg-[#F3F4F6] text-[#374151] rounded-2xl px-4 py-2.5'
-                : 'text-[#374151] px-4 py-2'
+                ? 'bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] text-[#374151] rounded-2xl px-5 py-3 shadow-sm'
+                : 'text-[#374151] px-4 py-3'
             }`}
           >
             {message.role === 'user' ? (
               (() => {
+                // Check if this is an auto-initiated message
+                const isAutoInitiated = (message.content || '').includes('[Auto-initiated by system]');
+                
                 // Extract knowledge file references from message content
                 const fileRefPattern = /\[Referenced Knowledge File: "([^"]+)" \(([^)]+)\)(?: - Storage: ([^\]]+))?\]/g;
                 let cleanContent = message.content || '';
@@ -361,11 +403,51 @@ export default function MessageList({
                   knowledgeRefs.push({ name: match[1], type: match[2] });
                 }
                 
-                // Remove file references from display content
-                cleanContent = cleanContent.replace(fileRefPattern, '').replace(/^\n+/, '').trim();
+                // Remove file references and auto-initiated marker from display content
+                cleanContent = cleanContent
+                  .replace(fileRefPattern, '')
+                  .replace(/\[Auto-initiated by system\]\n*/g, '')
+                  .replace(/^\n+/, '')
+                  .trim();
                 
                 return (
                   <div>
+                    {/* Auto-initiated badge */}
+                    {isAutoInitiated && (
+                      <div className="flex items-center gap-2 mb-3 px-3 py-1.5 rounded-full w-fit relative">
+                        {/* Glow effect */}
+                        <div 
+                          className="absolute inset-0 rounded-full blur-md opacity-40"
+                          style={{ background: 'linear-gradient(90deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }}
+                        />
+                        {/* Badge content */}
+                        <div className="relative flex items-center gap-1.5 text-[10px] font-medium">
+                          <svg 
+                            className="w-3 h-3" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="url(#autoGradient)" 
+                            strokeWidth="2"
+                          >
+                            <defs>
+                              <linearGradient id="autoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#FFAF40" />
+                                <stop offset="33%" stopColor="#D194EC" />
+                                <stop offset="66%" stopColor="#9A8FEA" />
+                                <stop offset="100%" stopColor="#65B4FF" />
+                              </linearGradient>
+                            </defs>
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          <span 
+                            className="bg-clip-text text-transparent"
+                            style={{ backgroundImage: 'linear-gradient(90deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)' }}
+                          >
+                            Auto-initiated by system to help you get started
+                          </span>
+                        </div>
+                      </div>
+                    )}
                     {/* Knowledge file references */}
                     {knowledgeRefs.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-2">
@@ -384,7 +466,7 @@ export default function MessageList({
                       </div>
                     )}
                     {/* Message content */}
-                    <div className="whitespace-pre-wrap break-words leading-relaxed">
+                    <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">
                       {cleanContent}
                     </div>
                   </div>
@@ -414,16 +496,16 @@ export default function MessageList({
 
                   // Check for keywords that indicate AI is about to execute or has executed tools
                   const hasExecutionIndicator = message.content && (
-                    message.content.includes('现在开始执行') ||
-                    message.content.includes('开始执行') ||
-                    message.content.includes('执行中') ||
-                    message.content.match(/已完成.*调研|已完成.*分析|已完成.*提取/)
+                    message.content.includes('Starting execution') ||
+                    message.content.includes('Executing') ||
+                    message.content.includes('In progress') ||
+                    message.content.match(/Completed.*research|Completed.*analysis|Completed.*extraction/)
                   );
 
                   // If content mentions execution, split at that point
                   if (hasExecutionIndicator && message.content) {
                     // Find where execution starts or results appear
-                    const executionMatch = message.content.match(/(现在开始执行|开始执行|执行中|已完成[^。！\n]{0,30})/);
+                    const executionMatch = message.content.match(/(Starting execution|Executing|In progress|Completed[^.\n]{0,30})/);
                     
                     if (executionMatch && executionMatch.index !== undefined) {
                       // Split at the execution indicator
@@ -439,8 +521,15 @@ export default function MessageList({
                             </div>
                           )}
                           
-                          {/* Tool executions */}
-                          <div className="mb-4">
+                          {/* Results/summary before tools */}
+                          {afterExecution && (
+                            <div className="mb-4">
+                              <MarkdownMessage content={afterExecution} />
+                            </div>
+                          )}
+                          
+                          {/* Tool executions at bottom (running tools will be sorted to bottom) */}
+                          <div>
                             <ToolCallsSummary
                               toolInvocations={message.toolInvocations}
                               userId={userId}
@@ -452,21 +541,22 @@ export default function MessageList({
                               isStreaming={isLoading && isLastMessage}
                             />
                           </div>
-                          
-                          {/* Results/summary after tools */}
-                          {afterExecution && (
-                            <MarkdownMessage content={afterExecution} />
-                          )}
                         </>
                       );
                     }
                   }
 
-                  // Default: tools first, then content
+                  // Default: content first, then tools (so running tools stay at bottom)
                   return (
                     <>
-                      {/* Tool executions */}
-                      <div className="mb-4">
+                      {/* Show content first */}
+                      {message.content && (
+                        <div className="mb-4">
+                          <MarkdownMessage content={message.content} />
+                        </div>
+                      )}
+                      {/* Tool executions at bottom (running tools will be sorted to bottom) */}
+                      <div>
                         <ToolCallsSummary
                           toolInvocations={message.toolInvocations}
                           userId={userId}
@@ -478,8 +568,6 @@ export default function MessageList({
                           isStreaming={isLoading && isLastMessage}
                         />
                       </div>
-                      {/* Then show final response */}
-                      {message.content && <MarkdownMessage content={message.content} />}
                     </>
                   );
                 })()}

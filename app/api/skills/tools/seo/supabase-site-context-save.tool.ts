@@ -15,10 +15,13 @@ const supabase = createClient(
  * IMPORTANT: Brand assets (colors, fonts, etc.) should be saved with type='logo', not as separate types.
  */
 export const save_site_context = tool({
-  description: `Save or update site-wide context in the database.
+  description: `Save or update site-wide context in the database (site_contexts table, Brand Assets).
   
   For brand assets (colors, fonts, tone), use type='logo' and include the optional fields.
-  For content sections, use their specific types (hero-section, about-us, etc.) with content as JSON string.`,
+  For content sections, use their specific types (hero-section, about-us, etc.) with content as JSON string.
+  For competitors list, use type='competitors' with content as JSON array: [{"name": "Competitor Name", "url": "https://competitor.com"}, ...]
+  
+  IMPORTANT: This saves to Brand Assets (site_contexts), NOT to content library (content_items).`,
   parameters: z.object({
     userId: z.string().describe('The ID of the user (pass your Current User ID here)'),
     projectId: z.string().optional().describe('The ID of the SEO project to scope this context to'),
@@ -28,8 +31,8 @@ export const save_site_context = tool({
       'hero-section', 'problem-statement', 'who-we-serve',
       'use-cases', 'industries', 'products-services',
       'social-proof-trust', 'leadership-team', 'about-us',
-      'faq', 'contact-information'
-    ]).describe('Type of context being saved. Use "logo" for brand assets (colors, fonts).'),
+      'faq', 'contact-information', 'competitors'
+    ]).describe('Type of context being saved. Use "logo" for brand assets (colors, fonts). Use "competitors" for competitor list (JSON array of {name, url}).'),
     content: z.string().optional().describe('Text content (e.g., sitemap URLs as JSON string, code snippets, or structured content as JSON)'),
     fileUrl: z.string().optional().describe('URL to a file (e.g., logo image URL)'),
     // Brand asset fields (only for type='logo')

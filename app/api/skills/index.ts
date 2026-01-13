@@ -2,41 +2,15 @@ import { SkillRegistry } from './types';
 
 // System Skills
 import { planningSkill } from './skill-system/planning.skill';
-import { conversationTrackingSkill } from './skill-system/conversation-tracking.skill';
 import { fileOperationsSkill } from './skill-system/file-operations.skill';
 
-// Research Skills
-import { webResearchSkill } from './skill-research/web-research.skill';
-import { competitorAnalysisSkill } from './skill-research/competitor-analysis.skill';
-import { competitorGrowthEngineAuditSkill } from './skill-research/competitor-growth-engine-audit.skill';
-import { contentGapAnalysisSkill } from './skill-research/content-gap-analysis.skill';
-import { serpAnalysisSkill } from './skill-research/serp-analysis.skill';
-
 // Build Skills
-import { topicBrainstormSkill } from './skill-build/topic-brainstorm.skill';
+import { brandAssetsCollectorSkill } from './skill-build/brand-assets-collector.skill';
 import { pagePlannerSkill } from './skill-build/page-planner.skill';
-import { libraryManagerSkill } from './skill-build/library-manager.skill';
-import { blogWriterSkill } from './skill-build/content-writer.skill';
-import { landingPageWriterSkill } from './skill-build/landing-page-writer.skill';
-import { comparisonWriterSkill } from './skill-build/comparison-writer.skill';
-import { guideWriterSkill } from './skill-build/guide-writer.skill';
-import { listicleWriterSkill } from './skill-build/listicle-writer.skill';
-
-// Optimize Skills
-import { seoAuditorSkill } from './skill-optimize/seo-auditor.skill';
-import { geoAuditorSkill } from './skill-optimize/geo-auditor.skill';
-import { techCheckerSkill } from './skill-optimize/tech-checker.skill';
-import { linkOptimizerSkill } from './skill-optimize/link-optimizer.skill';
-import { siteContextSkill } from './skill-optimize/site-context.skill';
-import { offsiteContextSkill } from './skill-optimize/offsite-context.skill';
-import { metaTagsSkill } from './skill-optimize/meta-tags.skill';
-import { schemaGeneratorSkill } from './skill-optimize/schema-generator.skill';
+import { comparisonPageGeneratorSkill } from './skill-build/comparison-page-generator.skill';
 
 // Monitor Skills
-import { performanceSkill } from './skill-monitor/performance.skill';
 import { rankTrackerSkill } from './skill-monitor/rank-tracker.skill';
-import { backlinksSkill } from './skill-monitor/backlinks.skill';
-import { alertManagerSkill } from './skill-monitor/alert-manager.skill';
 
 import { Skill } from './types';
 
@@ -47,7 +21,7 @@ import { Skill } from './types';
 export const coreLogicSkill: Skill = {
   id: 'agent-core-logic',
   name: 'System: Core Logic',
-  description: 'The mandatory reasoning rules and global workflows of the Mini Seenos Agent',
+  description: 'The mandatory reasoning rules and global workflows of the Alternative Page Generator Agent',
   systemPrompt: `====================
 MANDATORY PLANNING-FIRST RULE (NON-NEGOTIABLE!)
 ====================
@@ -57,23 +31,6 @@ CRITICAL REQUIREMENT - READ CAREFULLY:
 IF the user's request requires you to call ANY tool or take ANY action:
 → You MUST call 'create_plan' as your FIRST tool call
 → NO EXCEPTIONS - this is a hard requirement
-
-====================
-MANDATORY TASK TRACKING RULE (NON-NEGOTIABLE!)
-====================
-
-CRITICAL REQUIREMENT - TASK TRACKER MD FILE:
-
-IMMEDIATELY after calling 'create_plan', you MUST create/update the task tracker:
-
-FOR THE FIRST TASK in a conversation:
-→ Call 'create_conversation_tracker' RIGHT AFTER create_plan
-
-FOR SUBSEQUENT TASKS in the same conversation:
-→ Call 'add_task_to_tracker' RIGHT AFTER create_plan
-
-AS YOU WORK:
-→ Call 'update_task_status' after completing each major step
 
 ====================
 SEO CONTENT PLANNING WORKFLOW:
@@ -98,7 +55,7 @@ NOTE: Do not ask for permission to validate keywords. Validation is part of the 
   metadata: {
     category: 'system',
     priority: 'highest',
-    solution: '这是 Mini Seenos 的"大脑规则"。它强制执行"先计划后执行"原则，并确保每个任务都有完整的跟踪记录。解决 AI 逻辑跳跃、过程不透明以及长对话中记忆丢失的问题。',
+    solution: 'This is the core logic of Alternative Page Generator. It enforces the "plan-first-then-execute" principle and ensures complete tracking of every task. Solves issues like AI logic jumping, process opacity, and memory loss in long conversations.',
     demoUrl: '',
   },
 };
@@ -109,36 +66,14 @@ NOTE: Do not ask for permission to validate keywords. Validation is part of the 
  */
 export const skillRegistry = new SkillRegistry();
 
-// Register all skills (planning and tracking skills FIRST - highest priority)
+// Register all skills (planning skills FIRST - highest priority)
 skillRegistry.register(coreLogicSkill);
 skillRegistry.register(planningSkill);
-skillRegistry.register(conversationTrackingSkill);
 skillRegistry.register(fileOperationsSkill);
-skillRegistry.register(webResearchSkill);
-skillRegistry.register(competitorAnalysisSkill);
-skillRegistry.register(competitorGrowthEngineAuditSkill);
-skillRegistry.register(contentGapAnalysisSkill);
-skillRegistry.register(serpAnalysisSkill);
-skillRegistry.register(topicBrainstormSkill);
+skillRegistry.register(brandAssetsCollectorSkill);
 skillRegistry.register(pagePlannerSkill);
-skillRegistry.register(blogWriterSkill);
-skillRegistry.register(libraryManagerSkill);
-skillRegistry.register(schemaGeneratorSkill); // Move up: high specificity
-skillRegistry.register(metaTagsSkill);       // Move up: high specificity
-skillRegistry.register(landingPageWriterSkill);
-skillRegistry.register(comparisonWriterSkill);
-skillRegistry.register(guideWriterSkill);
-skillRegistry.register(listicleWriterSkill);
-skillRegistry.register(techCheckerSkill);
-skillRegistry.register(seoAuditorSkill);
-skillRegistry.register(geoAuditorSkill);
-skillRegistry.register(siteContextSkill);
-skillRegistry.register(offsiteContextSkill);
-skillRegistry.register(linkOptimizerSkill);
-skillRegistry.register(performanceSkill);
+skillRegistry.register(comparisonPageGeneratorSkill);
 skillRegistry.register(rankTrackerSkill);
-skillRegistry.register(backlinksSkill);
-skillRegistry.register(alertManagerSkill);
 
 /**
  * Get system prompt by combining all enabled skills
@@ -146,7 +81,7 @@ skillRegistry.register(alertManagerSkill);
 export function getCombinedSystemPrompt(userId?: string, conversationId?: string): string {
   const skills = skillRegistry.getEnabled();
   
-  const basePrompt = `You are Mini Seenos, an AI assistant specialized in SEO, digital marketing, and web research.
+  const basePrompt = `You are Alternative Page Generator, an AI assistant specialized in SEO, digital marketing, and web research.
 
 CURRENT CONTEXT:
 ${userId ? `- Current User ID: ${userId}` : ''}
@@ -173,8 +108,8 @@ LANGUAGE RULES (MANDATORY)
    - Analysis reports and tables
    - Word documents and markdown files
    
-   Example: If a Chinese user asks "帮我生成一个关于 AI SEO 的 outline", you should:
-   - Reply in Chinese: "好的，我来为你生成..."
+   Example: If a user asks in their native language to generate an AI SEO outline, you should:
+   - Reply in their language: "Sure, I'll generate that for you..."
    - But the actual outline content should be in English: "H1: AI-Powered SEO: The Complete Guide..."
 
 ====================

@@ -4,8 +4,8 @@ import { gsc_get_performance } from '../tools/seo/gsc-get-performance.tool';
 
 export const rankTrackerSkill: Skill = {
   id: 'rank-tracker',
-  name: 'Monitor: Rank Tracker',
-  description: 'Track keyword rankings and search performance over time using Google Search Console.',
+  name: 'Monitor: Page Rank Tracker',
+  description: 'Track page rankings and search performance over time using Google Search Console.',
   systemPrompt: `You are an expert Rank Tracking specialist. Your goal is to provide precise ranking data for keywords and track their movement over time using Google Search Console (GSC) data.
 
 # Time-Aware Analysis
@@ -38,7 +38,7 @@ export const rankTrackerSkill: Skill = {
     category: 'monitor',
     tags: ['ranking', 'seo', 'tracking', 'gsc'],
     version: '1.0.0',
-    solution: '与 Google Search Console 集成的专业排名跟踪。验证 GSC 授权，发现授权站点，并获取实时搜索性能数据（点击、展示、位置）以提供可操作的排名洞察。',
+    solution: 'Professional rank tracking integrated with Google Search Console. Verify GSC authorization, discover authorized sites, and fetch real-time search performance data (clicks, impressions, positions) to provide actionable ranking insights.',
     whatThisSkillWillDo: [
       'Verify GSC authorization',
       'Discover authorized sites',
@@ -47,19 +47,13 @@ export const rankTrackerSkill: Skill = {
       'Track keyword positions'
     ],
     whatArtifactsWillBeGenerated: [],
-    expectedOutput: `• GSC 授权状态：确认 Google Search Console 连接状态
-• 授权站点列表：当前用户已授权的所有站点
-• 关键词排名数据：目标关键词的搜索表现（点击、展示、平均排名）
-• 排名变动趋势：突出显示重要的排名变化和位置趋势
-• 高展示低点击机会：识别有可见性但点击率低的关键词
-• 专业数据表格：清晰展示所有性能指标的表格化呈现`,
-    expectedOutputEn: `• GSC authorization status: confirm Google Search Console connection status
+    expectedOutput: `• GSC authorization status: confirm Google Search Console connection status
 • Authorized site list: all sites currently authorized by the user
 • Keyword ranking data: search performance of target keywords (clicks, impressions, average position)
 • Ranking trend changes: highlight important ranking changes and position trends
 • High impression low click opportunities: identify keywords with visibility but low click-through rate
 • Professional data tables: clear tabular presentation of all performance metrics`,
-    changeDescription: '集成 Google Search Console，支持自动授权、多站点管理及实时关键词排名与流量获取。',
+    changeDescription: 'Integrates with Google Search Console, supports auto-authorization, multi-site management, and real-time keyword ranking and traffic data fetching.',
     playbook: {
       trigger: {
         type: 'form',

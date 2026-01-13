@@ -94,15 +94,6 @@ export default function FeedbacksPage() {
     return (
       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
         <div className="text-center">
-          <div className="mb-8">
-            <Image 
-              src="/product-logo.webp" 
-              alt="Mini Seenos Logo" 
-              width={96} 
-              height={96}
-              className="mx-auto animate-subtle-shake"
-            />
-          </div>
           <h1 className="text-2xl font-bold text-[#111827] mb-4">Message Feedbacks</h1>
           <p className="text-[#6B7280]">Please sign in to view feedbacks</p>
         </div>

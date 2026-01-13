@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import ActionHints from './ActionHints';
 import { supabase } from '@/lib/supabase';
 import type { FileRecord, ContentItem } from '@/lib/supabase';
 
@@ -25,8 +24,6 @@ interface ChatInputProps {
   referenceImageUrl: string | null;
   conversationId?: string | null;
   projectId?: string | null;
-  tokenStats: { inputTokens: number; outputTokens: number };
-  apiStats: { tavilyCalls: number; semrushCalls: number; serperCalls: number };
   knowledgeFiles?: KnowledgeFileRef[];
   mentionedFiles?: KnowledgeFileRef[];
   onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -36,7 +33,7 @@ interface ChatInputProps {
   onRemoveFile: (fileId: string) => void;
   onAttachContentItem: (itemId: string) => void;
   onRemoveContentItem: (itemId: string) => void;
-  onPlaybookClick: (skill: any) => void;
+  onPlaybookClick?: (skill: any) => void;
   onReferenceImageChange: (url: string | null) => void;
   onUploadSuccess?: () => void;
   onMentionFile?: (file: KnowledgeFileRef) => void;
@@ -54,8 +51,6 @@ export default function ChatInput({
   referenceImageUrl,
   conversationId,
   projectId,
-  tokenStats,
-  apiStats,
   knowledgeFiles = [],
   mentionedFiles = [],
   onInputChange,
@@ -73,7 +68,6 @@ export default function ChatInput({
 }: ChatInputProps) {
   const [isComposing, setIsComposing] = useState(false);
   const [showFileSelector, setShowFileSelector] = useState(false);
-  const [selectorTab, setSelectorTab] = useState<'files' | 'content'>('content');
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -572,8 +566,8 @@ export default function ChatInput({
               onCompositionEnd={() => setIsComposing(false)}
               onPaste={handlePaste}
               onBlur={saveSelection}
-              data-placeholder="Ask anything about SEO & GEO... Type @ to reference knowledge files"
-              className={`w-full px-4 text-base border border-[#E5E5E5] rounded-3xl focus:outline-none resize-none thin-scrollbar leading-relaxed ${
+              data-placeholder="How can I help with your SEO page?"
+              className={`w-full px-4 text-base text-[#111827] border border-[#E5E5E5] rounded-3xl focus:outline-none resize-none thin-scrollbar leading-relaxed ${
                 isLoading ? 'bg-[#F5F5F5] cursor-not-allowed opacity-60' : 'bg-white'
               }`}
               style={{ 
@@ -583,7 +577,8 @@ export default function ChatInput({
                 overflowY: 'auto',
                 maxHeight: '200px',
                 whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word'
+                wordBreak: 'break-word',
+                caretColor: '#111827'
               }}
               suppressContentEditableWarning
             />
@@ -660,42 +655,6 @@ export default function ChatInput({
             
             {/* Left controls - Bottom side */}
             <div className="absolute left-3 bottom-4 flex items-center gap-2">
-              {/* Image upload button */}
-              <div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingImage || isLoading}
-                  className={`w-7 h-7 rounded-full border transition-all flex items-center justify-center cursor-pointer ${
-                    uploadingImage
-                      ? 'bg-[#F3F4F6] border-[#E5E5E5] text-[#9CA3AF]'
-                      : referenceImageUrl
-                      ? 'bg-[#10B981] border-[#10B981] text-white shadow-sm'
-                      : 'bg-[#FAFAFA] border-[#E5E5E5] text-[#6B7280] hover:bg-[#F3F4F6]'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  title="Upload reference image for generation"
-                >
-                  {uploadingImage ? (
-                    <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
-                    </svg>
-                  ) : (
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-
               <div className="relative">
                 <button
                   type="button"
@@ -715,62 +674,40 @@ export default function ChatInput({
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowFileSelector(false)} />
                     <div className="absolute bottom-full left-0 mb-1 w-72 bg-white rounded-xl shadow-lg border border-[#E5E5E5] flex flex-col max-h-80 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-bottom-left">
-                      <div className="flex border-b border-[#F5F5F5] bg-[#FAFAFA]">
-                        <button type="button" onClick={() => setSelectorTab('content')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${selectorTab === 'content' ? 'text-[#111827] bg-white' : 'text-[#9CA3AF] hover:text-[#6B7280]'}`}>Planned Content</button>
-                        <button type="button" onClick={() => setSelectorTab('files')} className={`flex-1 py-2 text-[9px] font-bold uppercase tracking-wider transition-colors ${selectorTab === 'files' ? 'text-[#111827] bg-white' : 'text-[#9CA3AF] hover:text-[#6B7280]'}`}>Artifacts</button>
+                      <div className="px-3 py-2 border-b border-[#F5F5F5] bg-[#FAFAFA]">
+                        <span className="text-[10px] font-bold text-[#374151] uppercase tracking-wide">Page Blueprint</span>
                       </div>
                       <div className="p-2 overflow-y-auto thin-scrollbar">
-                        {selectorTab === 'files' ? (
-                          files.length === 0 ? <div className="p-4 text-center text-xs text-[#9CA3AF] italic">No artifacts available</div> :
-                          files.map(file => {
-                            const isAttached = attachedFileIds.includes(file.id);
-                            return (
-                              <button key={file.id} type="button" onClick={() => onAttachFile(file.id)} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors cursor-pointer hover:bg-[#F3F4F6] text-[#374151]">
-                                <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${isAttached ? 'bg-[#111827] border-[#111827]' : 'border-[#E5E5E5]'}`}>
-                                  {isAttached && <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12" /></svg>}
-                                </div>
-                                <div className="flex-1 min-w-0 text-left">
-                                  <div className="text-xs font-medium truncate">{file.filename}</div>
-                                  <div className="text-[10px] text-[#9CA3AF]">{formatDate(file.created_at)}</div>
-                                </div>
-                              </button>
-                            );
-                          })
+                        {contentItems.filter(item => !(item.status === 'generated' || item.generated_content !== null)).length === 0 ? (
+                          <div className="p-4 text-center text-xs text-[#9CA3AF] italic">No pending content</div>
                         ) : (
-                          contentItems.length === 0 ? <div className="p-4 text-center text-xs text-[#9CA3AF] italic">No planned content yet</div> :
-                          contentItems.map(item => {
-                            const isAttached = attachedContentItemIds.includes(item.id);
-                            const isGenerated = item.status === 'generated' || item.generated_content !== null;
-                            const pageTypeColor = 
-                              item.page_type === 'blog' ? 'text-blue-600' :
-                              item.page_type === 'landing_page' ? 'text-purple-600' :
-                              item.page_type === 'comparison' ? 'text-orange-600' :
-                              item.page_type === 'guide' ? 'text-green-600' :
-                              item.page_type === 'listicle' ? 'text-pink-600' :
-                              'text-gray-600';
-                            return (
-                              <button key={item.id} type="button" onClick={() => onAttachContentItem(item.id)} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors cursor-pointer hover:bg-[#F3F4F6] text-[#374151]">
-                                <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${isAttached ? 'bg-blue-600 border-blue-600' : 'border-[#E5E5E5]'}`}>
-                                  {isAttached && <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12" /></svg>}
-                                </div>
-                                <div className="flex-1 min-w-0 text-left">
-                                  <div className="flex items-center gap-1.5 mb-0.5">
-                                    <div className="text-xs font-medium truncate">{item.title}</div>
-                                    {isGenerated && (
-                                      <span className="flex-shrink-0 px-1.5 py-0.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded text-[9px] font-bold text-green-700">
-                                        ✓ Generated
-                                      </span>
-                                    )}
+                          contentItems
+                            .filter(item => !(item.status === 'generated' || item.generated_content !== null))
+                            .map(item => {
+                              const isAttached = attachedContentItemIds.includes(item.id);
+                              const pageTypeColor = 
+                                item.page_type === 'blog' ? 'text-blue-600' :
+                                item.page_type === 'landing_page' ? 'text-purple-600' :
+                                item.page_type === 'comparison' ? 'text-orange-600' :
+                                item.page_type === 'guide' ? 'text-green-600' :
+                                item.page_type === 'listicle' ? 'text-pink-600' :
+                                'text-gray-600';
+                              return (
+                                <button key={item.id} type="button" onClick={() => onAttachContentItem(item.id)} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors cursor-pointer hover:bg-[#F3F4F6] text-[#374151]">
+                                  <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${isAttached ? 'bg-blue-600 border-blue-600' : 'border-[#E5E5E5]'}`}>
+                                    {isAttached && <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12" /></svg>}
                                   </div>
-                                  <div className="flex items-center gap-1.5 text-[10px]">
-                                    <span className={`font-medium ${pageTypeColor}`}>{item.page_type || 'blog'}</span>
-                                    <span className="text-[#D1D5DB]">•</span>
-                                    <span className="text-[#9CA3AF]">{item.target_keyword}</span>
+                                  <div className="flex-1 min-w-0 text-left">
+                                    <div className="text-xs font-medium truncate mb-0.5">{item.title}</div>
+                                    <div className="flex items-center gap-1.5 text-[10px]">
+                                      <span className={`font-medium ${pageTypeColor}`}>{item.page_type || 'blog'}</span>
+                                      <span className="text-[#D1D5DB]">•</span>
+                                      <span className="text-[#9CA3AF]">{item.target_keyword}</span>
+                                    </div>
                                   </div>
-                                </div>
-                              </button>
-                            );
-                          })
+                                </button>
+                              );
+                            })
                         )}
                       </div>
                     </div>
@@ -778,34 +715,6 @@ export default function ChatInput({
                 )}
               </div>
 
-              {/* Action Hints Dropdown */}
-              <ActionHints skills={skills} onPlaybookClick={onPlaybookClick} />
-              
-              {/* Conversation Stats */}
-              {conversationId && (
-                <div className="flex items-center gap-3 ml-3 text-[10px] text-[#6B7280] border-l border-[#E5E5E5] pl-3">
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium text-[#9CA3AF]">Input Tokens:</span>
-                    <span className="font-bold text-[#111827]">{tokenStats.inputTokens.toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium text-[#9CA3AF]">Output Tokens:</span>
-                    <span className="font-bold text-[#111827]">{tokenStats.outputTokens.toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium text-[#9CA3AF]">Tavily:</span>
-                    <span className="font-bold text-[#111827]">{apiStats.tavilyCalls}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium text-[#9CA3AF]">Semrush:</span>
-                    <span className="font-bold text-[#111827]">{apiStats.semrushCalls}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium text-[#9CA3AF]">Serper:</span>
-                    <span className="font-bold text-[#111827]">{apiStats.serperCalls}</span>
-                  </div>
-                </div>
-              )}
             </div>
             
             {/* Right controls - Send button */}

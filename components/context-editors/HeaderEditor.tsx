@@ -120,7 +120,7 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
               type="text"
               value={headerConfig.siteName}
               onChange={(e) => setHeaderConfig({ ...headerConfig, siteName: e.target.value })}
-              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white"
+              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF]"
             />
           </div>
           <div>
@@ -133,7 +133,7 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
                 ctaButton: { ...headerConfig.ctaButton, label: e.target.value }
               })}
               placeholder="Button Label"
-              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white"
+              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF]"
             />
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
                 ctaButton: { ...headerConfig.ctaButton, url: e.target.value }
               })}
               placeholder="Button URL"
-              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white"
+              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF]"
             />
           </div>
           <div>
@@ -162,7 +162,7 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
                   ...headerConfig,
                   ctaButton: { ...headerConfig.ctaButton, color: e.target.value }
                 })}
-                className="flex-1 px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-[10px] font-mono bg-white"
+                className="flex-1 px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-[10px] font-mono bg-white text-[#111827]"
               />
               <div 
                 className="w-6 h-6 rounded border border-[#E5E5E5] flex-shrink-0"
@@ -186,7 +186,7 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
                     setHeaderConfig({ ...headerConfig, navigation: newNav });
                   }}
                   placeholder="Label"
-                  className="w-1/3 px-1.5 py-0.5 border border-transparent hover:border-[#E5E5E5] rounded focus:border-[#9AD6FF] focus:outline-none text-[10px]"
+                  className="w-1/3 px-1.5 py-0.5 border border-transparent hover:border-[#E5E5E5] rounded focus:border-[#9AD6FF] focus:outline-none text-[10px] bg-white text-[#111827] placeholder:text-[#9CA3AF]"
                 />
                 <input
                   type="text"
@@ -197,7 +197,7 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
                     setHeaderConfig({ ...headerConfig, navigation: newNav });
                   }}
                   placeholder="URL"
-                  className="flex-1 px-1.5 py-0.5 border border-transparent hover:border-[#E5E5E5] rounded focus:border-[#9AD6FF] focus:outline-none text-[10px] font-mono"
+                  className="flex-1 px-1.5 py-0.5 border border-transparent hover:border-[#E5E5E5] rounded focus:border-[#9AD6FF] focus:outline-none text-[10px] font-mono bg-white text-[#111827] placeholder:text-[#9CA3AF]"
                 />
                 <button
                   type="button"

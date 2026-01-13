@@ -93,7 +93,7 @@ const AssetUploadField = ({
             value={value}
             onChange={(e) => handleUrlChange(e.target.value)}
             placeholder={placeholder}
-            className="w-full px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA] focus:border-transparent"
+            className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA] focus:border-transparent"
           />
           <label className="flex items-center gap-1.5 cursor-pointer text-[10px] text-[#6B7280] hover:text-[#374151]">
             <input
@@ -253,7 +253,7 @@ export default function BrandSiteSection({
               value={metaTitle}
               onChange={(e) => setMetaTitle(e.target.value)}
               placeholder="Page title"
-              className="w-full px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+              className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
             />
           </div>
           <div>
@@ -263,7 +263,7 @@ export default function BrandSiteSection({
               value={metaKeywords}
               onChange={(e) => setMetaKeywords(e.target.value)}
               placeholder="keyword1, keyword2, keyword3"
-              className="w-full px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+              className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
             />
           </div>
         </div>
@@ -274,7 +274,7 @@ export default function BrandSiteSection({
             onChange={(e) => setMetaDescription(e.target.value)}
             placeholder="Brief description of the page"
             rows={3}
-            className="w-full px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA] resize-none"
+            className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA] resize-none"
           />
         </div>
         <div>
@@ -284,7 +284,7 @@ export default function BrandSiteSection({
             value={domainName}
             onChange={(e) => setDomainName(e.target.value)}
             placeholder="https://example.com"
-            className="w-full px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+            className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
           />
         </div>
         <AssetUploadField
@@ -360,7 +360,7 @@ export default function BrandSiteSection({
                 type="text"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                className="flex-1 px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+                className="flex-1 px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
               />
             </div>
           </div>
@@ -377,7 +377,7 @@ export default function BrandSiteSection({
                 type="text"
                 value={secondaryColor}
                 onChange={(e) => setSecondaryColor(e.target.value)}
-                className="flex-1 px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+                className="flex-1 px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
               />
             </div>
           </div>
@@ -392,7 +392,7 @@ export default function BrandSiteSection({
           value={tone}
           onChange={(e) => setTone(e.target.value)}
           placeholder="e.g., Professional, Friendly, Casual"
-          className="w-full px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+          className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
         />
       </div>
 
@@ -407,7 +407,7 @@ export default function BrandSiteSection({
               value={headingFont}
               onChange={(e) => setHeadingFont(e.target.value)}
               placeholder="e.g., Montserrat, Poppins"
-              className="w-full px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+              className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
             />
             <p className="text-[10px] text-[#9CA3AF] mt-0.5">Font used for headings (H1, H2, etc.)</p>
           </div>
@@ -418,7 +418,7 @@ export default function BrandSiteSection({
               value={bodyFont}
               onChange={(e) => setBodyFont(e.target.value)}
               placeholder="e.g., Inter, Roboto, Open Sans"
-              className="w-full px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+              className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
             />
             <p className="text-[10px] text-[#9CA3AF] mt-0.5">Font used for body text and paragraphs</p>
           </div>
@@ -433,7 +433,7 @@ export default function BrandSiteSection({
           value={languages}
           onChange={(e) => setLanguages(e.target.value)}
           placeholder="e.g., en, zh, es (comma-separated)"
-          className="w-full px-2.5 py-1.5 text-xs border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
+          className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
         />
         <p className="text-[10px] text-[#9CA3AF]">Supported languages on the website</p>
       </div>
@@ -449,14 +449,14 @@ export default function BrandSiteSection({
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
-              <span>可在聊天中使用 Site Context skill 自动提取</span>
+              <span>Use Site Context skill in chat to auto-extract</span>
             </div>
           )}
         </div>
         
         {/* Header */}
         <div ref={headerRef} className="space-y-2">
-          <label className="block text-xs font-medium text-[#6B7280]">Header 导航</label>
+          <label className="block text-xs font-medium text-[#6B7280]">Header Navigation</label>
           <HeaderEditor
             initialConfig={headerInitialConfig || undefined}
             logoUrl={userLogoUrl || undefined}
@@ -466,7 +466,7 @@ export default function BrandSiteSection({
 
         {/* Footer */}
         <div ref={footerRef} className="space-y-2 mt-4">
-          <label className="block text-xs font-medium text-[#6B7280]">Footer 链接</label>
+          <label className="block text-xs font-medium text-[#6B7280]">Footer Links</label>
           <FooterEditor
             initialConfig={footerInitialConfig || undefined}
             logoUrl={userLogoUrl || undefined}

@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       'hero-section', 'problem-statement', 'who-we-serve',
       'use-cases', 'industries', 'products-services',
       'social-proof-trust', 'leadership-team', 'about-us',
-      'faq', 'contact-information'
+      'faq', 'contact-information', 'competitors'
     ];
 
     if (!validTypes.includes(type)) {

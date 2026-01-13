@@ -2,14 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import type { SiteContext, ContentItem, ContentProject } from '@/lib/supabase';
-import TasksPanel from './TasksPanel';
-import type { OffsiteContext } from './context-modal/types';
-
-interface TaskStep {
-  step_number: number;
-  description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
-}
 
 interface ConversationSidebarProps {
   siteContexts: SiteContext[];
@@ -20,10 +12,7 @@ interface ConversationSidebarProps {
   onRefreshContent: () => void;
   onDeleteProject: (projectId: string, projectName: string) => void;
   onDeleteContentItem: (itemId: string, itemTitle: string) => void;
-  onOpenContextModal?: (tab?: 'onsite' | 'offsite' | 'knowledge') => void;
-  conversationId?: string;
-  currentTasks?: TaskStep[];
-  offsiteContext?: OffsiteContext | null;
+  onOpenContextModal?: (tab?: 'onsite' | 'knowledge') => void;
 }
 
 export default function ConversationSidebar({
@@ -36,9 +25,6 @@ export default function ConversationSidebar({
   onDeleteProject,
   onDeleteContentItem,
   onOpenContextModal,
-  conversationId,
-  currentTasks = [],
-  offsiteContext,
 }: ConversationSidebarProps) {
   // Group items by project first
   const groupedContent = contentProjects.map(project => ({
@@ -56,7 +42,6 @@ export default function ConversationSidebar({
     itemCount?: number;
   } | null>(null);
   const [expandedOnSite, setExpandedOnSite] = useState(true);
-  const [expandedOffSite, setExpandedOffSite] = useState(false);
 
   // Auto-expand first project when content loads
   useEffect(() => {
@@ -80,6 +65,7 @@ export default function ConversationSidebar({
   // Count acquired fields for each category
   const getFieldCount = (category: string): { acquired: number; total: number } => {
     const fieldMappings: Record<string, string[]> = {
+      'competitors': ['competitors'],
       'brand-site': ['meta-info', 'logo', 'colors', 'typography', 'tone', 'languages', 'header', 'footer', 'sitemap'],
       'hero-section': ['hero-headline', 'hero-subheadline', 'hero-cta', 'hero-media', 'hero-metrics'],
       'pages': ['key-pages', 'landing-pages', 'blog-resources'],
@@ -206,6 +192,8 @@ export default function ConversationSidebar({
         return hasStringValue(siteContexts.find(ctx => ctx.type === 'faq')?.content);
       case 'contact-info':
         return hasJsonContent(siteContexts.find(ctx => ctx.type === 'contact-information')?.content);
+      case 'competitors':
+        return hasJsonContent(siteContexts.find(ctx => ctx.type === 'competitors')?.content);
       case 'key-pages':
         return hasStringValue(siteContexts.find(ctx => ctx.type === 'key-website-pages')?.content);
       case 'landing-pages':
@@ -271,34 +259,9 @@ export default function ConversationSidebar({
 
   // Red dot indicator component
   const RedDot = () => (
-    <span className="inline-block w-1.5 h-1.5 bg-red-500 rounded-full ml-1" title="未填充"></span>
+    <span className="inline-block w-1.5 h-1.5 bg-red-500 rounded-full ml-1" title="Not filled"></span>
   );
 
-  // Count acquired fields for offsite categories
-  const getOffsiteFieldCount = (category: string): { acquired: number; total: number } => {
-    if (!offsiteContext) return { acquired: 0, total: 0 };
-    
-    const fieldMappings: Record<string, (keyof OffsiteContext)[]> = {
-      'monitoring': ['brand_keywords', 'product_keywords', 'key_persons', 'hashtags', 'regions', 'languages'],
-      'owned': ['official_channels', 'executive_accounts'],
-      'reviews': ['review_platforms', 'directories', 'storefronts'],
-      'community': ['forums', 'qa_platforms', 'branded_groups'],
-      'media': ['media_channels', 'coverage', 'events'],
-      'kols': ['creators', 'experts', 'press_contacts'],
-    };
-    
-    const fields = fieldMappings[category] || [];
-    const total = fields.length;
-    const acquired = fields.filter(field => {
-      const value = offsiteContext[field];
-      if (Array.isArray(value)) {
-        return value.length > 0;
-      }
-      return false;
-    }).length;
-    
-    return { acquired, total };
-  };
 
   const getStatusStyle = (status: string): React.CSSProperties => {
     if (status === 'ready') {
@@ -365,17 +328,18 @@ export default function ConversationSidebar({
     <aside className={`${sidebarWidth} bg-white border border-[#E5E5E5] rounded-lg shadow-sm flex flex-col h-full overflow-hidden`} onClick={() => setContextMenu(null)}>
       
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        {/* Context Section (Top 1/3) */}
-        <div className="flex flex-col h-1/3 min-h-0 border-b border-[#E5E5E5]">
+        {/* Context Section (Top 40%) */}
+        <div className="flex flex-col min-h-0 border-b border-[#E5E5E5]" style={{ height: '40%' }}>
           <div className="px-4 py-1.5 text-xs font-bold text-[#111827] uppercase tracking-wider flex items-center justify-between shrink-0 border-b border-[#E5E5E5] h-10">
-            <span>Context</span>
+            <span>Brand Assets</span>
             <button
               onClick={() => onOpenContextModal?.()}
               className="p-1 rounded hover:bg-white text-[#6B7280] hover:text-[#111827] transition-all"
-              title="Add Context"
+              title="Edit Brand Assets"
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M12 5v14M5 12h14" />
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
             </button>
           </div>
@@ -409,9 +373,8 @@ export default function ConversationSidebar({
                 {expandedOnSite && (
                   <div className="ml-5 mt-0.5 space-y-0.5">
                     {[
+                      { label: 'Competitors', key: 'competitors' },
                       { label: 'Brand & Site', key: 'brand-site' },
-                      { label: 'Hero Section', key: 'hero-section' },
-                      { label: 'Pages', key: 'pages' },
                       { label: 'Business Context', key: 'business-context' },
                       { label: 'Trust & Company', key: 'trust-company' },
                     ].map(({ label, key }) => {
@@ -425,64 +388,6 @@ export default function ConversationSidebar({
                           <span className="text-[11px] text-[#6B7280] flex-1">{label}</span>
                           <span className={`px-1.5 py-0.5 text-[9px] font-semibold rounded ${
                             acquired === total 
-                              ? 'bg-green-100 text-green-700' 
-                              : acquired > 0 
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-gray-100 text-gray-500'
-                          }`}>
-                            {acquired}/{total}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Off Site - Expandable */}
-              <div>
-                <button
-                  onClick={() => setExpandedOffSite(!expandedOffSite)}
-                  className="w-full flex items-center justify-between px-2 py-1 rounded-lg hover:bg-[#F3F4F6] transition-all text-left group cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 flex-1">
-                    <svg 
-                      className={`w-3 h-3 text-[#9CA3AF] transition-transform ${expandedOffSite ? 'rotate-90' : ''}`} 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2.5"
-                    >
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                    <svg className="w-4 h-4 text-[#6B7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                    <span className="text-xs font-medium text-[#374151]">Off Site</span>
-                  </div>
-                </button>
-
-                {/* Off Site Sub-items */}
-                {expandedOffSite && (
-                  <div className="ml-5 mt-0.5 space-y-0.5">
-                    {[
-                      { label: 'Monitoring Scope', key: 'monitoring' },
-                      { label: 'Owned Presence', key: 'owned' },
-                      { label: 'Reviews & Listings', key: 'reviews' },
-                      { label: 'Community', key: 'community' },
-                      { label: 'Media', key: 'media' },
-                      { label: 'KOLs', key: 'kols' },
-                    ].map(({ label, key }) => {
-                      const { acquired, total } = getOffsiteFieldCount(key);
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => onOpenContextModal?.('offsite')}
-                          className="w-full flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-[#F3F4F6] transition-all text-left cursor-pointer"
-                        >
-                          <span className="text-[11px] text-[#6B7280] flex-1">{label}</span>
-                          <span className={`px-1.5 py-0.5 text-[9px] font-semibold rounded ${
-                            acquired === total && total > 0
                               ? 'bg-green-100 text-green-700' 
                               : acquired > 0 
                               ? 'bg-blue-100 text-blue-700'
@@ -514,8 +419,8 @@ export default function ConversationSidebar({
           </div>
         </div>
 
-        {/* Page Blueprint Section (Middle 1/3) */}
-        <div className="flex flex-col h-1/3 min-h-0 border-b border-[#E5E5E5]">
+        {/* Page Blueprint Section (Bottom 60%) */}
+        <div className="flex flex-col flex-1 min-h-0">
           <div className="px-4 py-1.5 text-xs font-bold text-[#111827] uppercase tracking-wider flex items-center justify-between shrink-0 border-b border-[#E5E5E5] h-10">
             <div className="flex items-center gap-2">
               <span>Page Blueprint</span>
@@ -665,18 +570,6 @@ export default function ConversationSidebar({
           </div>
         </div>
 
-        {/* Tasks Section (Bottom 1/3) */}
-        <div className="flex flex-col h-1/3 min-h-0">
-          <div className="px-4 py-1.5 text-xs font-bold text-[#111827] uppercase tracking-wider shrink-0 border-b border-[#E5E5E5] h-10 flex items-center">
-            Tasks
-          </div>
-          <div className="flex-1 overflow-y-auto thin-scrollbar px-2 pb-2 pt-2">
-            <TasksPanel 
-              conversationId={conversationId}
-              tasks={currentTasks}
-            />
-          </div>
-        </div>
       </div>
 
       {/* Context Menu */}
@@ -701,8 +594,8 @@ export default function ConversationSidebar({
               </svg>
               <span>
                 {contextMenu.type === 'project' 
-                  ? `Delete Project${contextMenu.itemCount && contextMenu.itemCount > 0 ? ` (${contextMenu.itemCount})` : ''}`
-                  : 'Delete'
+                  ? `Delete Cluster${contextMenu.itemCount && contextMenu.itemCount > 0 ? ` (${contextMenu.itemCount} items)` : ''}`
+                  : 'Delete Page'
                 }
               </span>
             </button>

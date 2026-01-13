@@ -7,14 +7,11 @@ import { generateHeaderHTML } from '@/lib/templates/default-header';
 import { generateFooterHTML } from '@/lib/templates/default-footer';
 import {
   BrandSiteSection,
-  HeroSection,
-  PagesSection,
   BusinessContextSection,
   TrustCompanySection,
-  OffsiteSection,
   KnowledgeSection,
 } from './context-modal';
-import type { OffsiteContext } from './context-modal/types';
+import CompetitorsEditor from './context-editors/CompetitorsEditor';
 
 interface ContextModalNewProps {
   isOpen: boolean;
@@ -26,10 +23,10 @@ interface ContextModalNewProps {
     fileUrl?: string;
   }) => Promise<void>;
   projectId?: string;
-  initialTab?: 'onsite' | 'offsite' | 'knowledge';
+  initialTab?: 'onsite' | 'knowledge';
 }
 
-type TabType = 'onsite' | 'offsite' | 'knowledge';
+type TabType = 'onsite' | 'knowledge';
 
 export default function ContextModalNew({
   isOpen,
@@ -48,52 +45,12 @@ export default function ContextModalNew({
     setActiveTab(initialTab);
   }, [initialTab]);
 
-  // Fetch offsite context when modal opens and project ID is available
-  useEffect(() => {
-    const fetchOffsiteContext = async () => {
-      if (!isOpen || !projectId) return;
-      
-      setIsLoadingOffsite(true);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const headers: HeadersInit = {};
-        if (session?.access_token) {
-          headers['Authorization'] = `Bearer ${session.access_token}`;
-        }
-
-        const response = await fetch(`/api/offsite-contexts?projectId=${projectId}`, {
-          headers,
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          setOffsiteContext(result.data);
-        }
-      } catch (error) {
-        console.error('Error fetching offsite context:', error);
-      } finally {
-        setIsLoadingOffsite(false);
-      }
-    };
-
-    fetchOffsiteContext();
-  }, [isOpen, projectId]);
-  
   // Navigation expand states
-  const [expandedNavBrandAssets, setExpandedNavBrandAssets] = useState(true);
-  const [expandedNavHeroSection, setExpandedNavHeroSection] = useState(false);
-  const [expandedNavPages, setExpandedNavPages] = useState(false);
+  const [expandedNavCompetitors, setExpandedNavCompetitors] = useState(true);
+  const [expandedNavBrandAssets, setExpandedNavBrandAssets] = useState(false);
   const [expandedNavBusinessContext, setExpandedNavBusinessContext] = useState(false);
   const [expandedNavTrustCompany, setExpandedNavTrustCompany] = useState(false);
   
-  // Offsite navigation expand states
-  const [expandedNavMonitoring, setExpandedNavMonitoring] = useState(true);
-  const [expandedNavOwned, setExpandedNavOwned] = useState(false);
-  const [expandedNavReviews, setExpandedNavReviews] = useState(false);
-  const [expandedNavCommunity, setExpandedNavCommunity] = useState(false);
-  const [expandedNavMedia, setExpandedNavMedia] = useState(false);
-  const [expandedNavKols, setExpandedNavKols] = useState(false);
-
   // File states
   const [logoLightFile, setLogoLightFile] = useState<File | null>(null);
   const [logoDarkFile, setLogoDarkFile] = useState<File | null>(null);
@@ -129,10 +86,6 @@ export default function ContextModalNew({
   const [footerConfig, setFooterConfig] = useState<any>(null);
   
   // Content states
-  const [keyWebsitePagesContent, setKeyWebsitePagesContent] = useState('');
-  const [landingPagesContent, setLandingPagesContent] = useState('');
-  const [blogResourcesContent, setBlogResourcesContent] = useState('');
-  const [heroSectionContent, setHeroSectionContent] = useState('');
   const [problemStatementContent, setProblemStatementContent] = useState('');
   const [whoWeServeContent, setWhoWeServeContent] = useState('');
   const [useCasesContent, setUseCasesContent] = useState('');
@@ -143,10 +96,7 @@ export default function ContextModalNew({
   const [aboutUsContent, setAboutUsContent] = useState('');
   const [faqContent, setFaqContent] = useState('');
   const [contactInfoContent, setContactInfoContent] = useState('');
-
-  // Offsite context state
-  const [offsiteContext, setOffsiteContext] = useState<OffsiteContext | null>(null);
-  const [isLoadingOffsite, setIsLoadingOffsite] = useState(false);
+  const [competitorsContent, setCompetitorsContent] = useState('');
 
   // Refs for scrolling
   const brandAssetsRef = useRef<HTMLDivElement>(null);
@@ -157,10 +107,6 @@ export default function ContextModalNew({
   const headerRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
   const sitemapRef = useRef<HTMLDivElement>(null);
-  const keyWebsitePagesRef = useRef<HTMLDivElement>(null);
-  const landingPagesRef = useRef<HTMLDivElement>(null);
-  const blogResourcesRef = useRef<HTMLDivElement>(null);
-  const heroSectionRef = useRef<HTMLDivElement>(null);
   const problemStatementRef = useRef<HTMLDivElement>(null);
   const whoWeServeRef = useRef<HTMLDivElement>(null);
   const useCasesRef = useRef<HTMLDivElement>(null);
@@ -171,6 +117,7 @@ export default function ContextModalNew({
   const aboutUsRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
   const contactInfoRef = useRef<HTMLDivElement>(null);
+  const competitorsRef = useRef<HTMLDivElement>(null);
 
   // Get contexts
   const logoContext = siteContexts.find(c => c.type === 'logo');
@@ -232,10 +179,6 @@ export default function ContextModalNew({
       }
       
       // Initialize content from contexts
-      const keyWebsitePagesContext = siteContexts.find(c => c.type === 'key-website-pages');
-      const landingPagesContext = siteContexts.find(c => c.type === 'landing-pages');
-      const blogResourcesContext = siteContexts.find(c => c.type === 'blog-resources');
-      const heroSectionContext = siteContexts.find(c => c.type === 'hero-section');
       const problemStatementContext = siteContexts.find(c => c.type === 'problem-statement');
       const whoWeServeContext = siteContexts.find(c => c.type === 'who-we-serve');
       const useCasesContext = siteContexts.find(c => c.type === 'use-cases');
@@ -246,11 +189,8 @@ export default function ContextModalNew({
       const aboutUsContext = siteContexts.find(c => c.type === 'about-us');
       const faqContext = siteContexts.find(c => c.type === 'faq');
       const contactInfoContext = siteContexts.find(c => c.type === 'contact-information');
+      const competitorsContext = siteContexts.find(c => c.type === 'competitors');
       
-      setKeyWebsitePagesContent(keyWebsitePagesContext?.content || '');
-      setLandingPagesContent(landingPagesContext?.content || '');
-      setBlogResourcesContent(blogResourcesContext?.content || '');
-      setHeroSectionContent(heroSectionContext?.content || '');
       setProblemStatementContent(problemStatementContext?.content || '');
       setWhoWeServeContent(whoWeServeContext?.content || '');
       setUseCasesContent(useCasesContext?.content || '');
@@ -261,6 +201,7 @@ export default function ContextModalNew({
       setAboutUsContent(aboutUsContext?.content || '');
       setFaqContent(faqContext?.content || '');
       setContactInfoContent(contactInfoContext?.content || '');
+      setCompetitorsContent(competitorsContext?.content || '');
     }
   }, [isOpen, siteContexts, logoContext]);
 
@@ -288,66 +229,6 @@ export default function ContextModalNew({
 
   const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  // Handle offsite context changes
-  const handleOffsiteContextChange = async (updates: Partial<OffsiteContext>) => {
-    // Update local state immediately for responsiveness
-    setOffsiteContext(prev => {
-      if (!prev) {
-        // Create new context with default empty arrays
-        return {
-          brand_keywords: [],
-          product_keywords: [],
-          key_persons: [],
-          hashtags: [],
-          required_keywords: [],
-          excluded_keywords: [],
-          regions: [],
-          languages: [],
-          official_channels: [],
-          executive_accounts: [],
-          review_platforms: [],
-          directories: [],
-          storefronts: [],
-          forums: [],
-          qa_platforms: [],
-          branded_groups: [],
-          media_channels: [],
-          coverage: [],
-          events: [],
-          creators: [],
-          experts: [],
-          press_contacts: [],
-          ...updates,
-        } as OffsiteContext;
-      }
-      return { ...prev, ...updates };
-    });
-
-    // Save to database (debounced would be better for production)
-    if (projectId) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json',
-        };
-        if (session?.access_token) {
-          headers['Authorization'] = `Bearer ${session.access_token}`;
-        }
-
-        await fetch('/api/offsite-contexts', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            projectId,
-            ...updates,
-          }),
-        });
-      } catch (error) {
-        console.error('Error saving offsite context:', error);
-      }
-    }
   };
 
   const handleSaveAll = async (e: React.FormEvent) => {
@@ -439,10 +320,6 @@ export default function ContextModalNew({
         }
       };
       
-      await saveContentIfChanged('key-website-pages', keyWebsitePagesContent);
-      await saveContentIfChanged('landing-pages', landingPagesContent);
-      await saveContentIfChanged('blog-resources', blogResourcesContent);
-      await saveContentIfChanged('hero-section', heroSectionContent);
       await saveContentIfChanged('problem-statement', problemStatementContent);
       await saveContentIfChanged('who-we-serve', whoWeServeContent);
       await saveContentIfChanged('use-cases', useCasesContent);
@@ -453,6 +330,7 @@ export default function ContextModalNew({
       await saveContentIfChanged('about-us', aboutUsContent);
       await saveContentIfChanged('faq', faqContent);
       await saveContentIfChanged('contact-information', contactInfoContent);
+      await saveContentIfChanged('competitors', competitorsContent);
 
       onClose();
     } catch (error) {
@@ -467,17 +345,17 @@ export default function ContextModalNew({
 
   // Red Dot component for empty fields
   const RedDot = () => (
-    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" title="未填写"></span>
+    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" title="Not filled"></span>
   );
 
   // Helper function to check if a context field has value
   const hasContextValue = (field: string): boolean => {
-    // 默认值列表 - 这些不算作"有值"
+    // Default values list - these don't count as "having value"
     const defaultValues = ['#9A8FEA', '#FF5733'];
     
     const hasStringValue = (value: string | null | undefined): boolean => {
       if (!value || !value.trim()) return false;
-      // 排除默认值
+      // Exclude default values
       if (defaultValues.includes(value.trim())) return false;
       return true;
     };
@@ -487,7 +365,7 @@ export default function ContextModalNew({
       try {
         const parsed = JSON.parse(content);
         if (Array.isArray(parsed)) {
-          // 检查数组是否有实际内容
+          // Check if array has actual content
           if (parsed.length === 0) return false;
           return parsed.some(item => {
             if (typeof item === 'object' && item !== null) {
@@ -534,15 +412,6 @@ export default function ContextModalNew({
         'header': 'header',
         'footer': 'footer',
         'sitemap': 'sitemap',
-        'hero-section': 'hero-section',
-        'hero-headline': 'hero-section',
-        'hero-subheadline': 'hero-section',
-        'hero-cta': 'hero-section',
-        'hero-media': 'hero-section',
-        'hero-metrics': 'hero-section',
-        'key-pages': 'key-website-pages',
-        'landing-pages': 'landing-pages',
-        'blog-resources': 'blog-resources',
         'problem-statement': 'problem-statement',
         'who-we-serve': 'who-we-serve',
         'use-cases': 'use-cases',
@@ -553,6 +422,7 @@ export default function ContextModalNew({
         'about-us': 'about-us',
         'faq': 'faq',
         'contact-info': 'contact-information',
+        'competitors': 'competitors',
       };
       return ctx.type === typeMap[field];
     });
@@ -568,7 +438,7 @@ export default function ContextModalNew({
                hasStringValue(logoContext?.logo_dark_url) ||
                hasStringValue(logoContext?.file_url);
       case 'colors':
-        // 只有当颜色不是默认值时才显示绿点
+        // Only show green dot when color is not default value
         const pColor = logoContext?.primary_color;
         const sColor = logoContext?.secondary_color;
         return (hasStringValue(pColor) && !defaultValues.includes(pColor || '')) ||
@@ -583,16 +453,6 @@ export default function ContextModalNew({
       case 'footer':
       case 'sitemap':
         return hasJsonContent(context.content);
-      case 'hero-headline':
-        return hasSpecificJsonField(context.content, 'headline');
-      case 'hero-subheadline':
-        return hasSpecificJsonField(context.content, 'subheadline');
-      case 'hero-cta':
-        return hasSpecificJsonField(context.content, 'callToAction');
-      case 'hero-media':
-        return hasSpecificJsonField(context.content, 'media');
-      case 'hero-metrics':
-        return hasSpecificJsonField(context.content, 'metrics');
       default:
         return hasJsonContent(context.content);
     }
@@ -605,6 +465,16 @@ export default function ContextModalNew({
 
   // Navigation groups
   const navigationGroups = [
+    {
+      label: 'Competitors',
+      icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>,
+      expanded: expandedNavCompetitors,
+      setExpanded: setExpandedNavCompetitors,
+      fieldKeys: ['competitors'],
+      children: [
+        { label: 'Competitor List', ref: competitorsRef, checkKey: 'competitors' },
+      ]
+    },
     {
       label: 'Brand & Site',
       icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>,
@@ -621,32 +491,6 @@ export default function ContextModalNew({
         { label: 'Header', ref: headerRef, checkKey: 'header' },
         { label: 'Footer', ref: footerRef, checkKey: 'footer' },
         { label: 'Sitemap', ref: sitemapRef, checkKey: 'sitemap' },
-      ]
-    },
-    {
-      label: 'Hero Section',
-      icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>,
-      expanded: expandedNavHeroSection,
-      setExpanded: setExpandedNavHeroSection,
-      fieldKeys: ['hero-headline', 'hero-subheadline', 'hero-cta', 'hero-media', 'hero-metrics'],
-      children: [
-        { label: 'Headline', ref: heroSectionRef, checkKey: 'hero-headline' },
-        { label: 'Subheadline', ref: heroSectionRef, checkKey: 'hero-subheadline' },
-        { label: 'Call to Action', ref: heroSectionRef, checkKey: 'hero-cta' },
-        { label: 'Media', ref: heroSectionRef, checkKey: 'hero-media' },
-        { label: 'Metrics', ref: heroSectionRef, checkKey: 'hero-metrics' },
-      ]
-    },
-    {
-      label: 'Pages',
-      icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>,
-      expanded: expandedNavPages,
-      setExpanded: setExpandedNavPages,
-      fieldKeys: ['key-pages', 'landing-pages', 'blog-resources'],
-      children: [
-        { label: 'Key Website Pages', ref: keyWebsitePagesRef, checkKey: 'key-pages' },
-        { label: 'Landing Pages', ref: landingPagesRef, checkKey: 'landing-pages' },
-        { label: 'Blog & Resources', ref: blogResourcesRef, checkKey: 'blog-resources' },
       ]
     },
     {
@@ -679,116 +523,8 @@ export default function ContextModalNew({
     },
   ];
 
-  // Count acquired fields for offsite categories
-  const getOffsiteFieldCount = (fieldKeys: string[]): { acquired: number; total: number } => {
-    if (!offsiteContext) return { acquired: 0, total: fieldKeys.length };
-    
-    const acquired = fieldKeys.filter(field => {
-      const value = (offsiteContext as any)[field];
-      if (Array.isArray(value)) {
-        return value.length > 0;
-      }
-      return false;
-    }).length;
-    
-    return { acquired, total: fieldKeys.length };
-  };
-
-  // Offsite navigation groups
-  const offsiteNavigationGroups = [
-    {
-      label: 'Monitoring Scope',
-      sectionId: 'offsite-monitoring',
-      icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>,
-      expanded: expandedNavMonitoring,
-      setExpanded: setExpandedNavMonitoring,
-      fieldKeys: ['brand_keywords', 'product_keywords', 'key_persons', 'hashtags', 'regions', 'languages'],
-      children: [
-        { label: 'Brand Keywords' },
-        { label: 'Product Keywords' },
-        { label: 'Key Persons' },
-        { label: 'Hashtags' },
-        { label: 'Regions' },
-        { label: 'Languages' },
-      ]
-    },
-    {
-      label: 'Owned Presence',
-      sectionId: 'offsite-owned',
-      icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1" /><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" /><line x1="6" y1="1" x2="6" y2="4" /><line x1="10" y1="1" x2="10" y2="4" /><line x1="14" y1="1" x2="14" y2="4" /></svg>,
-      expanded: expandedNavOwned,
-      setExpanded: setExpandedNavOwned,
-      fieldKeys: ['official_channels', 'executive_accounts'],
-      children: [
-        { label: 'Official Channels' },
-        { label: 'Executive Accounts' },
-      ]
-    },
-    {
-      label: 'Reviews & Listings',
-      sectionId: 'offsite-reviews',
-      icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>,
-      expanded: expandedNavReviews,
-      setExpanded: setExpandedNavReviews,
-      fieldKeys: ['review_platforms', 'directories', 'storefronts'],
-      children: [
-        { label: 'Review Platforms' },
-        { label: 'Directories' },
-        { label: 'Storefronts' },
-      ]
-    },
-    {
-      label: 'Community',
-      sectionId: 'offsite-community',
-      icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
-      expanded: expandedNavCommunity,
-      setExpanded: setExpandedNavCommunity,
-      fieldKeys: ['forums', 'qa_platforms', 'branded_groups'],
-      children: [
-        { label: 'Forums' },
-        { label: 'Q&A Platforms' },
-        { label: 'Branded Groups' },
-      ]
-    },
-    {
-      label: 'Media',
-      sectionId: 'offsite-media',
-      icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>,
-      expanded: expandedNavMedia,
-      setExpanded: setExpandedNavMedia,
-      fieldKeys: ['media_channels', 'coverage', 'events'],
-      children: [
-        { label: 'Media Channels' },
-        { label: 'Coverage' },
-        { label: 'Events' },
-      ]
-    },
-    {
-      label: 'KOLs',
-      sectionId: 'offsite-kols',
-      icon: <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>,
-      expanded: expandedNavKols,
-      setExpanded: setExpandedNavKols,
-      fieldKeys: ['creators', 'experts', 'press_contacts'],
-      children: [
-        { label: 'Creators' },
-        { label: 'Experts' },
-        { label: 'Press Contacts' },
-      ]
-    },
-  ];
-
-  // Scroll to offsite section
-  const scrollToOffsiteSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
   const tabs = [
     { id: 'onsite' as TabType, label: 'On Site' },
-    { id: 'offsite' as TabType, label: 'Off Site' },
     { id: 'knowledge' as TabType, label: 'Knowledge' },
   ];
 
@@ -797,7 +533,7 @@ export default function ContextModalNew({
       <div className="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-6xl h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#E5E5E5] flex items-center justify-between shrink-0">
-          <h2 className="text-lg font-bold text-[#111827]">Context Wizard</h2>
+          <h2 className="text-lg font-bold text-[#111827]">Brand Assets</h2>
             <button
               onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F3F4F6] transition-colors"
@@ -890,72 +626,6 @@ export default function ContextModalNew({
                 </div>
               )}
               
-              {/* Offsite Navigation */}
-              {activeTab === 'offsite' && (
-                <div className="space-y-1">
-                  {offsiteNavigationGroups.map((group, index) => {
-                    const { acquired, total } = group.fieldKeys ? getOffsiteFieldCount(group.fieldKeys) : { acquired: 0, total: 0 };
-                    return (
-                    <div key={index}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          group.setExpanded?.(!group.expanded);
-                          if (group.sectionId) {
-                            scrollToOffsiteSection(group.sectionId);
-                          }
-                        }}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left text-xs transition-colors font-medium ${
-                          group.expanded ? 'bg-[#F3F4F6] text-[#111827]' : 'text-[#374151] hover:bg-[#F3F4F6]'
-                        }`}
-                      >
-                        <svg 
-                          className={`w-3 h-3 text-[#9CA3AF] transition-transform ${group.expanded ? 'rotate-90' : ''}`} 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2.5"
-                        >
-                          <path d="M9 18l6-6-6-6"/>
-                        </svg>
-                        {group.icon}
-                        <span className="flex-1">{group.label}</span>
-                        {total > 0 && (
-                          <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${
-                            acquired === total 
-                              ? 'bg-green-100 text-green-700' 
-                              : acquired > 0 
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-gray-100 text-gray-500'
-                          }`}>
-                            {acquired}/{total}
-                          </span>
-                        )}
-                      </button>
-                      {group.expanded && group.children && (
-                        <div className="ml-5 mt-1 space-y-0.5">
-                          {group.children.map((child: { label: string }, childIndex: number) => (
-                            <button
-                              key={childIndex}
-                              type="button"
-                              onClick={() => {
-                                if (group.sectionId) {
-                                  scrollToOffsiteSection(group.sectionId);
-                                }
-                              }}
-                              className="w-full flex items-center gap-2 px-2 py-1 rounded-lg text-left text-xs transition-colors hover:bg-[#F3F4F6] text-[#6B7280]"
-                            >
-                              <span>{child.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    );
-                  })}
-                </div>
-              )}
-              
               {/* Knowledge Navigation */}
               {activeTab === 'knowledge' && (
                 <div className="space-y-1">
@@ -972,6 +642,27 @@ export default function ContextModalNew({
             <div className="flex-1 overflow-y-auto p-6 thin-scrollbar">
               {activeTab === 'onsite' && (
                 <div className="space-y-8 max-w-4xl">
+                  {/* Competitors Section */}
+                  <div ref={competitorsRef} className="space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <svg className="w-4 h-4 text-[#6B7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                      </svg>
+                      <h3 className="text-base font-bold text-[#111827]">Competitors</h3>
+                    </div>
+                    <p className="text-xs text-[#6B7280] pl-6">
+                      Add your main competitors with their names and URLs.
+                    </p>
+                    <div className="pl-6">
+                      <CompetitorsEditor
+                        initialContent={competitorsContent}
+                        onContentChange={setCompetitorsContent}
+                      />
+                    </div>
+                  </div>
+
                   <BrandSiteSection
                     siteContexts={siteContexts}
                     showDebugInfo={showDebugInfo}
@@ -1028,28 +719,6 @@ export default function ContextModalNew({
                     sitemapRef={sitemapRef}
                   />
 
-                  <HeroSection
-                    siteContexts={siteContexts}
-                    showDebugInfo={showDebugInfo}
-                    heroSectionContent={heroSectionContent}
-                    setHeroSectionContent={setHeroSectionContent}
-                    heroSectionRef={heroSectionRef}
-                  />
-
-                  <PagesSection
-                    siteContexts={siteContexts}
-                    showDebugInfo={showDebugInfo}
-                    keyWebsitePagesContent={keyWebsitePagesContent}
-                    setKeyWebsitePagesContent={setKeyWebsitePagesContent}
-                    landingPagesContent={landingPagesContent}
-                    setLandingPagesContent={setLandingPagesContent}
-                    blogResourcesContent={blogResourcesContent}
-                    setBlogResourcesContent={setBlogResourcesContent}
-                    keyWebsitePagesRef={keyWebsitePagesRef}
-                    landingPagesRef={landingPagesRef}
-                    blogResourcesRef={blogResourcesRef}
-                  />
-
                   <BusinessContextSection
                     siteContexts={siteContexts}
                     showDebugInfo={showDebugInfo}
@@ -1088,16 +757,6 @@ export default function ContextModalNew({
                     aboutUsRef={aboutUsRef}
                     faqRef={faqRef}
                     contactInfoRef={contactInfoRef}
-                  />
-                </div>
-              )}
-
-              {activeTab === 'offsite' && (
-                <div className="space-y-8 max-w-4xl">
-                  <OffsiteSection 
-                    offsiteContext={offsiteContext}
-                    onOffsiteContextChange={handleOffsiteContextChange}
-                    isLoading={isLoadingOffsite}
                   />
                 </div>
               )}

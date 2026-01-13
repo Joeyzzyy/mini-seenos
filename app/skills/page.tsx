@@ -281,11 +281,8 @@ function SkillsPageContent() {
       <header className="h-16 border-b border-[#F3F4F6] bg-white flex items-center justify-between px-8 z-10 shrink-0">
         <div className="flex items-center gap-12 h-full">
           <Link href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-[#F3F4F6] group-hover:scale-110 transition-transform shrink-0">
-              <Image src="/product-logo.webp" alt="Logo" width={24} height={24} className="rounded-xl" />
-            </div>
             <div className="hidden md:block">
-              <h1 className="text-sm font-black text-[#111827] uppercase tracking-tighter">Mini Seenos</h1>
+              <h1 className="text-sm font-black text-[#111827] uppercase tracking-tighter">Alternative Page Generator</h1>
             </div>
           </Link>
 
@@ -804,7 +801,7 @@ function SkillsPageContent() {
 
           <footer className="p-4 border-t border-[#F3F4F6] bg-white flex items-center justify-center gap-8 shrink-0">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-[#111827] font-black">Mini Seenos</span>
+              <span className="text-[10px] text-[#111827] font-black">Alternative Page Generator</span>
               <span className="text-[8px] text-[#9CA3AF]">&copy; 2025</span>
               <span className="text-[8px] text-[#9CA3AF] uppercase tracking-wider">Expertise Hub</span>
             </div>

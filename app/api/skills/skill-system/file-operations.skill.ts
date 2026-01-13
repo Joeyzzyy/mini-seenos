@@ -43,7 +43,7 @@ USER EXPERIENCE:
     category: 'system',
     tags: ['csv', 'json', 'markdown', 'export'],
     version: '1.1.0',
-    solution: '解决多格式数据导出和持久化需求。通过提供 CSV、JSON 和 Markdown 生成的统一接口，在 AI 生成的洞察和用户可下载的资产之间架起桥梁，确保数据在专业 SEO 工作流程中的可移植性。',
-    changeDescription: '处理 Markdown、CSV、JSON 及 Word (DOCX) 等多种格式的读写转换。',
+    solution: 'Solves multi-format data export and persistence needs. Bridges AI-generated insights and user-downloadable assets by providing unified interfaces for CSV, JSON, and Markdown generation, ensuring data portability in professional SEO workflows.',
+    changeDescription: 'Handles read/write conversion for multiple formats including Markdown, CSV, JSON, and Word (DOCX).',
   },
 };

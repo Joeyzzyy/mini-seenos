@@ -30,7 +30,7 @@ export default async function SharePage({ params }: PageProps) {
               <p className="text-sm font-medium">Conversation not found or inaccessible</p>
             </div>
             <Link href="/chat" className="text-sm font-bold text-[#111827] hover:underline">
-              Back to Mini Seenos
+              Back to Alternative Page Generator
             </Link>
           </div>
         </div>

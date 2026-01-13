@@ -170,7 +170,7 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
               type="text"
               value={footerConfig.companyName}
               onChange={(e) => setFooterConfig({ ...footerConfig, companyName: e.target.value })}
-              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white"
+              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF]"
             />
           </div>
           <div>
@@ -179,7 +179,7 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
               type="text"
               value={footerConfig.tagline}
               onChange={(e) => setFooterConfig({ ...footerConfig, tagline: e.target.value })}
-              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white"
+              className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF]"
             />
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
                 type="text"
                 value={footerConfig.backgroundColor}
                 onChange={(e) => setFooterConfig({ ...footerConfig, backgroundColor: e.target.value })}
-                className="flex-1 px-1.5 py-0.5 border border-[#E5E5E5] rounded focus:outline-none text-[10px] font-mono"
+                className="flex-1 px-1.5 py-0.5 border border-[#E5E5E5] rounded focus:outline-none text-[10px] font-mono bg-white text-[#111827]"
               />
               <div 
                 className="w-5 h-5 rounded border border-[#E5E5E5] flex-shrink-0"
@@ -207,7 +207,7 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
                 type="text"
                 value={footerConfig.textColor}
                 onChange={(e) => setFooterConfig({ ...footerConfig, textColor: e.target.value })}
-                className="flex-1 px-1.5 py-0.5 border border-[#E5E5E5] rounded focus:outline-none text-[10px] font-mono"
+                className="flex-1 px-1.5 py-0.5 border border-[#E5E5E5] rounded focus:outline-none text-[10px] font-mono bg-white text-[#111827]"
               />
               <input
                 type="color"
@@ -233,7 +233,7 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
                       newColumns[colIndex].title = e.target.value;
                       setFooterConfig({ ...footerConfig, columns: newColumns });
                     }}
-                    className="flex-1 px-1 py-0.5 text-[9px] font-bold border-b border-transparent hover:border-[#E5E5E5] focus:border-[#9AD6FF] focus:outline-none uppercase tracking-tight"
+                    className="flex-1 px-1 py-0.5 text-[9px] font-bold border-b border-transparent hover:border-[#E5E5E5] focus:border-[#9AD6FF] focus:outline-none uppercase tracking-tight bg-white text-[#111827] placeholder:text-[#9CA3AF]"
                   />
                   <button
                     type="button"
@@ -260,7 +260,7 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
                           setFooterConfig({ ...footerConfig, columns: newColumns });
                         }}
                         placeholder="Link"
-                        className="flex-1 px-1 py-0.5 text-[9px] border border-transparent hover:border-[#F0F0F0] rounded focus:outline-none"
+                        className="flex-1 px-1 py-0.5 text-[9px] border border-transparent hover:border-[#F0F0F0] rounded focus:outline-none bg-white text-[#111827] placeholder:text-[#9CA3AF]"
                       />
                       <button
                         type="button"
@@ -339,7 +339,7 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
                     setFooterConfig({ ...footerConfig, socialMedia: newSocial });
                   }}
                   placeholder="URL"
-                  className="flex-1 px-1 py-0.5 text-[9px] border-none focus:ring-0 font-mono truncate"
+                  className="flex-1 px-1 py-0.5 text-[9px] border-none focus:ring-0 font-mono truncate bg-white text-[#111827] placeholder:text-[#9CA3AF]"
                 />
                 <button
                   type="button"

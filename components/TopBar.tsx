@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface TopBarProps {
   onDomainsClick?: () => void;
@@ -15,6 +15,7 @@ interface TopBarProps {
 
 export default function TopBar({ onDomainsClick, onGSCClick, user: propUser, showBackToProjects }: TopBarProps) {
   const [user, setUser] = useState<User | null>(propUser || null);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   useEffect(() => {
     if (propUser !== undefined) {
@@ -43,24 +44,17 @@ export default function TopBar({ onDomainsClick, onGSCClick, user: propUser, sho
 
   return (
     <div className="flex items-center justify-between px-4 py-2">
-      {/* 左侧 Logo */}
+      {/* Left side title */}
       <Link 
         href="/" 
         target="_blank" 
         rel="noopener noreferrer" 
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
       >
-        <Image 
-          src="/product-logo.webp" 
-          alt="Mini Seenos Logo" 
-          width={24} 
-          height={24}
-          className="rounded-lg"
-        />
-        <span className="text-base font-bold text-[#111827]">Mini Seenos</span>
+        <span className="text-base font-bold text-[#111827]">Alternative Page Generator</span>
       </Link>
 
-      {/* 右侧功能按钮和用户信息 */}
+      {/* Right side function buttons and user info */}
       {user && (
         <div className="flex items-center gap-3">
           {/* Function Buttons */}
@@ -107,35 +101,6 @@ export default function TopBar({ onDomainsClick, onGSCClick, user: propUser, sho
               </button>
             )}
 
-            {/* Skills Link */}
-            <Link
-              href="/skills"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center gap-0.5 px-2 py-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-all"
-              title="AI Skills & Tools"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-              <span className="text-[9px] font-medium">Skills</span>
-            </Link>
-
-            {/* Feedbacks Link - Document/clipboard icon */}
-            <Link
-              href="/feedbacks"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center gap-0.5 px-2 py-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-all"
-              title="Message Feedbacks"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-              <span className="text-[9px] font-medium">Feedback</span>
-            </Link>
           </div>
 
           <div className="w-px h-8 bg-[#E5E5E5]"></div>
@@ -166,10 +131,24 @@ export default function TopBar({ onDomainsClick, onGSCClick, user: propUser, sho
             </span>
           </div>
 
+          {/* Switch Site Button */}
+          {showBackToProjects && (
+            <Link
+              href="/projects"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-all text-xs font-medium cursor-pointer"
+              title="Switch Site"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+              </svg>
+              <span>Switch Site</span>
+            </Link>
+          )}
+
           {/* Sign Out Button */}
           <button
-            onClick={handleSignOut}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[#6B7280] hover:text-[#EF4444] hover:bg-[#FEF2F2] rounded-lg transition-all text-xs font-medium"
+            onClick={() => setShowSignOutConfirm(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[#6B7280] hover:text-[#EF4444] hover:bg-[#FEF2F2] rounded-lg transition-all text-xs font-medium cursor-pointer"
             title="Sign Out"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -180,6 +159,19 @@ export default function TopBar({ onDomainsClick, onGSCClick, user: propUser, sho
             <span>Sign Out</span>
           </button>
         </div>
+      )}
+
+      {/* Sign Out Confirmation Modal */}
+      {showSignOutConfirm && (
+        <ConfirmModal
+          title="Sign Out"
+          message="Are you sure you want to sign out? You will need to sign in again to access your projects."
+          confirmText="Sign Out"
+          cancelText="Cancel"
+          onConfirm={handleSignOut}
+          onCancel={() => setShowSignOutConfirm(false)}
+          isDangerous
+        />
       )}
     </div>
   );

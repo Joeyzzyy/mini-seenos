@@ -73,7 +73,7 @@ export default function ProjectsPage() {
       router.push(`/chat/${project.id}`);
     } catch (error) {
       console.error('Failed to create project:', error);
-      alert('Failed to create project. Please try again.');
+      alert('Failed to create site. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -88,7 +88,7 @@ export default function ProjectsPage() {
       setDeletingProject(null);
     } catch (error) {
       console.error('Failed to delete project:', error);
-      alert('Failed to delete project. Please try again.');
+      alert('Failed to delete site. Please try again.');
     }
   };
 
@@ -100,7 +100,7 @@ export default function ProjectsPage() {
             <Image src="/product-logo.webp" alt="Logo" width={64} height={64} className="mx-auto rounded-xl" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Please Sign In</h1>
-          <p className="text-gray-500 mb-8">You need to sign in to manage your projects.</p>
+          <p className="text-gray-500 mb-8">You need to sign in to manage your sites.</p>
           <AuthButton />
         </div>
       </div>
@@ -120,8 +120,8 @@ export default function ProjectsPage() {
       <main className="flex-1 max-w-4xl mx-auto w-full px-8 py-12">
         <div className="flex items-center justify-between mb-12">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Your Projects</h1>
-            <p className="text-gray-500 mt-1">Select or add a domain project to start working</p>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Your Sites</h1>
+            <p className="text-gray-500 mt-1">Select or add a site to start creating alternative pages</p>
           </div>
           <button 
             onClick={() => setIsAdding(true)}
@@ -130,7 +130,7 @@ export default function ProjectsPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
             </svg>
-            Add Project
+            Add Site
           </button>
         </div>
 
@@ -143,7 +143,7 @@ export default function ProjectsPage() {
                 placeholder="e.g. example.com"
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
-                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
+                className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-gray-300 transition-all"
                 autoFocus
               />
               <button
@@ -151,7 +151,7 @@ export default function ProjectsPage() {
                 disabled={isSubmitting || !newDomain.trim()}
                 className="px-6 py-3 bg-black text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                {isSubmitting ? 'Adding...' : 'Add Project'}
+                {isSubmitting ? 'Adding...' : 'Add Site'}
               </button>
               <button
                 type="button"
@@ -170,7 +170,7 @@ export default function ProjectsPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
-            <p className="text-sm text-gray-500 animate-pulse">Loading your projects...</p>
+            <p className="text-sm text-gray-500 animate-pulse">Loading your sites...</p>
           </div>
         ) : projects.length === 0 && !isAdding ? (
           <div className="bg-white border-2 border-dashed border-gray-200 rounded-[32px] p-16 text-center">
@@ -179,15 +179,15 @@ export default function ProjectsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">No projects found</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">No sites found</h3>
             <p className="text-gray-500 max-w-xs mx-auto mb-8 text-sm">
-              Enter your domain to start generating AI-powered SEO content and manage your site context.
+              Enter your domain to start creating alternative pages for your competitors.
             </p>
             <button 
               onClick={() => setIsAdding(true)}
               className="px-6 py-3 bg-black text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
-              Add My First Project
+              Add My First Site
             </button>
           </div>
         ) : (
@@ -213,7 +213,7 @@ export default function ProjectsPage() {
                       setDeletingProject(project);
                     }}
                     className="p-2 text-[#9CA3AF] hover:text-[#EF4444] hover:bg-red-50 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100 cursor-pointer"
-                    title="Delete Project"
+                    title="Delete Site"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h14" />
@@ -226,7 +226,7 @@ export default function ProjectsPage() {
                     {project.domain}
                   </h3>
                   <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest mt-1">
-                    Manage SEO & Context
+                    Create Alternative Pages
                   </p>
                 </div>
 
@@ -247,9 +247,9 @@ export default function ProjectsPage() {
 
       {deletingProject && (
         <ConfirmModal
-          title="Delete Project"
-          message={`Are you sure you want to delete the project for "${deletingProject.domain}"? This will permanently remove all associated site contexts and conversations.`}
-          confirmText="Delete Project"
+          title="Delete Site"
+          message={`Are you sure you want to delete "${deletingProject.domain}"? This will permanently remove all associated data and conversations.`}
+          confirmText="Delete Site"
           onConfirm={handleDeleteProject}
           onCancel={() => setDeletingProject(null)}
           isDangerous={true}

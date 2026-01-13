@@ -33,9 +33,6 @@ export default function SharePageClient({ conversation, messages, files }: Share
       {/* Header */}
       <header className="h-16 border-b border-[#F3F4F6] bg-white sticky top-0 z-10 flex items-center px-6">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-[#F3F4F6]">
-            <Image src="/product-logo.webp" alt="Logo" width={20} height={20} />
-          </div>
           <div className="flex flex-col min-w-0">
             <h1 className="text-sm font-bold text-[#111827] truncate">
               {conversation.title}
@@ -50,7 +47,7 @@ export default function SharePageClient({ conversation, messages, files }: Share
             rel="noopener noreferrer"
             className="text-xs font-bold text-[#111827] bg-[#F3F4F6] px-4 py-2 rounded-xl border border-[#E5E5E5] hover:bg-[#E5E5E5] transition-all"
           >
-            Try Mini Seenos
+            Try Alternative Page Generator
           </Link>
         </div>
       </header>
@@ -72,7 +69,7 @@ export default function SharePageClient({ conversation, messages, files }: Share
       {/* Footer */}
       <footer className="p-6 border-t border-[#F3F4F6] bg-white text-center">
         <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-widest">
-          Created with Mini Seenos Agent &bull; 2025
+          Created with Alternative Page Generator &bull; 2025
         </p>
       </footer>
 

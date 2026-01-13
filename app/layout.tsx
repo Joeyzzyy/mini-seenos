@@ -6,8 +6,8 @@ const geistSans = { variable: "--font-geist-sans" };
 const geistMono = { variable: "--font-geist-mono" };
 
 export const metadata: Metadata = {
-  title: "Mini Seenos",
-  description: "Mini Seenos - SEO Agent with Gemini AI and Semrush integration",
+  title: "Alternative Page Generator",
+  description: "Alternative Page Generator - AI-powered alternative page generator",
   icons: {
     icon: '/tab-logo.webp',
     shortcut: '/tab-logo.webp',

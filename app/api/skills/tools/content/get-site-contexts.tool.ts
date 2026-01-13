@@ -44,6 +44,7 @@ Available context types:
 - "about-us": Company story, mission & vision, core values
 - "faq": Frequently asked questions
 - "contact-information": Contact details (primary contact, location, hours, support channels)
+- "competitors": Competitor list (JSON array of {name, url} objects)
 
 Use this tool BEFORE generating HTML pages to ensure the generated pages include the user's branding, layout, and relevant content.`,
   parameters: z.object({
@@ -55,7 +56,7 @@ Use this tool BEFORE generating HTML pages to ensure the generated pages include
       'hero-section', 'problem-statement', 'who-we-serve',
       'use-cases', 'industries', 'products-services',
       'social-proof-trust', 'leadership-team', 'about-us',
-      'faq', 'contact-information'
+      'faq', 'contact-information', 'competitors'
     ])).optional().describe('Specific context types to fetch. If not provided, fetches all types.')
   }),
   execute: async ({ user_id, projectId, types }) => {

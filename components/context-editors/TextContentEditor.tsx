@@ -42,7 +42,7 @@ export default function TextContentEditor({
         onChange={(e) => handleChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9AD6FF] resize-none"
+        className="w-full px-3 py-2 text-sm bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9AD6FF] resize-none"
       />
     </div>
   );

@@ -1,13 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
+const isMissingConfig = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (isMissingConfig && typeof window !== 'undefined') {
   console.warn('⚠️ Supabase environment variables are missing. Auth features will not work.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const isSupabaseConfigured = !isMissingConfig;
 
 /**
  * Creates a Supabase client with service role key to bypass RLS.
@@ -113,7 +116,7 @@ export interface SiteContext {
         'hero-section' | 'problem-statement' | 'who-we-serve' | 
         'use-cases' | 'industries' | 'products-services' | 
         'social-proof-trust' | 'leadership-team' | 'about-us' | 
-        'faq' | 'contact-information';
+        'faq' | 'contact-information' | 'competitors';
   content: string | null; // For header/footer/meta code or sitemap JSON, or structured JSON for new types
   file_url: string | null; // Deprecated: Use logo_light_url or logo_dark_url instead
   // Brand Assets fields

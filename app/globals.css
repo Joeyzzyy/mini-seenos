@@ -37,6 +37,32 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Ensure all clickable elements have pointer cursor */
+button,
+a,
+[role="button"],
+[onclick],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+select,
+label[for],
+summary,
+.clickable,
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
+/* Disable pointer for disabled elements */
+button:disabled,
+input:disabled,
+select:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* Loading ball animation */
 @keyframes scale-pulse {
   0%, 100% {
@@ -179,4 +205,76 @@ body {
 .markdown-content code {
   white-space: pre-wrap !important;
   word-break: break-word !important;
+}
+
+/* Enhanced markdown content styling */
+.markdown-content h2 {
+  position: relative;
+}
+
+.markdown-content table {
+  font-feature-settings: 'tnum' on, 'lnum' on;
+}
+
+.markdown-content table td {
+  vertical-align: top;
+}
+
+/* Better table cell content wrapping */
+.markdown-content table td > div {
+  max-width: 280px;
+}
+
+/* Smooth transitions for interactive elements */
+.markdown-content a {
+  transition: all 0.15s ease;
+}
+
+.markdown-content blockquote {
+  position: relative;
+}
+
+/* List item bullet styling */
+.markdown-content ul li::marker {
+  color: #9A8FEA;
+}
+
+.markdown-content ol li::marker {
+  color: #6B7280;
+  font-weight: 600;
+}
+
+/* Code block scrollbar */
+.markdown-content pre::-webkit-scrollbar {
+  height: 6px;
+}
+
+.markdown-content pre::-webkit-scrollbar-track {
+  background: #1F2937;
+  border-radius: 3px;
+}
+
+.markdown-content pre::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  border-radius: 3px;
+}
+
+.markdown-content pre::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
+}
+
+/* Message fade in animation */
+@keyframes message-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-message-in {
+  animation: message-fade-in 0.3s ease-out forwards;
 }

@@ -10,8 +10,8 @@ import { find_topic_gaps } from '../tools/content/find-topic-gaps.tool';
 
 export const pagePlannerSkill: Skill = {
   id: 'page-planner',
-  name: 'Build: Page Planner',
-  description: 'Architect a full Topic Cluster by defining Pillar and Supporting pages with TDK, SEO data, and outlines',
+  name: 'Build: Alternative Page Planner',
+  description: 'Plan alternative pages targeting competitor keywords with TDK, SEO data, and outlines',
   systemPrompt: `You are a Content Architect and SEO Strategist. Your goal is to take a brainstormed topic and turn it into a comprehensive, ready-to-execute Topic Cluster.
 
 CORE OBJECTIVE:
@@ -82,7 +82,7 @@ NOTE: The table is your "Master Blueprint". Internal linking is the glue of the 
     priority: '2',
     tags: ['outline', 'planning', 'structure', 'cluster'],
     version: '1.5.0',
-    solution: '将高层主题转化为可执行的内容集群。定义支柱页面和支持页面之间的关系，用真实的 Semrush 数据验证每个 URL，并逆向工程竞品的 SERP 结构，在保存到数据库之前创建获胜的 H1-H3 大纲。',
+    solution: 'Transform high-level topics into executable content clusters. Define relationships between pillar and supporting pages, validate URLs with real Semrush data, and reverse-engineer competitor SERP structures to create winning H1-H3 outlines before saving to database.',
     demoUrl: '',
     whatThisSkillWillDo: [
       'Define Pillar and Supporting pages',
@@ -92,17 +92,12 @@ NOTE: The table is your "Master Blueprint". Internal linking is the glue of the 
       'Save to content database'
     ],
     whatArtifactsWillBeGenerated: [],
-    expectedOutput: `• Topic Cluster 结构图（1 个 Pillar + 3-5 个 Supporting 页面）
-• 每个页面的完整 TDK（Title, Description, Keywords）
-• Semrush 验证的 SEO 指标（搜索量、难度、CPC）
-• 基于 SERP 竞品逆向工程的 H1-H3 大纲（每个页面）
-• 数据库保存确认：所有页面已保存到 content_items 表`,
-    expectedOutputEn: `• Topic Cluster structure diagram (1 Pillar + 3-5 Supporting pages)
+    expectedOutput: `• Topic Cluster structure diagram (1 Pillar + 3-5 Supporting pages)
 • Complete TDK for each page (Title, Description, Keywords)
 • Semrush-validated SEO metrics (search volume, difficulty, CPC)
 • H1-H3 outline reverse-engineered from SERP competitors (for each page)
 • Database save confirmation: all pages saved to content_items table`,
-    changeDescription: '将主题转化为包含 Pillar/Supporting 结构的完整集群规划。',
+    changeDescription: 'Transform topics into complete cluster planning with Pillar/Supporting structure.',
     playbook: {
       trigger: {
         type: 'form',
