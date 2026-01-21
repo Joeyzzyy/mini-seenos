@@ -17,25 +17,25 @@ const PLANS = [
     name: 'Starter',
     price: 9.9,
     credits: 10,
-    description: '适合初试身手',
-    features: ['10 页面生成额度', '基础支持', '30 天有效期'],
+    description: 'Perfect to get started',
+    features: ['10 page credits', 'Basic support', '30-day validity'],
   },
   {
     id: 'standard',
     name: 'Standard',
     price: 19.9,
     credits: 20,
-    description: '最受欢迎',
+    description: 'Most popular',
     popular: true,
-    features: ['20 页面生成额度', '优先支持', '60 天有效期', '批量生成'],
+    features: ['20 page credits', 'Priority support', '60-day validity', 'Batch generation'],
   },
   {
     id: 'pro',
     name: 'Pro',
     price: 39.9,
     credits: 50,
-    description: '专业用户首选',
-    features: ['50 页面生成额度', '专属支持', '90 天有效期', '批量生成', 'API 访问'],
+    description: 'For power users',
+    features: ['50 page credits', 'Dedicated support', '90-day validity', 'Batch generation', 'API access'],
   },
 ];
 
@@ -50,7 +50,7 @@ export default function PricingModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 重置状态
+  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setSelectedPlan(null);
@@ -68,7 +68,7 @@ export default function PricingModal({
 
   const createOrder = async () => {
     if (!selectedPlan) {
-      setError('请先选择一个计划');
+      setError('Please select a plan first');
       throw new Error('No plan selected');
     }
 
@@ -86,7 +86,7 @@ export default function PricingModal({
     const data = await response.json();
     
     if (!response.ok) {
-      setError(data.error || '创建订单失败');
+      setError(data.error || 'Failed to create order');
       throw new Error(data.error);
     }
 
@@ -110,17 +110,17 @@ export default function PricingModal({
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error || '支付确认失败');
+        setError(result.error || 'Payment confirmation failed');
         return;
       }
 
-      // 支付成功
+      // Payment successful
       onPaymentSuccess(result.new_total, result.subscription_tier);
       onClose();
       
     } catch (err) {
       console.error('Payment error:', err);
-      setError('支付处理出错，请稍后重试');
+      setError('Payment processing failed. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -128,12 +128,12 @@ export default function PricingModal({
 
   const onError = (err: any) => {
     console.error('PayPal error:', err);
-    setError('PayPal 支付出错，请稍后重试');
+    setError('PayPal payment error. Please try again.');
     setIsProcessing(false);
   };
 
   const onCancel = () => {
-    setError('支付已取消');
+    setError('Payment cancelled');
     setIsProcessing(false);
   };
 
@@ -150,9 +150,9 @@ export default function PricingModal({
         {/* Header */}
         <div className="sticky top-0 bg-[#1a1a2e] border-b border-[#2d2d44] px-6 py-4 flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-white">升级你的计划</h2>
+            <h2 className="text-2xl font-bold text-white">Upgrade Your Plan</h2>
             <p className="text-gray-400 text-sm mt-1">
-              当前: {currentCredits} 积分 · {currentTier} 计划
+              Current: {currentCredits} credits · {currentTier} plan
             </p>
           </div>
           <button
@@ -188,7 +188,7 @@ export default function PricingModal({
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full">
-                    最受欢迎
+                    MOST POPULAR
                   </div>
                 )}
                 
@@ -204,7 +204,7 @@ export default function PricingModal({
                 
                 <div className="text-center mb-6">
                   <span className="inline-block bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-medium">
-                    {plan.credits} 积分
+                    {plan.credits} credits
                   </span>
                 </div>
                 
@@ -265,7 +265,7 @@ export default function PricingModal({
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    正在处理支付...
+                    Processing payment...
                   </div>
                 </div>
               )}
@@ -278,9 +278,9 @@ export default function PricingModal({
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
-              安全支付由 PayPal 提供
+              Secure payment powered by PayPal
             </div>
-            <p>支付完成后积分将立即到账</p>
+            <p>Credits will be added instantly after payment</p>
           </div>
         </div>
       </div>

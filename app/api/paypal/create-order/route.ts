@@ -70,18 +70,18 @@ export async function POST(request: NextRequest) {
     
     if (authError || !user) {
       return NextResponse.json(
-        { error: '请先登录后再购买' },
+        { error: 'Please sign in first' },
         { status: 401 }
       );
     }
 
-    // 解析请求体
+    // Parse request body
     const body = await request.json();
     const { plan } = body as { plan: keyof typeof PRICING_PLANS };
 
     if (!plan || !PRICING_PLANS[plan]) {
       return NextResponse.json(
-        { error: '无效的订阅计划' },
+        { error: 'Invalid subscription plan' },
         { status: 400 }
       );
     }
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       const errorData = await orderResponse.text();
       console.error('Failed to create PayPal order:', errorData);
       return NextResponse.json(
-        { error: '创建订单失败，请稍后重试' },
+        { error: 'Failed to create order. Please try again.' },
         { status: 500 }
       );
     }
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating PayPal order:', error);
     return NextResponse.json(
-      { error: '服务器错误，请稍后重试' },
+      { error: 'Server error. Please try again later.' },
       { status: 500 }
     );
   }

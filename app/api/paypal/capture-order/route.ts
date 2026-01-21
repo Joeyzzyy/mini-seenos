@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// PayPal API 基础配置
+// PayPal API configuration
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
 const PAYPAL_API_BASE = process.env.NODE_ENV === 'production' 
   ? 'https://api-m.paypal.com'
   : 'https://api-m.sandbox.paypal.com';
 
-// 定价配置
+// Pricing configuration
 const PRICING_PLANS = {
   starter: { price: '9.90', credits: 10, tier: 'starter' },
   standard: { price: '19.90', credits: 20, tier: 'standard' },
@@ -39,7 +39,7 @@ function createAuthenticatedClient(request: NextRequest) {
   );
 }
 
-// 获取 PayPal Access Token
+// Get PayPal Access Token
 async function getPayPalAccessToken(): Promise<string> {
   const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
   
@@ -62,32 +62,32 @@ async function getPayPalAccessToken(): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
-    // 验证用户身份
+    // Verify user identity
     const supabase = createAuthenticatedClient(request);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
       return NextResponse.json(
-        { error: '请先登录' },
+        { error: 'Please sign in first' },
         { status: 401 }
       );
     }
 
-    // 解析请求体
+    // Parse request body
     const body = await request.json();
     const { orderID } = body as { orderID: string };
 
     if (!orderID) {
       return NextResponse.json(
-        { error: '订单ID缺失' },
+        { error: 'Order ID is missing' },
         { status: 400 }
       );
     }
 
-    // 获取 PayPal Access Token
+    // Get PayPal Access Token
     const accessToken = await getPayPalAccessToken();
 
-    // 捕获（完成）PayPal 订单
+    // Capture (complete) PayPal order
     const captureResponse = await fetch(
       `${PAYPAL_API_BASE}/v2/checkout/orders/${orderID}/capture`,
       {
@@ -103,22 +103,22 @@ export async function POST(request: NextRequest) {
       const errorData = await captureResponse.text();
       console.error('Failed to capture PayPal order:', errorData);
       return NextResponse.json(
-        { error: '支付确认失败' },
+        { error: 'Payment confirmation failed' },
         { status: 500 }
       );
     }
 
     const captureData = await captureResponse.json();
 
-    // 检查支付状态
+    // Check payment status
     if (captureData.status !== 'COMPLETED') {
       return NextResponse.json(
-        { error: '支付未完成', status: captureData.status },
+        { error: 'Payment not completed', status: captureData.status },
         { status: 400 }
       );
     }
 
-    // 从订单中提取计划信息
+    // Extract plan info from order
     const purchaseUnit = captureData.purchase_units?.[0];
     let planInfo: { user_id: string; plan: keyof typeof PRICING_PLANS; credits: number } | null = null;
     
@@ -132,21 +132,21 @@ export async function POST(request: NextRequest) {
       console.error('Failed to parse custom_id:', e);
     }
 
-    // 验证用户匹配
+    // Verify user match
     if (planInfo && planInfo.user_id !== user.id) {
       console.error('User mismatch:', { expected: planInfo.user_id, actual: user.id });
       return NextResponse.json(
-        { error: '订单用户不匹配' },
+        { error: 'Order user mismatch' },
         { status: 403 }
       );
     }
 
-    // 确定要添加的积分数量
+    // Determine credits to add
     const plan = planInfo?.plan || 'starter';
     const creditsToAdd = PRICING_PLANS[plan]?.credits || 10;
     const newTier = PRICING_PLANS[plan]?.tier || 'starter';
 
-    // 更新用户积分 - 使用数据库函数
+    // Update user credits - use database function
     const { data: newCredits, error: updateError } = await supabaseAdmin.rpc(
       'add_user_credits',
       {
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error('Failed to add credits:', updateError);
-      // 回退：直接更新表
+      // Fallback: direct table update
       const { error: directError } = await supabaseAdmin
         .from('user_profiles')
         .update({
@@ -172,13 +172,13 @@ export async function POST(request: NextRequest) {
       if (directError) {
         console.error('Direct update also failed:', directError);
         return NextResponse.json(
-          { error: '积分更新失败，请联系客服' },
+          { error: 'Failed to update credits. Please contact support.' },
           { status: 500 }
         );
       }
     }
 
-    // 更新订单状态（如果表存在）
+    // Update order status (if table exists)
     try {
       await supabaseAdmin.from('payment_orders').update({
         status: 'COMPLETED',
@@ -186,10 +186,10 @@ export async function POST(request: NextRequest) {
         completed_at: new Date().toISOString(),
       }).eq('id', orderID);
     } catch {
-      // 忽略表不存在的错误
+      // Ignore if table doesn't exist
     }
 
-    // 获取更新后的用户信息
+    // Get updated user profile
     const { data: updatedProfile } = await supabaseAdmin
       .from('user_profiles')
       .select('credits, subscription_tier, subscription_status')
@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: '支付成功！',
+      message: 'Payment successful!',
       credits_added: creditsToAdd,
       new_total: updatedProfile?.credits || newCredits,
       subscription_tier: updatedProfile?.subscription_tier || newTier,
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error capturing PayPal order:', error);
     return NextResponse.json(
-      { error: '服务器错误，请稍后重试' },
+      { error: 'Server error. Please try again later.' },
       { status: 500 }
     );
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase, getSEOProjects, createSEOProject, deleteSEOProject, SEOProject } from '@/lib/supabase';
@@ -9,6 +9,7 @@ import AuthButton from '@/components/AuthButton';
 import TopBar from '@/components/TopBar';
 import DomainsModal from '@/components/DomainsModal';
 import ConfirmModal from '@/components/ConfirmModal';
+import PricingModal from '@/components/PricingModal';
 
 export default function ProjectsPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -21,6 +22,8 @@ export default function ProjectsPage() {
   const [deletingProject, setDeletingProject] = useState<SEOProject | null>(null);
   const [userCredits, setUserCredits] = useState<number>(1);
   const [subscriptionTier, setSubscriptionTier] = useState<string>('free');
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const hasShownPricingModal = useRef(false);
   const router = useRouter();
   
   const brandGradient = 'linear-gradient(80deg, #FFAF40, #D194EC, #9A8FEA, #65B4FF)';
@@ -39,10 +42,26 @@ export default function ProjectsPage() {
         const data = await response.json();
         setUserCredits(data.credits ?? 1);
         setSubscriptionTier(data.subscription_tier ?? 'free');
+        
+        // Auto-show pricing modal for free tier users (only once per session)
+        if (data.subscription_tier === 'free' && !hasShownPricingModal.current) {
+          hasShownPricingModal.current = true;
+          // Small delay to ensure page is loaded
+          setTimeout(() => {
+            setShowPricingModal(true);
+          }, 500);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch user credits:', error);
     }
+  };
+
+  // Handle payment success
+  const handlePaymentSuccess = (newCredits: number, newTier: string) => {
+    setUserCredits(newCredits);
+    setSubscriptionTier(newTier);
+    setShowPricingModal(false);
   };
 
   useEffect(() => {
@@ -138,6 +157,7 @@ export default function ProjectsPage() {
           onDomainsClick={() => setIsDomainsOpen(true)}
           credits={userCredits}
           subscriptionTier={subscriptionTier}
+          onCreditsUpdate={handlePaymentSuccess}
         />
       )}
 
@@ -279,6 +299,15 @@ export default function ProjectsPage() {
           isDangerous={true}
         />
       )}
+
+      {/* Pricing Modal - Auto shows for free tier users */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        currentCredits={userCredits}
+        currentTier={subscriptionTier}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 }
