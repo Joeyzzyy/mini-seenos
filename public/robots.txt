@@ -1,0 +1,14 @@
+# https://seopages.pro robots.txt
+
+User-agent: *
+Allow: /
+
+# Disallow private/app areas
+Disallow: /api/
+Disallow: /chat/
+Disallow: /projects/
+Disallow: /feedbacks/
+Disallow: /share/
+
+# Sitemap
+Sitemap: https://seopages.pro/sitemap.xml

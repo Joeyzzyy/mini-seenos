@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 
 interface FilePreviewModalProps {
@@ -128,8 +127,8 @@ export default function FilePreviewModal({
         <div className="flex-1 overflow-y-auto thin-scrollbar">
           {loading ? (
             <div className="flex items-center justify-center h-full bg-[#FAFAFA]">
-              <Image 
-                src="/product-logo.webp" 
+              <img 
+                src="/new-logo.png" 
                 alt="Loading..." 
                 width={96} 
                 height={96}

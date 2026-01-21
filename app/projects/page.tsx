@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase, getSEOProjects, createSEOProject, deleteSEOProject, SEOProject } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
@@ -97,7 +96,7 @@ export default function ProjectsPage() {
       <div className="min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-center font-sans">
         <div className="text-center">
           <div className="mb-8">
-            <Image src="/product-logo.webp" alt="Logo" width={64} height={64} className="mx-auto rounded-xl" />
+            <img src="/new-logo.png" alt="Logo" width={64} height={64} className="mx-auto" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Please Sign In</h1>
           <p className="text-gray-500 mb-8">You need to sign in to manage your sites.</p>

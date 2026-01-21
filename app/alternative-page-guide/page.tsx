@@ -31,6 +31,9 @@ export const metadata: Metadata = {
     url: 'https://seopages.pro/alternative-page-guide',
     images: ['/images/alternative-page-guide/index-hero.webp'],
   },
+  alternates: {
+    canonical: 'https://seopages.pro/alternative-page-guide',
+  },
 };
 
 // Cluster pages for internal linking

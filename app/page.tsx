@@ -599,19 +599,44 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="py-8 sm:py-12 px-4 sm:px-6 border-t border-white/5">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#9A8FEA] via-[#65B4FF] to-[#9A8FEA] rounded-full blur-sm opacity-50 animate-[glow_3s_ease-in-out_infinite]" />
-              <img src="/new-logo.png" alt="SEOPages" className="relative h-6 sm:h-7 w-auto" />
+        <div className="max-w-6xl mx-auto">
+          {/* Main Footer Row */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6 mb-6">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#9A8FEA] via-[#65B4FF] to-[#9A8FEA] rounded-full blur-sm opacity-50 animate-[glow_3s_ease-in-out_infinite]" />
+                <img src="/new-logo.png" alt="SEOPages" className="relative h-6 sm:h-7 w-auto" />
+              </div>
+              <span className="text-white text-sm sm:text-base italic tracking-wide" style={{ fontFamily: '"Playfair Display", Georgia, serif' }}>
+                seopages<span className="text-[#9A8FEA]">.</span>pro
+              </span>
             </div>
-            <span className="text-white text-sm sm:text-base italic tracking-wide" style={{ fontFamily: '"Playfair Display", Georgia, serif' }}>
-              seopages<span className="text-[#9A8FEA]">.</span>pro
-            </span>
+            <nav className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-gray-400">
+              <a href="/" className="hover:text-white transition-colors">Home</a>
+              <a href="/alternative-page-guide" className="hover:text-white transition-colors">Guide</a>
+              <a href="#features" className="hover:text-white transition-colors">Features</a>
+              <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            </nav>
           </div>
-          <p className="text-gray-500 text-xs sm:text-sm text-center">
-            © 2026 seopages.pro. All rights reserved.
-          </p>
+          
+          {/* Legal & Contact Row */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/5">
+            <nav className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs text-gray-500">
+              <a href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</a>
+              <span className="text-gray-700">|</span>
+              <a href="/terms" className="hover:text-gray-300 transition-colors">Terms of Service</a>
+              <span className="text-gray-700">|</span>
+              <a href="mailto:wps_zy@126.com" className="hover:text-gray-300 transition-colors flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                wps_zy@126.com
+              </a>
+            </nav>
+            <p className="text-gray-500 text-xs text-center">
+              © {new Date().getFullYear()} seopages.pro. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
 

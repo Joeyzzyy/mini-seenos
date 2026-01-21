@@ -106,6 +106,7 @@ function extractBodyContent(html: string): { content: string; styles: string } {
 // 生成元数据
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const canonicalUrl = `https://seopages.pro/${CLUSTER}/${slug}`;
   
   // 优先从静态文件获取
   const staticHtml = await getStaticHtmlContent(slug);
@@ -117,7 +118,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       openGraph: {
         title: meta.title,
         description: meta.description,
-        url: `https://seopages.pro/${CLUSTER}/${slug}`,
+        url: canonicalUrl,
+      },
+      alternates: {
+        canonical: canonicalUrl,
       },
     };
   }
@@ -128,11 +132,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: dbContent.seoTitle,
       description: dbContent.seoDescription,
+      alternates: {
+        canonical: canonicalUrl,
+      },
     };
   }
   
   return {
     title: slug.replace(/-/g, ' '),
+    alternates: {
+      canonical: canonicalUrl,
+    },
   };
 }
 

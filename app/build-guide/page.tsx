@@ -2,8 +2,6 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-
 // Icon components
 const Icons = {
   check: (
@@ -1090,7 +1088,7 @@ skillRegistry.register(seoSkill);`,
             {/* Logo & Title */}
             <Link href="/" className="inline-flex items-center gap-3 mb-8 group">
               <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center group-hover:shadow-md transition-shadow">
-                <Image src="/product-logo.webp" alt="Logo" width={20} height={20} />
+                <img src="/new-logo.png" alt="Logo" width={20} height={20} />
               </div>
               <div>
                 <h1 className="text-lg font-semibold text-gray-900">{productInfo.name}</h1>
