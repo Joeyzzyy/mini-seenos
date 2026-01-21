@@ -51,7 +51,7 @@ export default function PlaybookTrigger({ skill, siteContexts = [], onCancel, on
   
   // Extract site info from meta context
   const extractSiteInfo = () => {
-    const metaContext = siteContexts.find(ctx => ctx.type === 'meta');
+    const metaContext = siteContexts.find(ctx => (ctx.type as string) === 'meta');
     if (!metaContext?.content) return { siteName: '', siteUrl: '' };
     
     try {

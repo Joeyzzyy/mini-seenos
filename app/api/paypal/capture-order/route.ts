@@ -179,13 +179,15 @@ export async function POST(request: NextRequest) {
     }
 
     // 更新订单状态（如果表存在）
-    await supabaseAdmin.from('payment_orders').update({
-      status: 'COMPLETED',
-      paypal_capture_id: captureData.purchase_units?.[0]?.payments?.captures?.[0]?.id,
-      completed_at: new Date().toISOString(),
-    }).eq('id', orderID).catch(() => {
+    try {
+      await supabaseAdmin.from('payment_orders').update({
+        status: 'COMPLETED',
+        paypal_capture_id: captureData.purchase_units?.[0]?.payments?.captures?.[0]?.id,
+        completed_at: new Date().toISOString(),
+      }).eq('id', orderID);
+    } catch {
       // 忽略表不存在的错误
-    });
+    }
 
     // 获取更新后的用户信息
     const { data: updatedProfile } = await supabaseAdmin

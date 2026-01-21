@@ -41,8 +41,8 @@ export default function ContextModal({
       const logoContext = siteContexts.find(c => c.type === 'logo');
       const headerContext = siteContexts.find(c => c.type === 'header');
       const footerContext = siteContexts.find(c => c.type === 'footer');
-      const metaContext = siteContexts.find(c => c.type === 'meta');
-      const sitemapContext = siteContexts.find(c => c.type === 'sitemap');
+      const metaContext = siteContexts.find(c => (c.type as string) === 'meta');
+      const sitemapContext = siteContexts.find(c => (c.type as string) === 'sitemap');
 
       setFormData({
         logo: logoContext?.file_url || logoContext?.content || '',

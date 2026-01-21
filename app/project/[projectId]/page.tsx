@@ -66,7 +66,7 @@ export default function ProjectChatPage() {
   const [toast, setToast] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: '' });
   const [isDomainsOpen, setIsDomainsOpen] = useState(false);
   const [isContextModalOpen, setIsContextModalOpen] = useState(false);
-  const [contextModalInitialTab, setContextModalInitialTab] = useState<'onsite' | 'knowledge'>('onsite');
+  const [contextModalInitialTab, setContextModalInitialTab] = useState<'brand' | 'competitors'>('brand');
   
   // Task state
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -772,7 +772,7 @@ Execute the full page generation workflow.`;
               setRefreshingSiteContexts(false);
             }}
             onOpenContextModal={(tab) => {
-              setContextModalInitialTab(tab || 'onsite');
+              setContextModalInitialTab(tab || 'brand');
               setIsContextModalOpen(true);
             }}
             isRefreshingSiteContexts={refreshingSiteContexts}

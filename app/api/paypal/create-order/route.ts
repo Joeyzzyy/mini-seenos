@@ -137,20 +137,22 @@ export async function POST(request: NextRequest) {
     const orderData = await orderResponse.json();
 
     // 可选：将订单记录到数据库
-    await supabaseAdmin.from('payment_orders').insert({
-      id: orderData.id,
-      user_id: user.id,
-      plan: plan,
-      amount: selectedPlan.price,
-      currency: 'USD',
-      credits: selectedPlan.credits,
-      status: 'CREATED',
-      provider: 'paypal',
-      created_at: new Date().toISOString(),
-    }).catch(err => {
+    try {
+      await supabaseAdmin.from('payment_orders').insert({
+        id: orderData.id,
+        user_id: user.id,
+        plan: plan,
+        amount: selectedPlan.price,
+        currency: 'USD',
+        credits: selectedPlan.credits,
+        status: 'CREATED',
+        provider: 'paypal',
+        created_at: new Date().toISOString(),
+      });
+    } catch (err: any) {
       // 如果表不存在，忽略错误（可选功能）
-      console.log('Note: payment_orders table may not exist:', err.message);
-    });
+      console.log('Note: payment_orders table may not exist:', err?.message);
+    }
 
     return NextResponse.json({
       orderID: orderData.id,

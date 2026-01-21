@@ -25,7 +25,7 @@ interface TaskListProps {
   onGeneratePage: (item: ContentItem) => void;
   onRefreshContent: () => void;
   onRefreshSiteContexts: () => void;
-  onOpenContextModal: (tab?: 'onsite' | 'knowledge') => void;
+  onOpenContextModal: (tab?: 'brand' | 'competitors') => void;
   isRefreshingSiteContexts?: boolean;
   isRefreshingContent?: boolean;
   contextTaskStatus: TaskStatus;
@@ -79,7 +79,7 @@ export default function TaskList({
   const hasContextData = () => {
     const logoContext = siteContexts.find(ctx => ctx.type === 'logo');
     const competitorsContext = siteContexts.find(ctx => ctx.type === 'competitors');
-    return !!(logoContext?.brand_name || competitorsContext?.content);
+    return !!(logoContext?.domain_name || logoContext?.logo_url || competitorsContext?.content);
   };
 
   // Context task

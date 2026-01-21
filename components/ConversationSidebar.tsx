@@ -293,9 +293,9 @@ export default function ConversationSidebar({
                 )}
               </div>
 
-              {/* Knowledge */}
+              {/* Knowledge (Brand Info) */}
               <button
-                onClick={() => onOpenContextModal?.('knowledge')}
+                onClick={() => onOpenContextModal?.('brand')}
                 className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-[#F3F4F6] text-left group transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-2 flex-1">

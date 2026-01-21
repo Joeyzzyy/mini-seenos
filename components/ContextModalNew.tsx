@@ -673,9 +673,9 @@ export default function ContextModalNew({
                               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M5 13l4 4L19 7" />
                               </svg>
-                              {value.extracted ? `${value.extracted} fields` : 
-                               value.navItems ? `${value.navItems} nav items` :
-                               value.columns ? `${value.columns} columns` : 'Done'}
+                              {(value as any).extracted ? `${(value as any).extracted} fields` : 
+                               (value as any).navItems ? `${(value as any).navItems} nav items` :
+                               (value as any).columns ? `${(value as any).columns} columns` : 'Done'}
                             </span>
                           ) : (
                             <span className="text-[#EF4444]">{value.error || 'Failed'}</span>
@@ -715,8 +715,8 @@ export default function ContextModalNew({
                   Add your competitors to generate comparison pages.
                 </p>
                 <CompetitorsEditor
-                  initialValue={competitorsContent}
-                  onChange={setCompetitorsContent}
+                  initialContent={competitorsContent}
+                  onContentChange={setCompetitorsContent}
                 />
               </div>
             )}
