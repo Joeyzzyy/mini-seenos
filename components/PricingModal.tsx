@@ -10,6 +10,7 @@ interface PricingModalProps {
   currentCredits: number;
   currentTier: string;
   onPaymentSuccess: (newCredits: number, newTier: string) => void;
+  initialPlan?: 'starter' | 'standard' | 'pro' | null; // Pre-selected plan from homepage
 }
 
 const PLANS = [
@@ -61,16 +62,20 @@ export default function PricingModal({
   currentCredits,
   currentTier,
   onPaymentSuccess,
+  initialPlan = null,
 }: PricingModalProps) {
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(initialPlan);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const accessTokenRef = useRef<string | null>(null);
 
+  // Determine if we should show direct checkout (when plan is pre-selected from homepage)
+  const isDirectCheckout = !!initialPlan;
+
   // Get session token when modal opens
   useEffect(() => {
     if (isOpen) {
-      setSelectedPlan(null);
+      setSelectedPlan(initialPlan);
       setIsProcessing(false);
       setError(null);
       
@@ -79,7 +84,7 @@ export default function PricingModal({
         accessTokenRef.current = session?.access_token || null;
       });
     }
-  }, [isOpen]);
+  }, [isOpen, initialPlan]);
 
   if (!isOpen) return null;
 
@@ -177,6 +182,141 @@ export default function PricingModal({
     setIsProcessing(false);
   };
 
+  const currentPlan = PLANS.find(p => p.id === selectedPlan);
+
+  // Direct Checkout Mode - Show only payment for pre-selected plan
+  if (isDirectCheckout && currentPlan) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        {/* Backdrop */}
+        <div 
+          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+          onClick={onClose}
+        />
+        
+        {/* Compact Payment Modal */}
+        <div className="relative bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md mx-4">
+          {/* Header */}
+          <div className="border-b border-white/5 px-6 py-4 flex justify-between items-center">
+            <h2 className="text-xl font-bold text-white">Complete Purchase</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {error}
+              </div>
+            )}
+
+            {/* Plan Summary Card */}
+            <div className={`relative p-5 rounded-xl mb-6 ${
+              currentPlan.popular
+                ? 'bg-gradient-to-br from-[#9A8FEA]/20 via-[#65B4FF]/10 to-transparent border border-[#9A8FEA]/30'
+                : 'bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10'
+            }`}>
+              {currentPlan.popular && (
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-[#FFAF40] via-[#9A8FEA] to-[#65B4FF] rounded-full text-[10px] font-semibold text-white">
+                  MOST POPULAR
+                </div>
+              )}
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{currentPlan.name} Plan</h3>
+                  <p className="text-gray-400 text-sm">{currentPlan.credits} page credits</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-white">${currentPlan.price}</div>
+                  <div className="text-gray-500 text-xs">one-time</div>
+                </div>
+              </div>
+
+              {/* Features Summary */}
+              <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-2">
+                {currentPlan.features.slice(0, 4).map((feature, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <svg className="w-3.5 h-3.5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>
+                      {feature.highlight ? (
+                        <><span className="text-white font-medium">{feature.text}</span>{feature.suffix}</>
+                      ) : (
+                        feature.text
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* PayPal Button */}
+            <div className="mb-4">
+              <PayPalScriptProvider
+                options={{
+                  clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '',
+                  currency: 'USD',
+                  intent: 'capture',
+                }}
+              >
+                <div className={isProcessing ? 'opacity-50 pointer-events-none' : ''}>
+                  <PayPalButtons
+                    style={{
+                      layout: 'vertical',
+                      color: 'blue',
+                      shape: 'rect',
+                      label: 'paypal',
+                      height: 45,
+                    }}
+                    createOrder={createOrder}
+                    onApprove={onApprove}
+                    onError={onError}
+                    onCancel={onCancel}
+                    disabled={isProcessing}
+                  />
+                </div>
+              </PayPalScriptProvider>
+              
+              {isProcessing && (
+                <div className="text-center mt-3">
+                  <div className="inline-flex items-center text-[#9A8FEA] text-sm">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Processing payment...
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Security Notice */}
+            <p className="text-gray-500 text-xs text-center flex items-center justify-center gap-1.5">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              Secure payment · Credits added instantly
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Full Plan Selection Mode (from TopBar or other places)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
@@ -217,7 +357,7 @@ export default function PricingModal({
             </div>
           )}
 
-          {/* Plans Grid - Same as homepage */}
+          {/* Plans Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
             {PLANS.map((plan) => (
               <div

@@ -741,6 +741,7 @@ export default function HomePage() {
         currentCredits={userCredits}
         currentTier={subscriptionTier}
         onPaymentSuccess={handlePaymentSuccess}
+        initialPlan={selectedPlan}
       />
     </div>
   );
