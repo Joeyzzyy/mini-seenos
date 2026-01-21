@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 // PayPal API configuration
+// Use PAYPAL_MODE env var to explicitly set mode, defaults to 'live' in production
+const PAYPAL_MODE = process.env.PAYPAL_MODE || (process.env.NODE_ENV === 'production' ? 'live' : 'sandbox');
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
-const PAYPAL_API_BASE = process.env.NODE_ENV === 'production' 
+const PAYPAL_API_BASE = PAYPAL_MODE === 'live' 
   ? 'https://api-m.paypal.com'
   : 'https://api-m.sandbox.paypal.com';
 
