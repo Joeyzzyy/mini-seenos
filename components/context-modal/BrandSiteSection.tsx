@@ -3,8 +3,35 @@
 import { useState, useEffect } from 'react';
 import HeaderEditor from '../context-editors/HeaderEditor';
 import FooterEditor from '../context-editors/FooterEditor';
-import SitemapViewer from '../context-editors/SitemapViewer';
 import type { BrandSiteSectionProps } from './types';
+
+/**
+ * Ensure logo URL is absolute by prepending domain if it's a relative path
+ */
+function ensureAbsoluteLogoUrl(logoUrl: string | null | undefined, domainName: string | undefined): string | undefined {
+  if (!logoUrl) return undefined;
+  
+  // Already absolute URL
+  if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+    return logoUrl;
+  }
+  
+  // Data URI - return as is
+  if (logoUrl.startsWith('data:')) {
+    return logoUrl;
+  }
+  
+  // Relative path - needs domain to make absolute
+  if (domainName) {
+    const baseUrl = domainName.startsWith('http') ? domainName : `https://${domainName}`;
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+    const normalizedPath = logoUrl.startsWith('/') ? logoUrl : `/${logoUrl}`;
+    return `${normalizedBase}${normalizedPath}`;
+  }
+  
+  // No domain available, return as is (will be relative)
+  return logoUrl;
+}
 
 // Asset Upload Field Component
 const AssetUploadField = ({ 
@@ -48,31 +75,20 @@ const AssetUploadField = ({
     }
   };
 
-  const handleImageLoad = () => {
-    setPreviewState('success');
-  };
+  const handleImageLoad = () => setPreviewState('success');
+  const handleImageError = () => setPreviewState('error');
 
-  const handleImageError = () => {
-    setPreviewState('error');
-  };
-
-  // Initial preview URL
   const currentPreviewUrl = previewUrl || displayUrl || (value.trim() ? value : null);
 
   return (
     <div className="space-y-1.5">
       <label className="block text-xs font-medium text-[#374151]">{label}</label>
       <div className="flex gap-2">
-        {/* Preview Box */}
         <div className="w-12 h-12 border border-[#E5E5E5] rounded-lg flex items-center justify-center bg-[#F9FAFB] flex-shrink-0 overflow-hidden">
           {currentPreviewUrl ? (
             <>
-              {previewState === 'loading' && (
-                <span className="text-[10px] text-[#9CA3AF]">Loading</span>
-              )}
-              {previewState === 'error' && (
-                <span className="text-[10px] text-red-500">Preview Error</span>
-              )}
+              {previewState === 'loading' && <span className="text-[10px] text-[#9CA3AF]">Loading</span>}
+              {previewState === 'error' && <span className="text-[10px] text-red-500">Error</span>}
               <img 
                 src={currentPreviewUrl} 
                 alt={label}
@@ -85,8 +101,6 @@ const AssetUploadField = ({
             <span className="text-[10px] text-[#9CA3AF]">No preview</span>
           )}
         </div>
-        
-        {/* Input & Upload */}
         <div className="flex-1 space-y-1.5">
           <input
             type="text"
@@ -96,13 +110,7 @@ const AssetUploadField = ({
             className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA] focus:border-transparent"
           />
           <label className="flex items-center gap-1.5 cursor-pointer text-[10px] text-[#6B7280] hover:text-[#374151]">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-              id={id}
-            />
+            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id={id} />
             <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
             </svg>
@@ -116,35 +124,20 @@ const AssetUploadField = ({
 
 export default function BrandSiteSection({
   siteContexts,
-  showDebugInfo = false,
-  metaTitle,
-  setMetaTitle,
-  metaDescription,
-  setMetaDescription,
-  metaKeywords,
-  setMetaKeywords,
   domainName,
   setDomainName,
   ogImage,
   setOgImage,
   onOgImageFileChange,
   ogImagePreview,
-  logoLightUrl,
-  setLogoLightUrl,
-  logoDarkUrl,
-  setLogoDarkUrl,
-  faviconLightUrl,
-  setFaviconLightUrl,
-  faviconDarkUrl,
-  setFaviconDarkUrl,
-  onLogoLightFileChange,
-  onLogoDarkFileChange,
-  onFaviconLightFileChange,
-  onFaviconDarkFileChange,
-  logoLightPreview,
-  logoDarkPreview,
-  faviconLightPreview,
-  faviconDarkPreview,
+  logoUrl,
+  setLogoUrl,
+  faviconUrl,
+  setFaviconUrl,
+  onLogoFileChange,
+  onFaviconFileChange,
+  logoPreview,
+  faviconPreview,
   primaryColor,
   setPrimaryColor,
   secondaryColor,
@@ -153,8 +146,6 @@ export default function BrandSiteSection({
   setHeadingFont,
   bodyFont,
   setBodyFont,
-  tone,
-  setTone,
   languages,
   setLanguages,
   userLogoUrl,
@@ -163,37 +154,37 @@ export default function BrandSiteSection({
   brandAssetsRef,
   colorsRef,
   typographyRef,
-  toneRef,
   languagesRef,
   headerRef,
   footerRef,
-  sitemapRef,
 }: BrandSiteSectionProps) {
-  const sitemapContext = siteContexts.find(c => c.type === 'sitemap');
-  const logoContext = siteContexts.find(c => c.type === 'logo');
   const headerContext = siteContexts.find(c => c.type === 'header');
   const footerContext = siteContexts.find(c => c.type === 'footer');
+  
+  // Ensure logo URL is absolute for header/footer generation
+  const absoluteLogoUrl = ensureAbsoluteLogoUrl(userLogoUrl, domainName);
 
   // State for header and footer initial config
   const [headerInitialConfig, setHeaderInitialConfig] = useState<any>(null);
   const [footerInitialConfig, setFooterInitialConfig] = useState<any>(null);
 
-  // Parse header and footer data from siteContexts
+  // Parse header config from content (JSON format)
   useEffect(() => {
     if (headerContext?.content) {
+      const content = headerContext.content.trim();
+      // Skip if content is HTML (legacy format)
+      if (content.startsWith('<')) return;
+      
       try {
-        const parsedHeader = JSON.parse(headerContext.content);
-        // Transform API format to HeaderEditor format
-        // Use primaryColor from colors if available, otherwise default to dark
+        const parsedHeader = JSON.parse(content);
+        // Ensure logo URL is absolute
+        const configLogoUrl = ensureAbsoluteLogoUrl(parsedHeader.logo || logoUrl, domainName);
         setHeaderInitialConfig({
-          siteName: logoContext?.brand_name || '',
-          logo: logoLightUrl || '',
-          navigation: parsedHeader.navigation?.map((nav: any) => ({
-            label: nav.text,
-            url: nav.url
-          })) || [],
-          ctaButton: {
-            label: parsedHeader.ctaText || 'Get Started',
+          siteName: parsedHeader.siteName || '',
+          logo: configLogoUrl || '',
+          navigation: parsedHeader.navigation || [],
+          ctaButton: parsedHeader.ctaButton || {
+            label: 'Get Started',
             url: '#',
             color: primaryColor || '#111827',
           },
@@ -202,36 +193,33 @@ export default function BrandSiteSection({
         console.error('Failed to parse header content:', err);
       }
     }
-  }, [headerContext, logoContext, logoLightUrl, primaryColor]);
+  }, [headerContext, logoUrl, primaryColor, domainName]);
 
+  // Parse footer config from content (JSON format)
   useEffect(() => {
     if (footerContext?.content) {
+      const content = footerContext.content.trim();
+      // Skip if content is HTML (legacy format)
+      if (content.startsWith('<')) return;
+      
       try {
-        const parsedFooter = JSON.parse(footerContext.content);
-        // Transform API format to FooterEditor format
-        // Use white background by default, with dark text
+        const parsedFooter = JSON.parse(content);
+        // Ensure logo URL is absolute
+        const configLogoUrl = ensureAbsoluteLogoUrl(parsedFooter.logo || logoUrl, domainName);
         setFooterInitialConfig({
-          companyName: logoContext?.brand_name || '',
-          tagline: metaDescription || '',
-          backgroundColor: '#FFFFFF',
-          textColor: '#374151',
-          columns: parsedFooter.columns?.map((col: any) => ({
-            title: col.title,
-            links: col.links.map((link: any) => ({
-              label: link.text,
-              url: link.url
-            }))
-          })) || [],
-          socialMedia: parsedFooter.socialLinks?.map((social: any) => ({
-            platform: social.platform,
-            url: social.url
-          })) || [],
+          companyName: parsedFooter.companyName || '',
+          tagline: parsedFooter.tagline || '',
+          logo: configLogoUrl || '',
+          backgroundColor: parsedFooter.backgroundColor || '#FFFFFF',
+          textColor: parsedFooter.textColor || '#374151',
+          columns: parsedFooter.columns || [],
+          socialMedia: parsedFooter.socialMedia || [],
         });
       } catch (err) {
         console.error('Failed to parse footer content:', err);
       }
     }
-  }, [footerContext, logoContext, metaDescription]);
+  }, [footerContext, logoUrl, domainName]);
 
   return (
     <div>
@@ -242,103 +230,51 @@ export default function BrandSiteSection({
         <h3 className="text-base font-bold text-[#111827]">Brand & Site</h3>
       </div>
 
-      {/* Meta Info */}
+      {/* Domain Name */}
       <div ref={brandAssetsRef} className="space-y-3 pl-6 mb-5">
-        <h4 className="text-xs font-semibold text-[#111827]">Meta Info</h4>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1">Title</label>
-            <input
-              type="text"
-              value={metaTitle}
-              onChange={(e) => setMetaTitle(e.target.value)}
-              placeholder="Page title"
-              className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1">Keywords</label>
-            <input
-              type="text"
-              value={metaKeywords}
-              onChange={(e) => setMetaKeywords(e.target.value)}
-              placeholder="keyword1, keyword2, keyword3"
-              className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-[#374151] mb-1">Description</label>
-          <textarea
-            value={metaDescription}
-            onChange={(e) => setMetaDescription(e.target.value)}
-            placeholder="Brief description of the page"
-            rows={3}
-            className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA] resize-none"
-          />
-        </div>
+        <h4 className="text-xs font-semibold text-[#111827]">Domain</h4>
         <div>
           <label className="block text-xs font-medium text-[#374151] mb-1">Domain Name</label>
           <input
             type="text"
             value={domainName}
             onChange={(e) => setDomainName(e.target.value)}
-            placeholder="https://example.com"
+            placeholder="example.com"
             className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
           />
         </div>
-        <AssetUploadField
-          id="og-image"
-          label="OG Image"
-          value={ogImage}
-          onChange={setOgImage}
-          onFileChange={onOgImageFileChange}
-          previewUrl={ogImagePreview}
-          placeholder="https://example.com/og-image.png"
-        />
       </div>
 
-      {/* Logo & Favicon */}
+      {/* Logo, Favicon & OG Image */}
       <div className="space-y-3 pl-6 mb-5 pt-5 border-t border-[#F3F4F6]">
-        <h4 className="text-xs font-semibold text-[#111827]">Logo & Favicon</h4>
-        <div className="grid grid-cols-2 gap-3">
+        <h4 className="text-xs font-semibold text-[#111827]">Logo, Favicon & OG Image</h4>
+        <div className="grid grid-cols-3 gap-3">
           <AssetUploadField
-            id="logo-light"
-            label="Light Theme Logo"
-            value={logoLightUrl}
-            onChange={setLogoLightUrl}
-            onFileChange={onLogoLightFileChange}
-            previewUrl={logoLightPreview}
-            placeholder="https://example.com/logo-light.svg"
+            id="logo"
+            label="Logo"
+            value={logoUrl}
+            onChange={setLogoUrl}
+            onFileChange={onLogoFileChange}
+            previewUrl={logoPreview}
+            placeholder="https://example.com/logo.svg"
           />
           <AssetUploadField
-            id="logo-dark"
-            label="Dark Theme Logo"
-            value={logoDarkUrl}
-            onChange={setLogoDarkUrl}
-            onFileChange={onLogoDarkFileChange}
-            previewUrl={logoDarkPreview}
-            placeholder="https://example.com/logo-dark.svg"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <AssetUploadField
-            id="favicon-light"
-            label="Light Theme Favicon"
-            value={faviconLightUrl}
-            onChange={setFaviconLightUrl}
-            onFileChange={onFaviconLightFileChange}
-            previewUrl={faviconLightPreview}
+            id="favicon"
+            label="Favicon"
+            value={faviconUrl}
+            onChange={setFaviconUrl}
+            onFileChange={onFaviconFileChange}
+            previewUrl={faviconPreview}
             placeholder="https://example.com/favicon.ico"
           />
           <AssetUploadField
-            id="favicon-dark"
-            label="Dark Theme Favicon"
-            value={faviconDarkUrl}
-            onChange={setFaviconDarkUrl}
-            onFileChange={onFaviconDarkFileChange}
-            previewUrl={faviconDarkPreview}
-            placeholder="https://example.com/favicon-dark.ico"
+            id="og-image"
+            label="OG Image"
+            value={ogImage}
+            onChange={setOgImage}
+            onFileChange={onOgImageFileChange}
+            previewUrl={ogImagePreview}
+            placeholder="https://example.com/og.png"
           />
         </div>
       </div>
@@ -352,7 +288,7 @@ export default function BrandSiteSection({
             <div className="flex gap-2">
               <input
                 type="color"
-                value={primaryColor}
+                value={primaryColor || '#9A8FEA'}
                 onChange={(e) => setPrimaryColor(e.target.value)}
                 className="w-8 h-8 border border-[#E5E5E5] rounded-lg cursor-pointer"
               />
@@ -360,6 +296,7 @@ export default function BrandSiteSection({
                 type="text"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
+                placeholder="#9A8FEA"
                 className="flex-1 px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
               />
             </div>
@@ -369,7 +306,7 @@ export default function BrandSiteSection({
             <div className="flex gap-2">
               <input
                 type="color"
-                value={secondaryColor}
+                value={secondaryColor || '#FF5733'}
                 onChange={(e) => setSecondaryColor(e.target.value)}
                 className="w-8 h-8 border border-[#E5E5E5] rounded-lg cursor-pointer"
               />
@@ -377,23 +314,12 @@ export default function BrandSiteSection({
                 type="text"
                 value={secondaryColor}
                 onChange={(e) => setSecondaryColor(e.target.value)}
+                placeholder="#FF5733"
                 className="flex-1 px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
               />
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Tone */}
-      <div ref={toneRef} className="space-y-3 pl-6 mb-5 pt-5 border-t border-[#F3F4F6]">
-        <h4 className="text-xs font-semibold text-[#111827]">Tone</h4>
-        <input
-          type="text"
-          value={tone}
-          onChange={(e) => setTone(e.target.value)}
-          placeholder="e.g., Professional, Friendly, Casual"
-          className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
-        />
       </div>
 
       {/* Typography */}
@@ -409,7 +335,6 @@ export default function BrandSiteSection({
               placeholder="e.g., Montserrat, Poppins"
               className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
             />
-            <p className="text-[10px] text-[#9CA3AF] mt-0.5">Font used for headings (H1, H2, etc.)</p>
           </div>
           <div>
             <label className="block text-xs font-medium text-[#374151] mb-1">Body Font</label>
@@ -417,10 +342,9 @@ export default function BrandSiteSection({
               type="text"
               value={bodyFont}
               onChange={(e) => setBodyFont(e.target.value)}
-              placeholder="e.g., Inter, Roboto, Open Sans"
+              placeholder="e.g., Inter, Roboto"
               className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
             />
-            <p className="text-[10px] text-[#9CA3AF] mt-0.5">Font used for body text and paragraphs</p>
           </div>
         </div>
       </div>
@@ -435,31 +359,18 @@ export default function BrandSiteSection({
           placeholder="e.g., en, zh, es (comma-separated)"
           className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
         />
-        <p className="text-[10px] text-[#9CA3AF]">Supported languages on the website</p>
       </div>
 
       {/* Header & Footer */}
       <div className="space-y-3 pl-6 mb-5 pt-5 border-t border-[#F3F4F6]">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-semibold text-[#111827]">Header & Footer</h4>
-          {domainName && (
-            <div className="flex items-center gap-1.5 text-[10px] text-[#6B7280]">
-              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="16" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-              <span>Use Site Context skill in chat to auto-extract</span>
-            </div>
-          )}
-        </div>
+        <h4 className="text-xs font-semibold text-[#111827]">Header & Footer</h4>
         
         {/* Header */}
         <div ref={headerRef} className="space-y-2">
           <label className="block text-xs font-medium text-[#6B7280]">Header Navigation</label>
           <HeaderEditor
             initialConfig={headerInitialConfig || undefined}
-            logoUrl={userLogoUrl || undefined}
+            logoUrl={absoluteLogoUrl}
             onConfigChange={setHeaderConfig}
           />
         </div>
@@ -469,18 +380,11 @@ export default function BrandSiteSection({
           <label className="block text-xs font-medium text-[#6B7280]">Footer Links</label>
           <FooterEditor
             initialConfig={footerInitialConfig || undefined}
-            logoUrl={userLogoUrl || undefined}
+            logoUrl={absoluteLogoUrl}
             onConfigChange={setFooterConfig}
           />
         </div>
       </div>
-
-      {/* Sitemap */}
-      <div ref={sitemapRef} className="space-y-3 pl-6 mb-5 pt-5 border-t border-[#F3F4F6]">
-        <h4 className="text-xs font-semibold text-[#111827]">Sitemap</h4>
-        <SitemapViewer content={sitemapContext?.content || undefined} />
-      </div>
     </div>
   );
 }
-

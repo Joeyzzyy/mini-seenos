@@ -41,14 +41,17 @@ Returns HTML that can be assembled into the full page.`,
       text: z.string().default('Get Started'),
       url: z.string().default('/'),
     }).optional(),
-    cta_secondary: z.object({
-      text: z.string().default('See Comparison'),
-      url: z.string().default('#comparison'),
+    // EEAT E01/T05: Author and update info for trust signals
+    author: z.object({
+      name: z.string().default('Editorial Team').describe('Author or team name'),
+      role: z.string().optional().describe('Author role, e.g., "Product Research Team"'),
     }).optional(),
+    last_updated: z.string().optional().describe('Last updated date in ISO format'),
   }),
-  execute: async ({ brand, competitor, seo_description, cta_primary, cta_secondary }) => {
+  execute: async ({ brand, competitor, seo_description, cta_primary, author, last_updated }) => {
     const primaryCta = cta_primary || { text: `Try ${brand.name}`, url: '/' };
-    const secondaryCta = cta_secondary || { text: 'See Comparison', url: '#comparison' };
+    const authorInfo = author || { name: 'Editorial Team', role: 'Product Research' };
+    const updateDate = last_updated || new Date().toISOString().split('T')[0];
     
     // Generate fallback SVG logos
     const brandInitial = brand.name.charAt(0).toUpperCase();
@@ -109,14 +112,28 @@ Returns HTML that can be assembled into the full page.`,
       </p>
       ` : ''}
       
-      <!-- CTAs - Brand color ONLY for primary button -->
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4">
-        <a href="${escapeHtml(primaryCta.url)}" class="w-full sm:w-auto btn-primary px-6 md:px-8 py-3 md:py-4 rounded-xl text-sm md:text-base text-center">
+      <!-- CTA - Brand color for primary button -->
+      <div class="flex items-center justify-center mb-6 md:mb-8">
+        <a href="${escapeHtml(primaryCta.url)}" class="btn-primary px-6 md:px-8 py-3 md:py-4 rounded-xl text-sm md:text-base text-center">
           ${escapeHtml(primaryCta.text)}
         </a>
-        <a href="${escapeHtml(secondaryCta.url)}" class="w-full sm:w-auto btn-secondary px-6 md:px-8 py-3 md:py-4 rounded-xl text-sm md:text-base text-center">
-          ${escapeHtml(secondaryCta.text)}
-        </a>
+      </div>
+      
+      <!-- EEAT E01/T05: Author & Update Info for Trust Signals -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-500">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          <span>By <strong class="text-gray-700">${escapeHtml(authorInfo.name)}</strong>${authorInfo.role ? `, ${escapeHtml(authorInfo.role)}` : ''}</span>
+        </div>
+        <div class="hidden sm:block w-1 h-1 rounded-full bg-gray-300"></div>
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span>Updated <time datetime="${updateDate}">${new Date(updateDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</time></span>
+        </div>
       </div>
     </div>
   </section>`;

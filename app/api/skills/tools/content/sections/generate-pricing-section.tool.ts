@@ -61,8 +61,14 @@ Returns HTML that can be assembled into the full page.`,
       }),
     }),
     value_summary: z.string().describe('Summary paragraph about pricing value comparison'),
+    // EEAT R01/A01: Data source citations for reliability
+    data_sources: z.object({
+      brand_pricing_url: z.string().optional().describe('URL to brand pricing page'),
+      competitor_pricing_url: z.string().optional().describe('URL to competitor pricing page'),
+      last_checked: z.string().optional().describe('When pricing was last verified'),
+    }).optional(),
   }),
-  execute: async ({ brand, competitor, value_summary }) => {
+  execute: async ({ brand, competitor, value_summary, data_sources }) => {
     const brandInitial = brand.name.charAt(0).toUpperCase();
     const competitorInitial = competitor.name.charAt(0).toUpperCase();
 
@@ -183,6 +189,31 @@ Returns HTML that can be assembled into the full page.`,
           <div>
             <h4 class="font-semibold text-gray-900 mb-2">Value Analysis</h4>
             <p class="text-sm text-gray-700 leading-relaxed">${escapeHtml(value_summary)}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- EEAT R01/A01: Data Source Citations -->
+      <div class="mt-4 p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-100">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div class="text-xs text-gray-500">
+            <span class="font-medium text-gray-600">Pricing Sources:</span>
+            ${data_sources?.brand_pricing_url ? `
+            <a href="${escapeHtml(data_sources.brand_pricing_url)}" target="_blank" rel="noopener" class="ml-2 text-gray-600 hover:text-gray-900 underline underline-offset-2">${escapeHtml(brand.name)} Official Pricing</a>
+            ` : ''}
+            ${data_sources?.competitor_pricing_url ? `
+            <span class="mx-1">|</span>
+            <a href="${escapeHtml(data_sources.competitor_pricing_url)}" target="_blank" rel="noopener" class="text-gray-600 hover:text-gray-900 underline underline-offset-2">${escapeHtml(competitor.name)} Official Pricing</a>
+            ` : ''}
+            ${data_sources?.last_checked ? `
+            <span class="ml-2 text-gray-400">(Verified ${escapeHtml(data_sources.last_checked)})</span>
+            ` : ''}
+            ${!data_sources?.brand_pricing_url && !data_sources?.competitor_pricing_url ? `
+            <span class="ml-1">Pricing information sourced from official websites. Last verified ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}.</span>
+            ` : ''}
           </div>
         </div>
       </div>

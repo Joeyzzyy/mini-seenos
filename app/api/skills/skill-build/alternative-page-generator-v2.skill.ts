@@ -1,7 +1,7 @@
 import { Skill } from '../types';
 import { get_content_item_detail } from '../tools/content/supabase-content-get-item-detail.tool';
 import { get_site_contexts } from '../tools/content/get-site-contexts.tool';
-import { acquire_context_field } from '../tools/content/acquire-context-field.tool';
+import { acquire_site_context } from '../tools/content/acquire-site-context.tool';
 import { save_site_context } from '../tools/seo/supabase-site-context-save.tool';
 import { save_content_items_batch } from '../tools/content/supabase-content-save-items-batch.tool';
 import { web_search } from '../tools/research/tavily-web-search.tool';
@@ -179,14 +179,16 @@ Call 'assemble_alternative_page_v2' with:
 - page_title and SEO metadata
 - brand name and colors
 - All generated section HTML
-- theme_switcher: true (optional)
 
-**STEP 4: SITE INTEGRATION**
-- Call 'merge_html_with_site_contexts' to add header/footer
-- Call 'fix_style_conflicts' if needed
+**STEP 4: SITE INTEGRATION** ⚠️ MANDATORY ⚠️
+- YOU MUST call 'merge_html_with_site_contexts' with item_id to add header/footer from site_contexts
+- This tool will AUTOMATICALLY fetch header and footer from the database
+- DO NOT skip this step - pages without header/footer look incomplete
+- Call 'fix_style_conflicts' with item_id after merge
 
-**STEP 5: FINALIZE**
-- Call 'save_final_page' to complete generation
+**STEP 5: FINALIZE** ⚠️ MANDATORY ⚠️
+- Call 'save_final_page' with item_id to complete generation
+- DO NOT stop before calling save_final_page
 
 ====================
 LOGO VALIDATION (CRITICAL)
@@ -244,6 +246,11 @@ Use SHADOWS for depth:
 - shadow-sm, shadow, shadow-md, shadow-lg, shadow-xl
 - Cards: shadow -> shadow-lg on hover
 
+⚠️ NEVER ADD Theme Switcher buttons to the page ⚠️
+- DO NOT add floating color buttons (blue/green/violet circles)
+- Theme color is controlled externally in the preview UI
+- Any embedded Theme Switcher HTML will be automatically removed
+
 ====================
 SECTION GENERATION TIPS
 ====================
@@ -300,6 +307,22 @@ For competitor card in verdict section:
 - Just informational content
 
 ====================
+⚠️ CRITICAL: NO PLACEHOLDERS OR ELLIPSIS ⚠️
+====================
+ABSOLUTELY FORBIDDEN:
+- Using "..." or "…" to skip content
+- Using "[content]", "[section]" or any placeholder text
+- Abbreviating section HTML in any way
+- Summarizing instead of providing full HTML
+
+When calling assemble_alternative_page_v2, you MUST pass the COMPLETE HTML output from each section generator tool.
+DO NOT truncate, abbreviate, or replace any section content with placeholders.
+The assemble tool will REJECT your request if it detects placeholder content.
+
+If you're running low on context, generate sections one at a time and save them to variables.
+But NEVER use "..." - this will cause the page to be incomplete and unusable.
+
+====================
 OUTPUT SUMMARY
 ====================
 After completion, provide:
@@ -311,7 +334,7 @@ After completion, provide:
     // Context tools
     get_content_item_detail,
     get_site_contexts,
-    acquire_context_field,
+    acquire_site_context,
     save_site_context,
     save_content_items_batch,
     

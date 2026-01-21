@@ -125,7 +125,7 @@ export default function AlternativePageGuidePillar() {
         {/* Contextual Internal Link */}
         <RelatedLinkCard 
           href="/alternative-page-guide/alternative-page-seo-best-practices"
-          title="📈 10 SEO Best Practices for Alternative Pages"
+          title="10 SEO Best Practices for Alternative Pages"
           description="Master the SEO techniques that help alternative pages rank higher."
         />
         
@@ -188,7 +188,7 @@ export default function AlternativePageGuidePillar() {
         {/* Contextual Internal Link */}
         <RelatedLinkCard 
           href="/alternative-page-guide/how-to-write-alternative-page-copy"
-          title="✍️ How to Write Alternative Page Copy"
+          title="How to Write Alternative Page Copy"
           description="Copywriting techniques for high-converting comparison pages."
         />
         

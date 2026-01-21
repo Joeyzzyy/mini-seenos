@@ -79,14 +79,14 @@ skillRegistry.register(alternativePageGeneratorV2Skill);
 /**
  * Get system prompt by combining all enabled skills
  */
-export function getCombinedSystemPrompt(userId?: string, conversationId?: string): string {
+export function getCombinedSystemPrompt(userId?: string, projectId?: string): string {
   const skills = skillRegistry.getEnabled();
   
   const basePrompt = `You are Alternative Page Generator, an AI assistant specialized in creating TOP-TIER Alternative/Comparison landing pages.
 
 CURRENT CONTEXT:
 ${userId ? `- Current User ID: ${userId}` : ''}
-${conversationId ? `- Current Conversation ID: ${conversationId}` : ''}
+${projectId ? `- Current SEO Project ID: ${projectId}` : ''}
 - Current Time: ${new Date().toLocaleString('en-US', { timeZone: 'UTC', dateStyle: 'full', timeStyle: 'long' })} (UTC)
 
 ====================

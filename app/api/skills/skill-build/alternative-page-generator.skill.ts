@@ -1,7 +1,7 @@
 import { Skill } from '../types';
 import { get_content_item_detail } from '../tools/content/supabase-content-get-item-detail.tool';
 import { get_site_contexts } from '../tools/content/get-site-contexts.tool';
-import { acquire_context_field } from '../tools/content/acquire-context-field.tool';
+import { acquire_site_context } from '../tools/content/acquire-site-context.tool';
 import { save_site_context } from '../tools/seo/supabase-site-context-save.tool';
 import { save_content_items_batch } from '../tools/content/supabase-content-save-items-batch.tool';
 import { web_search } from '../tools/research/tavily-web-search.tool';
@@ -101,6 +101,10 @@ Each section must include:
 Call 'assemble_html_page' with:
 - item_id, page_title, page_type: 'alternative'
 - Complete SEO metadata (title, description, keywords)
+- site_url: The main product website URL (from logo context or brand site URL)
+- cta_button: { text: "Try [ProductName] Free", url: "https://product-site.com" }
+  ⚠️ CRITICAL: This CTA button links to the product website for conversion!
+  Use the domain from site context (logo context contains the site URL)
 - All sections with markdown content
 - Image placeholders if applicable
 
@@ -151,7 +155,7 @@ After completion, provide:
   tools: {
     get_content_item_detail,
     get_site_contexts,
-    acquire_context_field,
+    acquire_site_context,
     save_site_context,
     save_content_items_batch,
     web_search,

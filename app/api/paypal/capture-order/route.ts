@@ -1,0 +1,214 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// PayPal API 基础配置
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
+const PAYPAL_API_BASE = process.env.NODE_ENV === 'production' 
+  ? 'https://api-m.paypal.com'
+  : 'https://api-m.sandbox.paypal.com';
+
+// 定价配置
+const PRICING_PLANS = {
+  starter: { price: '9.90', credits: 10, tier: 'starter' },
+  standard: { price: '19.90', credits: 20, tier: 'standard' },
+  pro: { price: '39.90', credits: 50, tier: 'pro' },
+} as const;
+
+// Supabase admin client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+// Helper to create authenticated Supabase client
+function createAuthenticatedClient(request: NextRequest) {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        persistSession: false,
+      },
+      global: {
+        headers: {
+          Authorization: request.headers.get('Authorization') || '',
+        },
+      },
+    }
+  );
+}
+
+// 获取 PayPal Access Token
+async function getPayPalAccessToken(): Promise<string> {
+  const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
+  
+  const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${auth}`,
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to authenticate with PayPal');
+  }
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // 验证用户身份
+    const supabase = createAuthenticatedClient(request);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: '请先登录' },
+        { status: 401 }
+      );
+    }
+
+    // 解析请求体
+    const body = await request.json();
+    const { orderID } = body as { orderID: string };
+
+    if (!orderID) {
+      return NextResponse.json(
+        { error: '订单ID缺失' },
+        { status: 400 }
+      );
+    }
+
+    // 获取 PayPal Access Token
+    const accessToken = await getPayPalAccessToken();
+
+    // 捕获（完成）PayPal 订单
+    const captureResponse = await fetch(
+      `${PAYPAL_API_BASE}/v2/checkout/orders/${orderID}/capture`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!captureResponse.ok) {
+      const errorData = await captureResponse.text();
+      console.error('Failed to capture PayPal order:', errorData);
+      return NextResponse.json(
+        { error: '支付确认失败' },
+        { status: 500 }
+      );
+    }
+
+    const captureData = await captureResponse.json();
+
+    // 检查支付状态
+    if (captureData.status !== 'COMPLETED') {
+      return NextResponse.json(
+        { error: '支付未完成', status: captureData.status },
+        { status: 400 }
+      );
+    }
+
+    // 从订单中提取计划信息
+    const purchaseUnit = captureData.purchase_units?.[0];
+    let planInfo: { user_id: string; plan: keyof typeof PRICING_PLANS; credits: number } | null = null;
+    
+    try {
+      if (purchaseUnit?.payments?.captures?.[0]?.custom_id) {
+        planInfo = JSON.parse(purchaseUnit.payments.captures[0].custom_id);
+      } else if (purchaseUnit?.custom_id) {
+        planInfo = JSON.parse(purchaseUnit.custom_id);
+      }
+    } catch (e) {
+      console.error('Failed to parse custom_id:', e);
+    }
+
+    // 验证用户匹配
+    if (planInfo && planInfo.user_id !== user.id) {
+      console.error('User mismatch:', { expected: planInfo.user_id, actual: user.id });
+      return NextResponse.json(
+        { error: '订单用户不匹配' },
+        { status: 403 }
+      );
+    }
+
+    // 确定要添加的积分数量
+    const plan = planInfo?.plan || 'starter';
+    const creditsToAdd = PRICING_PLANS[plan]?.credits || 10;
+    const newTier = PRICING_PLANS[plan]?.tier || 'starter';
+
+    // 更新用户积分 - 使用数据库函数
+    const { data: newCredits, error: updateError } = await supabaseAdmin.rpc(
+      'add_user_credits',
+      {
+        user_id: user.id,
+        credits_to_add: creditsToAdd,
+        new_tier: newTier,
+      }
+    );
+
+    if (updateError) {
+      console.error('Failed to add credits:', updateError);
+      // 回退：直接更新表
+      const { error: directError } = await supabaseAdmin
+        .from('user_profiles')
+        .update({
+          credits: supabaseAdmin.rpc('get_user_credits', { user_id: user.id }) as unknown as number + creditsToAdd,
+          subscription_tier: newTier,
+          subscription_status: 'active',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+      
+      if (directError) {
+        console.error('Direct update also failed:', directError);
+        return NextResponse.json(
+          { error: '积分更新失败，请联系客服' },
+          { status: 500 }
+        );
+      }
+    }
+
+    // 更新订单状态（如果表存在）
+    await supabaseAdmin.from('payment_orders').update({
+      status: 'COMPLETED',
+      paypal_capture_id: captureData.purchase_units?.[0]?.payments?.captures?.[0]?.id,
+      completed_at: new Date().toISOString(),
+    }).eq('id', orderID).catch(() => {
+      // 忽略表不存在的错误
+    });
+
+    // 获取更新后的用户信息
+    const { data: updatedProfile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('credits, subscription_tier, subscription_status')
+      .eq('id', user.id)
+      .single();
+
+    return NextResponse.json({
+      success: true,
+      message: '支付成功！',
+      credits_added: creditsToAdd,
+      new_total: updatedProfile?.credits || newCredits,
+      subscription_tier: updatedProfile?.subscription_tier || newTier,
+      order_id: orderID,
+      capture_id: captureData.purchase_units?.[0]?.payments?.captures?.[0]?.id,
+    });
+
+  } catch (error) {
+    console.error('Error capturing PayPal order:', error);
+    return NextResponse.json(
+      { error: '服务器错误，请稍后重试' },
+      { status: 500 }
+    );
+  }
+}

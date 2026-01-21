@@ -42,6 +42,14 @@ Call this tool AFTER merge_html_with_site_contexts and BEFORE save_final_page.`,
         throw new Error('No HTML provided or found in database.');
       }
 
+      // 🔍 DEBUG: Check for header/footer in input
+      console.log(`[fix_style_conflicts] 🔍 INPUT HTML length: ${htmlToProcess.length} chars`);
+      const inputHasHeader = /<header[\s\S]*?<\/header>/i.test(htmlToProcess);
+      const inputHasFooter = /<footer[\s\S]*?<\/footer>/i.test(htmlToProcess);
+      console.log(`[fix_style_conflicts] 🔍 INPUT has <header>: ${inputHasHeader}`);
+      console.log(`[fix_style_conflicts] 🔍 INPUT has <footer>: ${inputHasFooter}`);
+      console.log(`[fix_style_conflicts] 🔍 INPUT starts with: ${htmlToProcess.substring(0, 300)}`);
+
       // Extract head and body content
       const headMatch = htmlToProcess.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
       const bodyMatch = htmlToProcess.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
@@ -99,7 +107,7 @@ Call this tool AFTER merge_html_with_site_contexts and BEFORE save_final_page.`,
       const wrappedBodyContent = wrapContentWithScope(bodyContent, scope_class);
 
       // Step 6: Rebuild complete HTML
-      const fixedHtml = `<!DOCTYPE html>
+      let fixedHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
 ${newHeadContent}
@@ -109,17 +117,59 @@ ${wrappedBodyContent}
 </body>
 </html>`;
 
+      // 🔧 FIX: Clean null characters (\u0000) that PostgreSQL text type doesn't support
+      const nullCharCount = (fixedHtml.match(/\u0000/g) || []).length;
+      if (nullCharCount > 0) {
+        console.log(`[fix_style_conflicts] ⚠️ Found ${nullCharCount} null characters (\\u0000), cleaning...`);
+        fixedHtml = fixedHtml.replace(/\u0000/g, '');
+      }
+
+      // 🔧 FIX: Remove any Theme Switcher HTML (should be controlled externally, not in the page)
+      const themeSwitcherPattern = /<!-- Theme Switcher -->[\s\S]*?<div[^>]*class="[^"]*fixed[^"]*top[^"]*right[^"]*z-50[^"]*flex[^"]*gap[^"]*"[^>]*>[\s\S]*?<\/div>/gi;
+      if (themeSwitcherPattern.test(fixedHtml)) {
+        console.log(`[fix_style_conflicts] 🧹 Removing embedded Theme Switcher HTML...`);
+        fixedHtml = fixedHtml.replace(themeSwitcherPattern, '');
+      }
+      // Also remove the setTheme script if present
+      const themeScriptPattern = /\/\/ Theme Switcher[\s\S]*?function setTheme\([\s\S]*?if \(savedTheme\) setTheme\(savedTheme\);/g;
+      if (themeScriptPattern.test(fixedHtml)) {
+        console.log(`[fix_style_conflicts] 🧹 Removing Theme Switcher JavaScript...`);
+        fixedHtml = fixedHtml.replace(themeScriptPattern, '');
+      }
+
+      // 🔍 DEBUG: Check for header/footer in output
+      const outputHasHeader = /<header[\s\S]*?<\/header>/i.test(fixedHtml);
+      const outputHasFooter = /<footer[\s\S]*?<\/footer>/i.test(fixedHtml);
+      console.log(`[fix_style_conflicts] 🔍 OUTPUT has <header>: ${outputHasHeader}`);
+      console.log(`[fix_style_conflicts] 🔍 OUTPUT has <footer>: ${outputHasFooter}`);
+      console.log(`[fix_style_conflicts] 🔍 OUTPUT length: ${fixedHtml.length} chars`);
+      
+      // Warn if header/footer were lost
+      if (inputHasHeader && !outputHasHeader) {
+        console.error(`[fix_style_conflicts] ❌ WARNING: Header was LOST during processing!`);
+      }
+      if (inputHasFooter && !outputHasFooter) {
+        console.error(`[fix_style_conflicts] ❌ WARNING: Footer was LOST during processing!`);
+      }
+
       // Save the fixed HTML back to the database
       if (item_id) {
-        console.log(`[fix_style_conflicts] Saving fixed HTML to database for item: ${item_id}`);
-        await supabase
+        console.log(`[fix_style_conflicts] 💾 Saving fixed HTML to database for item: ${item_id}`);
+        const { data: saveResult, error: saveError } = await supabase
           .from('content_items')
           .update({
             generated_content: fixedHtml,
             status: 'in_production',
             updated_at: new Date().toISOString()
           })
-          .eq('id', item_id);
+          .eq('id', item_id)
+          .select('id');
+        
+        if (saveError) {
+          console.error(`[fix_style_conflicts] ❌ SAVE ERROR:`, saveError);
+        } else {
+          console.log(`[fix_style_conflicts] ✅ SAVE SUCCESS!`);
+        }
       }
 
       // Step 7: Analyze conflicts and generate report

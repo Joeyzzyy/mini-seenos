@@ -66,12 +66,13 @@ Example: types: ["logo", "header", "footer", "competitors"]`,
       }
 
       // Transform data into a more usable format
-      const contexts: Record<string, { content?: string; fileUrl?: string; updatedAt: string }> = {};
+      const contexts: Record<string, { content?: string; html?: string; fileUrl?: string; updatedAt: string }> = {};
       
       if (data) {
         data.forEach((item: any) => {
           contexts[item.type] = {
             content: item.content || undefined,
+            html: item.html || undefined,  // Include HTML field for header/footer
             fileUrl: item.file_url || undefined,
             updatedAt: item.updated_at
           };
@@ -80,11 +81,20 @@ Example: types: ["logo", "header", "footer", "competitors"]`,
 
       // Extract logo details from logo context
       const logoContext = data?.find((item: any) => item.type === 'logo');
+      
+      // Build site_url from domain_name
+      const domainName = logoContext?.domain_name || null;
+      const siteUrl = domainName ? `https://${domainName.replace(/^https?:\/\//, '')}` : null;
+      
       const logoDetails = {
+        logo_url: logoContext?.logo_url || logoContext?.logo_light_url || logoContext?.logo_dark_url || logoContext?.file_url || null,
         logo_light_url: logoContext?.logo_light_url || null,
         logo_dark_url: logoContext?.logo_dark_url || null,
+        favicon_url: logoContext?.favicon_url || null,
         file_url: logoContext?.file_url || null,
         brand_name: logoContext?.brand_name || null,
+        domain_name: domainName,
+        site_url: siteUrl,  // Full URL for CTA buttons (e.g., "https://example.com")
         primary_color: logoContext?.primary_color || '#0ea5e9',
         secondary_color: logoContext?.secondary_color || '#8b5cf6',
         heading_font: logoContext?.heading_font || null,
@@ -102,15 +112,36 @@ Example: types: ["logo", "header", "footer", "competitors"]`,
         }
       }
       
+      // Extract header/footer HTML and config
+      const headerContext = data?.find((item: any) => item.type === 'header');
+      const footerContext = data?.find((item: any) => item.type === 'footer');
+      
+      // Parse header/footer config from content field
+      let headerConfig = null;
+      let footerConfig = null;
+      try {
+        if (headerContext?.content) headerConfig = JSON.parse(headerContext.content);
+      } catch (e) { /* ignore parse errors */ }
+      try {
+        if (footerContext?.content) footerConfig = JSON.parse(footerContext.content);
+      } catch (e) { /* ignore parse errors */ }
+      
       return {
         success: true,
         contexts,
         message: `Found ${data?.length || 0} site context(s) for user`,
         // Provide convenient access to specific contexts
-        logo: logoDetails.logo_light_url || logoDetails.logo_dark_url || logoDetails.file_url || null,
+        logo: logoDetails.logo_url || null,
         logo_details: logoDetails,
-        header: contexts.header?.content || null,
-        footer: contexts.footer?.content || null,
+        // Site URL for CTA buttons - links to product website for conversion
+        site_url: siteUrl,
+        brand_name: logoDetails.brand_name,
+        // IMPORTANT: Return HTML (not content/config) for header and footer
+        // The HTML is the rendered, ready-to-use code for page integration
+        header: headerContext?.html || null,
+        header_config: headerConfig,  // JSON config for reference
+        footer: footerContext?.html || null,
+        footer_config: footerConfig,  // JSON config for reference
         head: contexts.meta?.content || null,
         competitors,
       };

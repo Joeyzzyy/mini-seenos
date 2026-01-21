@@ -42,6 +42,39 @@ export default function SiteHeader({ variant = 'default' }: SiteHeaderProps) {
         </Link>
         
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* Comparisons Dropdown */}
+          <div className="hidden sm:block relative group">
+            <button className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
+              Comparisons
+              <svg className="w-3 h-3 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-2 min-w-[280px] shadow-xl">
+                <Link href="/seopages-pro-alternatives" className="block px-3 py-2 text-sm text-white hover:bg-white/10 rounded-lg transition-colors font-medium">
+                  🆚 SEOPages.pro vs 38 Tools
+                </Link>
+                <div className="border-t border-white/5 my-1"></div>
+                <Link href="/seopages-pro-alternatives/jasper-ai" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                  vs Jasper AI
+                </Link>
+                <Link href="/seopages-pro-alternatives/surfer-seo" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                  vs Surfer SEO
+                </Link>
+                <Link href="/seopages-pro-alternatives/ahrefs" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                  vs Ahrefs
+                </Link>
+                <Link href="/seopages-pro-alternatives/semrush" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                  vs SEMrush
+                </Link>
+                <Link href="/seopages-pro-alternatives" className="block px-3 py-2 text-sm text-[#9A8FEA] hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                  View all 38 comparisons →
+                </Link>
+              </div>
+            </div>
+          </div>
+          
           {/* Guide Dropdown */}
           <div className="hidden sm:block relative group">
             <button className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
@@ -53,7 +86,7 @@ export default function SiteHeader({ variant = 'default' }: SiteHeaderProps) {
             <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
               <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-2 min-w-[280px] shadow-xl">
                 <Link href="/alternative-page-guide" className="block px-3 py-2 text-sm text-white hover:bg-white/10 rounded-lg transition-colors font-medium">
-                  📚 Alternative Page Guide
+                  Alternative Page Guide
                 </Link>
                 <div className="border-t border-white/5 my-1"></div>
                 <Link href="/alternative-page-guide/what-are-alternative-pages" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">

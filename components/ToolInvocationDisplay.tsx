@@ -73,7 +73,7 @@ export default function ToolInvocationDisplay({ toolInvocation }: ToolInvocation
                 </svg>
               </div>
               <div>
-                <h4 className="font-bold text-white text-sm">📊 Interactive Report</h4>
+                <h4 className="font-bold text-white text-sm">Interactive Report</h4>
                 <p className="text-[10px] text-white/70">{result.filename} • {result.charts_generated || 0} charts</p>
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function ToolInvocationDisplay({ toolInvocation }: ToolInvocation
                     <p className="text-[#6B7280] leading-relaxed">{check.message}</p>
                     {check.suggestion && (
                       <div className="mt-1.5 pt-1.5 border-t border-[#F3F4F6] text-blue-600 font-medium">
-                        💡 {check.suggestion}
+                        {check.suggestion}
                       </div>
                     )}
                   </div>
@@ -267,7 +267,7 @@ export default function ToolInvocationDisplay({ toolInvocation }: ToolInvocation
                     <p className="text-[#6B7280] leading-relaxed">{check.message}</p>
                     {check.suggestion && (
                       <div className="mt-1.5 pt-1.5 border-t border-[#F3F4F6] text-purple-600 font-medium">
-                        ✨ {check.suggestion}
+                        {check.suggestion}
                       </div>
                     )}
                   </div>

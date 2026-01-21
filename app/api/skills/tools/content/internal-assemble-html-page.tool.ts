@@ -92,6 +92,10 @@ export const assemble_html_page = tool({
     seo_keywords: z.string().optional().describe('SEO keywords for meta tag (comma-separated)'),
     og_image: z.string().optional().describe('Open Graph image URL for social sharing'),
     site_url: z.string().optional().describe('Main site URL for canonical and OG tags'),
+    cta_button: z.object({
+      text: z.string().describe('CTA button text, e.g. "Try ProductName Free", "Get Started"'),
+      url: z.string().describe('CTA button URL - should be the product main website URL'),
+    }).optional().describe('Hero section CTA button - links to product website for conversion'),
     sections: z.preprocess(
       (val) => Array.isArray(val) ? val.filter(i => i !== null && typeof i === 'object') : val,
       z.array(z.object({
@@ -110,7 +114,7 @@ export const assemble_html_page = tool({
       }))
     ).optional().describe('Mapping of image placeholder IDs to URLs'),
   }),
-  execute: async ({ item_id, page_title, page_type, seo_title, seo_description, seo_keywords, og_image, site_url, sections, images = [] }) => {
+  execute: async ({ item_id, page_title, page_type, seo_title, seo_description, seo_keywords, og_image, site_url, cta_button, sections, images = [] }) => {
     // Normalize images
     const normalizedImages = await Promise.all(images.map(async (img) => {
       let publicUrl = img.public_url || img.publicUrl || '';
@@ -189,13 +193,6 @@ ${html.split('\n').map(line => '        ' + line).join('\n')}
       </div>
     </section>`;
     }).join('\n\n');
-    
-    const tocHtml = sections.map((s, i) => `
-      <li>
-        <a href="#section-${i}" class="text-gray-500 hover:text-indigo-600 transition-colors py-1 block border-l-2 border-transparent hover:border-indigo-600 pl-4">
-          ${escapeHtml(s.section_title)}
-        </a>
-      </li>`).join('');
 
     const customStyles = `
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -419,18 +416,15 @@ ${html.split('\n').map(line => '        ' + line).join('\n')}
         </h1>
         
         <!-- Description -->
-        ${seo_description ? `<p class="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto leading-relaxed font-medium mb-12">${escapeHtml(seo_description)}</p>` : ''}
+        ${seo_description ? `<p class="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto leading-relaxed font-medium mb-10">${escapeHtml(seo_description)}</p>` : ''}
         
-        <!-- CTA Buttons -->
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <a href="#comparison" class="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-900 font-bold rounded-xl shadow-2xl shadow-purple-500/25 hover:shadow-purple-500/40 transform hover:scale-105 transition-all duration-300">
-            See the Comparison
-            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-          </a>
-          <a href="#features" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300">
-            Explore Features
-          </a>
-        </div>
+        <!-- CTA Button - Links to product website for conversion -->
+        ${(cta_button?.url || site_url) ? `
+        <a href="${escapeHtml(cta_button?.url || site_url || '/')}" class="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-900 font-bold rounded-xl shadow-2xl shadow-purple-500/25 hover:shadow-purple-500/40 transform hover:scale-105 transition-all duration-300">
+          ${escapeHtml(cta_button?.text || 'Get Started Free')}
+          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+        </a>
+        ` : ''}
       </div>
     </div>
     
@@ -448,8 +442,8 @@ ${html.split('\n').map(line => '        ' + line).join('\n')}
       <div class="relative">
         <h2 class="text-3xl md:text-5xl font-black text-white mb-6">Ready to Make the Switch?</h2>
         <p class="text-xl text-white/70 max-w-2xl mx-auto mb-10">Join thousands of satisfied users who have already discovered a better alternative.</p>
-        <a href="/" class="inline-flex items-center justify-center gap-2 px-10 py-5 bg-white text-slate-900 font-bold text-lg rounded-xl shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 transform hover:scale-105 transition-all duration-300">
-          Get Started Now
+        <a href="${escapeHtml(cta_button?.url || site_url || '/')}" class="inline-flex items-center justify-center gap-2 px-10 py-5 bg-white text-slate-900 font-bold text-lg rounded-xl shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 transform hover:scale-105 transition-all duration-300">
+          ${escapeHtml(cta_button?.text || 'Get Started Now')}
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
         </a>
       </div>

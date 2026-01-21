@@ -6,15 +6,17 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 /**
  * GET /api/content/projects
- * Fetch content projects for a user (using service role to bypass RLS)
+ * Fetch content projects (Topic Clusters) for a user (using service role to bypass RLS)
  * 
  * Query params:
  * - user_id: string (required)
+ * - project_id: string (optional) - filter by SEO project (conversation) ID
  */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('user_id');
+    const seoProjectId = searchParams.get('project_id'); // SEO project (conversation) ID
     
     if (!userId) {
       return NextResponse.json({ error: 'user_id is required' }, { status: 400 });
@@ -28,11 +30,17 @@ export async function GET(req: Request) {
       }
     });
     
-    const { data, error } = await supabase
+    let query = supabase
       .from('content_projects')
       .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .eq('user_id', userId);
+    
+    // Filter by SEO project ID if provided
+    if (seoProjectId) {
+      query = query.eq('seo_project_id', seoProjectId);
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false });
     
     if (error) {
       console.error('[API] Failed to fetch content projects:', error);

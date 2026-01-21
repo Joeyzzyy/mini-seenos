@@ -75,8 +75,8 @@ export interface FileRecord {
 export interface ContentItem {
   id: string;
   user_id: string;
-  conversation_id: string | null;
-  project_id: string | null;
+  seo_project_id: string | null; // Links to seo_projects (domain)
+  project_id: string | null; // Links to content_projects (Topic Cluster)
   title: string;
   slug: string;
   page_type: 'alternative' | 'blog' | 'landing_page' | 'comparison' | 'guide' | 'listicle';
@@ -103,6 +103,7 @@ export interface ContentItem {
 export interface ContentProject {
   id: string;
   user_id: string;
+  seo_project_id: string | null; // Links to seo_projects (domain)
   name: string;
   description: string;
   created_at: string;
@@ -111,39 +112,25 @@ export interface ContentProject {
 export interface SiteContext {
   id: string;
   user_id: string;
-  type: 'logo' | 'header' | 'footer' | 'meta' | 'sitemap' | 
-        'key-website-pages' | 'landing-pages' | 'blog-resources' | 
-        'hero-section' | 'problem-statement' | 'who-we-serve' | 
-        'use-cases' | 'industries' | 'products-services' | 
-        'social-proof-trust' | 'leadership-team' | 'about-us' | 
-        'faq' | 'contact-information' | 'competitors';
-  content: string | null; // For header/footer/meta code or sitemap JSON, or structured JSON for new types
-  file_url: string | null; // Deprecated: Use logo_light_url or logo_dark_url instead
-  // Brand Assets fields
-  brand_name?: string | null; // Brand name
-  subtitle?: string | null; // Brand subtitle
-  meta_description?: string | null; // Meta description for SEO
-  og_image?: string | null; // Open Graph image URL
-  // Logo URLs (for different themes)
-  logo_light_url?: string | null; // Light theme logo URL
-  logo_dark_url?: string | null; // Dark theme logo URL
-  // Favicon URLs (for different themes)
-  favicon_light_url?: string | null; // Light theme favicon URL
-  favicon_dark_url?: string | null; // Dark theme favicon URL
-  // Deprecated fields (kept for backward compatibility)
-  favicon?: string | null; // Deprecated: Use favicon_light_url or favicon_dark_url
-  logo_light?: string | null; // Deprecated: Use logo_light_url
-  logo_dark?: string | null; // Deprecated: Use logo_dark_url
-  icon_light?: string | null; // Deprecated: Use favicon_light_url
-  icon_dark?: string | null; // Deprecated: Use favicon_dark_url
-  // Brand colors and typography
-  primary_color?: string | null; // Brand primary color
-  secondary_color?: string | null; // Brand secondary color
-  heading_font?: string | null; // Heading font family
-  body_font?: string | null; // Body font family
-  tone?: string | null; // Brand tone and voice
-  languages?: string | null; // Supported languages
-  project_id?: string | null; // Scope context to a specific SEO project
+  type: 'logo' | 'header' | 'footer' | 'competitors';
+  content: string | null; // JSON config for editors (header/footer config, competitors list)
+  html?: string | null; // Generated HTML content (for header/footer)
+  // Logo & Favicon (simplified - single field each)
+  logo_url?: string | null;
+  favicon_url?: string | null;
+  // Legacy fields (for backward compatibility)
+  logo_light_url?: string | null;
+  file_url?: string | null;
+  // Brand settings
+  domain_name?: string | null;
+  og_image?: string | null;
+  primary_color?: string | null;
+  secondary_color?: string | null;
+  heading_font?: string | null;
+  body_font?: string | null;
+  languages?: string | null;
+  // Project scoping
+  project_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -661,13 +648,13 @@ export async function getConversationFiles(conversationId: string): Promise<File
   return data as FileRecord[];
 }
 
-export async function getUserContentItems(userId: string, projectId?: string): Promise<ContentItem[]> {
+export async function getUserContentItems(userId: string, seoProjectId?: string): Promise<ContentItem[]> {
   // Use API route to fetch content items (bypasses RLS issues)
   // This ensures fresh data is always returned after tool operations
   try {
     const params = new URLSearchParams({ user_id: userId });
-    if (projectId) {
-      params.append('project_id', projectId);
+    if (seoProjectId) {
+      params.append('project_id', seoProjectId); // API expects project_id for SEO project filtering
     }
     
     const response = await fetch(`/api/content/items?${params.toString()}`, {
@@ -686,21 +673,33 @@ export async function getUserContentItems(userId: string, projectId?: string): P
   } catch (fetchError) {
     // Fallback to direct Supabase query if API fails
     console.warn('API fetch failed, falling back to direct query:', fetchError);
-    const { data, error } = await supabase
+    let query = supabase
       .from('content_items')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
+    
+    // Filter by SEO project (seo_project_id)
+    if (seoProjectId) {
+      query = query.eq('seo_project_id', seoProjectId);
+    }
+    
+    const { data, error } = await query;
 
     if (error) throw error;
     return data as ContentItem[];
   }
 }
 
-export async function getUserContentProjects(userId: string): Promise<ContentProject[]> {
+export async function getUserContentProjects(userId: string, seoProjectId?: string): Promise<ContentProject[]> {
   // Use API route to fetch content projects (bypasses RLS issues)
   try {
-    const response = await fetch(`/api/content/projects?user_id=${userId}`, {
+    const params = new URLSearchParams({ user_id: userId });
+    if (seoProjectId) {
+      params.append('project_id', seoProjectId); // API expects project_id param for SEO project filtering
+    }
+    
+    const response = await fetch(`/api/content/projects?${params.toString()}`, {
       method: 'GET',
       cache: 'no-store', // Ensure fresh data
     });
@@ -716,11 +715,17 @@ export async function getUserContentProjects(userId: string): Promise<ContentPro
   } catch (fetchError) {
     // Fallback to direct Supabase query if API fails
     console.warn('API fetch failed, falling back to direct query:', fetchError);
-    const { data, error } = await supabase
+    let query = supabase
       .from('content_projects')
       .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .eq('user_id', userId);
+    
+    // Filter by SEO project ID (seo_project_id column)
+    if (seoProjectId) {
+      query = query.eq('seo_project_id', seoProjectId);
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) throw error;
     return data as ContentProject[];
@@ -775,12 +780,90 @@ export async function createSEOProject(userId: string, domain: string): Promise<
 }
 
 export async function deleteSEOProject(projectId: string): Promise<void> {
+  // CRITICAL: Cascade delete all related data
+  // Order matters due to foreign key constraints
+  
+  console.log(`[deleteSEOProject] Starting cascade delete for project: ${projectId}`);
+  
+  // 1. First, get all conversations for this project to delete their messages
+  const { data: conversations } = await supabase
+    .from('conversations')
+    .select('id')
+    .eq('project_id', projectId);
+  
+  if (conversations && conversations.length > 0) {
+    const conversationIds = conversations.map(c => c.id);
+    
+    // Delete messages for all conversations
+    const { error: messagesError } = await supabase
+      .from('messages')
+      .delete()
+      .in('conversation_id', conversationIds);
+    
+    if (messagesError) {
+      console.error('[deleteSEOProject] Failed to delete messages:', messagesError);
+    } else {
+      console.log(`[deleteSEOProject] Deleted messages for ${conversationIds.length} conversations`);
+    }
+    
+    // Delete conversations
+    const { error: conversationsError } = await supabase
+      .from('conversations')
+      .delete()
+      .eq('project_id', projectId);
+    
+    if (conversationsError) {
+      console.error('[deleteSEOProject] Failed to delete conversations:', conversationsError);
+    } else {
+      console.log(`[deleteSEOProject] Deleted ${conversationIds.length} conversations`);
+    }
+  }
+  
+  // 2. Delete content_items
+  const { error: itemsError } = await supabase
+    .from('content_items')
+    .delete()
+    .eq('project_id', projectId);
+  
+  if (itemsError) {
+    console.error('[deleteSEOProject] Failed to delete content_items:', itemsError);
+  } else {
+    console.log('[deleteSEOProject] Deleted content_items');
+  }
+  
+  // 3. Delete content_projects
+  const { error: projectsError } = await supabase
+    .from('content_projects')
+    .delete()
+    .eq('project_id', projectId);
+  
+  if (projectsError) {
+    console.error('[deleteSEOProject] Failed to delete content_projects:', projectsError);
+  } else {
+    console.log('[deleteSEOProject] Deleted content_projects');
+  }
+  
+  // 4. Delete site_contexts
+  const { error: contextsError } = await supabase
+    .from('site_contexts')
+    .delete()
+    .eq('project_id', projectId);
+  
+  if (contextsError) {
+    console.error('[deleteSEOProject] Failed to delete site_contexts:', contextsError);
+  } else {
+    console.log('[deleteSEOProject] Deleted site_contexts');
+  }
+  
+  // 5. Finally, delete the project itself
   const { error } = await supabase
     .from('seo_projects')
     .delete()
     .eq('id', projectId);
 
   if (error) throw error;
+  
+  console.log(`[deleteSEOProject] Successfully deleted project and all related data: ${projectId}`);
 }
 
 export async function getContentItemById(itemId: string): Promise<ContentItem | null> {
@@ -875,27 +958,20 @@ export async function getSiteContexts(userId: string, projectId?: string): Promi
     if (ctx.type === 'logo') {
       return {
         ...base,
+        // Simplified fields (prefer new fields, fallback to legacy)
+        logo_url: ctx.logo_url || ctx.logo_light_url || ctx.logo_light || ctx.file_url,
+        favicon_url: ctx.favicon_url || ctx.favicon_light_url || ctx.icon_light || ctx.favicon,
+        // Legacy fields for backward compatibility
         file_url: ctx.file_url,
-        brand_name: ctx.brand_name,
-        subtitle: ctx.subtitle,
-        meta_description: ctx.meta_description,
+        logo_light_url: ctx.logo_light_url || ctx.logo_light,
+        // Brand settings
+        domain_name: ctx.domain_name,
         og_image: ctx.og_image,
-        favicon: ctx.favicon,
-        logo_light: ctx.logo_light,
-        logo_dark: ctx.logo_dark,
-        icon_light: ctx.icon_light,
-        icon_dark: ctx.icon_dark,
         primary_color: ctx.primary_color,
         secondary_color: ctx.secondary_color,
         heading_font: ctx.heading_font,
         body_font: ctx.body_font,
-        tone: ctx.tone,
         languages: ctx.languages,
-        // Compatibility aliases for Modal
-        logo_light_url: ctx.logo_light,
-        logo_dark_url: ctx.logo_dark,
-        favicon_light_url: ctx.icon_light,
-        favicon_dark_url: ctx.icon_dark,
       };
     }
 
@@ -934,21 +1010,28 @@ export async function upsertSiteContext(
   type: string,
   content?: string,
   fileUrl?: string,
-  projectId?: string
+  projectId?: string,
+  html?: string
 ): Promise<SiteContext> {
   // First try to get existing
   const existing = await getSiteContextByType(userId, type, projectId);
   
   if (existing) {
     // Update existing
+    const updateData: Record<string, unknown> = {
+      content: content || null,
+      file_url: fileUrl || null,
+      project_id: projectId || null,
+      updated_at: new Date().toISOString(),
+    };
+    // Only update html if explicitly provided (even if empty string, to clear it)
+    if (html !== undefined) {
+      updateData.html = html || null;
+    }
+    
     const { data, error } = await supabase
       .from('site_contexts')
-      .update({
-        content: content || null,
-        file_url: fileUrl || null,
-        project_id: projectId || null,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', existing.id)
       .select()
       .single();
@@ -957,15 +1040,21 @@ export async function upsertSiteContext(
     return data;
   } else {
     // Create new
+    const insertData: Record<string, unknown> = {
+      user_id: userId,
+      type,
+      content: content || null,
+      file_url: fileUrl || null,
+      project_id: projectId || null,
+    };
+    // Only set html if explicitly provided
+    if (html !== undefined) {
+      insertData.html = html || null;
+    }
+    
     const { data, error } = await supabase
       .from('site_contexts')
-      .insert({
-        user_id: userId,
-        type,
-        content: content || null,
-        file_url: fileUrl || null,
-        project_id: projectId || null,
-      })
+      .insert(insertData)
       .select()
       .single();
 

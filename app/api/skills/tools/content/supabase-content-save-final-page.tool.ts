@@ -39,7 +39,22 @@ export const save_final_page = tool({
         throw new Error('No content provided or found in database.');
       }
 
-      // Update content item and get user/conversation info
+      // 🔧 FIX: Clean null characters (\u0000) that PostgreSQL text type doesn't support
+      const nullCharCount = (contentToSave.match(/\u0000/g) || []).length;
+      if (nullCharCount > 0) {
+        console.log(`[save_final_page] ⚠️ Found ${nullCharCount} null characters (\\u0000), cleaning...`);
+        contentToSave = contentToSave.replace(/\u0000/g, '');
+      }
+
+      // 🔍 DEBUG: Check for header/footer in content to save
+      const hasHeader = /<header[\s\S]*?<\/header>/i.test(contentToSave);
+      const hasFooter = /<footer[\s\S]*?<\/footer>/i.test(contentToSave);
+      console.log(`[save_final_page] 🔍 Content length: ${contentToSave.length} chars`);
+      console.log(`[save_final_page] 🔍 Has <header>: ${hasHeader}`);
+      console.log(`[save_final_page] 🔍 Has <footer>: ${hasFooter}`);
+      console.log(`[save_final_page] 🔍 Content starts with: ${contentToSave.substring(0, 300)}`);
+
+      // Update content item and get user info
       const { data: item, error } = await supabase
         .from('content_items')
         .update({
@@ -48,7 +63,7 @@ export const save_final_page = tool({
           updated_at: new Date().toISOString()
         })
         .eq('id', item_id)
-        .select('user_id, conversation_id')
+        .select('user_id')
         .single();
 
       if (error) throw error;
@@ -88,10 +103,10 @@ export const save_final_page = tool({
           .from('files')
           .getPublicUrl(`${item.user_id}/${timestamp}-${filename}`);
 
-        // Insert file record
+        // Insert file record (conversation_id is null since content_items no longer links to conversations)
         await supabase.from('files').insert({
           user_id: item.user_id,
-          conversation_id: item.conversation_id,
+          conversation_id: null,
           filename: filename,
           original_filename: filename,
           file_type: 'txt',

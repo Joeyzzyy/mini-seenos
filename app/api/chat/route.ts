@@ -222,7 +222,6 @@ export async function POST(req: Request) {
     console.log('Received messages:', limitedMessages.length, `(total size: ${(totalMessageSize / 1024).toFixed(2)} KB)`);
     
     const userId = data?.userId;
-    const conversationId = data?.conversationId;
     const projectId = data?.projectId;
     const activeSkillId = data?.activeSkillId;
     const attachedContentItems = data?.attachedContentItems || [];
@@ -588,7 +587,7 @@ ${itemsList}
             requestState.hasCalledPlan = true;
             console.log('✅ Planning-first rule: create_plan called');
           }
-          
+          3
           // Execute the actual tool
           console.log(`🔧 Executing tool: ${toolName}${isFirstTool ? ' (first tool in response)' : ''}`);
           
@@ -612,12 +611,12 @@ ${itemsList}
             toolArgs.user_id = userId;
           }
           
-          // FORCE inject conversation_id - snake_case variant
-          if (conversationId && toolSchema?.shape && 'conversation_id' in toolSchema.shape) {
-            if (toolArgs.conversation_id !== conversationId) {
-              console.log(`[Auto-Injection] Overriding conversation_id for tool: ${toolName}`);
-            }
-            toolArgs.conversation_id = conversationId;
+          // FORCE inject seo_project_id - for content tools that link to SEO project
+          // These tools need seo_project_id to properly link content to the current SEO project
+          const toolsNeedingSeoProjectId = ['save_content_items_batch', 'save_content_item'];
+          if (projectId && toolsNeedingSeoProjectId.includes(toolName)) {
+            console.log(`[Auto-Injection] Injecting seo_project_id: ${projectId} for tool: ${toolName}`);
+            toolArgs.seo_project_id = projectId;
           }
           
           // FORCE inject projectId - always override AI's guess with the real project ID
@@ -698,7 +697,7 @@ ${itemsList}
     console.log('Starting streamText with planning-first enforcement...');
     
     // Build system prompt with content items context and auto-selected skill
-    const baseSystemPrompt = getCombinedSystemPrompt(userId, conversationId);
+    const baseSystemPrompt = getCombinedSystemPrompt(userId, projectId);
     
     // If a skill was auto-selected based on page_type, add its detailed instructions
     let autoSkillInstructions = '';
@@ -727,6 +726,13 @@ CRITICAL: EXECUTION CONTINUITY (MANDATORY)
 - If you are generating a page, DO NOT STOP until you have called 'save_final_page'.
 - NEVER stop to ask for preferences (like image style) unless the user specifically requested it. Use your best judgment and keep going.
 - If you stop before completion, you have FAILED the task. KEEP GOING.
+
+⚠️ ABSOLUTELY FORBIDDEN - PLACEHOLDER CONTENT ⚠️
+- NEVER use "..." or "…" to abbreviate or skip content
+- NEVER use placeholder text like "[content]", "[section here]", etc.
+- When passing section HTML to assemble tools, use the COMPLETE output from section generators
+- If you use placeholders, the assemble tool will REJECT your request and the page will be incomplete
+- Incomplete pages are UNACCEPTABLE - this is the product we sell!
 
 CRITICAL: FINAL RESPONSE (MANDATORY)
 - After completing ALL tool calls (especially after 'save_final_page'), you MUST provide a text response to the user.
@@ -780,15 +786,24 @@ IMPORTANT:
       tools,
       system: fullSystemPrompt,
       maxSteps: 35, // Allow up to 35 tool call rounds for complex workflows (blog generation needs ~30 steps)
-      onStepFinish: ({ toolCalls, finishReason }) => {
+      onStepFinish: ({ toolCalls, toolResults, finishReason }) => {
         if (toolCalls && toolCalls.length > 0) {
+          // Calculate tool results size for context monitoring
+          const toolResultsSize = toolResults ? JSON.stringify(toolResults).length : 0;
+          const estimatedToolTokens = Math.ceil(toolResultsSize / 4);
+          
           console.log('Step finished:', {
             toolCalls: toolCalls.map(tc => tc.toolName),
             finishReason,
-            planningEnforced: requestState.hasCalledPlan
+            planningEnforced: requestState.hasCalledPlan,
+            toolResultsSize: `${(toolResultsSize / 1024).toFixed(2)} KB (~${estimatedToolTokens.toLocaleString()} tokens)`,
           });
-          // Note: Tool results are now optimized at source (tools return URLs instead of base64)
-          // No need for post-processing cleanup here
+          
+          // Warn if tool results are getting large
+          if (estimatedToolTokens > 50000) {
+            console.warn(`⚠️  WARNING: Large tool results! ${estimatedToolTokens.toLocaleString()} tokens from this step`);
+            console.warn('This may cause context_length_exceeded error on next AI call');
+          }
         }
       },
       onFinish: ({ text, finishReason, usage }) => {
@@ -801,7 +816,18 @@ IMPORTANT:
         });
       },
       onError: (error) => {
-        console.error('Stream error:', error);
+        console.error('❌ Stream error:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          name: error instanceof Error ? error.name : 'Unknown',
+          stack: error instanceof Error ? error.stack : undefined,
+          cause: error instanceof Error ? (error as any).cause : undefined,
+          fullError: error,
+        });
+        // Log tool call state for debugging
+        console.error('Tool call state at error:', {
+          toolCalls: requestState.toolCalls,
+          hasCalledPlan: requestState.hasCalledPlan,
+        });
       },
     });
 

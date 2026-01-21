@@ -32,6 +32,7 @@ import DomainsModal from '@/components/DomainsModal';
 import ContextModalNew from '@/components/ContextModalNew';
 import Toast from '@/components/Toast';
 import ConfirmModal from '@/components/ConfirmModal';
+import SiteInitializationOverlay from '@/components/SiteInitializationOverlay';
 
 export default function ProjectChatPage() {
   const params = useParams();
@@ -69,9 +70,17 @@ export default function ProjectChatPage() {
   
   // Task state
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [runningTaskId, setRunningTaskId] = useState<string | null>(null);
+  const [runningTaskId, setRunningTaskIdState] = useState<string | null>(null);
+  const runningTaskIdRef = useRef<string | null>(null);
+  const setRunningTaskId = (id: string | null) => {
+    runningTaskIdRef.current = id;
+    setRunningTaskIdState(id);
+  };
   const [contextTaskStatus, setContextTaskStatus] = useState<TaskStatus>('pending');
   const [taskMessages, setTaskMessages] = useState<Map<string, any[]>>(new Map());
+  
+  // Initialization mode - show full screen overlay during first-time context acquisition
+  const [isInitializing, setIsInitializing] = useState(false);
   
   // Delete confirmation
   const [deletingCluster, setDeletingCluster] = useState<{ id: string; name: string } | null>(null);
@@ -106,7 +115,7 @@ export default function ProjectChatPage() {
     onError: async (error) => {
       console.error('[useChat:onError] Chat stream error:', error);
       const lastMessage = messages[messages.length - 1];
-      let errorMessage = `❌ Error: ${error.message || 'An unexpected error occurred. Please try again.'}`;
+      let errorMessage = `Error: ${error.message || 'An unexpected error occurred. Please try again.'}`;
       
       const errorMsg = {
         id: `error-${Date.now()}`,
@@ -117,18 +126,21 @@ export default function ProjectChatPage() {
       setMessages(prev => [...prev, errorMsg as any]);
       
       // Update task messages
-      if (runningTaskId) {
+      const currentTaskId = runningTaskIdRef.current;
+      if (currentTaskId) {
         setTaskMessages(prev => {
           const newMap = new Map(prev);
-          const existing = newMap.get(runningTaskId) || [];
-          newMap.set(runningTaskId, [...existing, errorMsg]);
+          const existing = newMap.get(currentTaskId) || [];
+          newMap.set(currentTaskId, [...existing, errorMsg]);
           return newMap;
         });
       }
       
       // Update task status
-      if (runningTaskId === 'context-analysis') {
+      if (currentTaskId === 'context-analysis') {
         setContextTaskStatus('error');
+        // Exit initialization mode on error
+        setIsInitializing(false);
       }
       setRunningTaskId(null);
       
@@ -146,7 +158,7 @@ export default function ProjectChatPage() {
       if (processedMessageIdsRef.current.has(messageId)) return;
       
       const conversation = currentConversationRef.current;
-      const currentRunningTaskId = runningTaskId; // Capture before clearing
+      const currentRunningTaskId = runningTaskIdRef.current; // Use ref to get latest value
       
       if (conversation && user) {
         processedMessageIdsRef.current.add(messageId);
@@ -219,6 +231,46 @@ export default function ProjectChatPage() {
     }
   }, [messages, runningTaskId]);
 
+  // Sync selectedTask.data with contentItems when contentItems updates
+  // This ensures the preview always shows the latest content after regeneration
+  useEffect(() => {
+    if (selectedTask && selectedTask.type === 'page' && contentItems.length > 0) {
+      const updatedItem = contentItems.find(item => item.id === selectedTask.id);
+      if (updatedItem) {
+        const currentData = selectedTask.data as ContentItem | undefined;
+        // Check if the content has actually changed (compare updated_at or generated_content)
+        if (currentData?.updated_at !== updatedItem.updated_at || 
+            currentData?.generated_content !== updatedItem.generated_content) {
+          console.log(`[Sync] Updating selectedTask.data for ${selectedTask.id}, new updated_at: ${updatedItem.updated_at}`);
+          setSelectedTask(prev => prev ? {
+            ...prev,
+            status: updatedItem.status === 'generated' ? 'completed' : prev.status,
+            data: updatedItem,
+          } : null);
+        }
+      }
+    }
+  }, [contentItems, selectedTask?.id]);
+
+  // Auto-exit initialization mode when context acquisition completes
+  const wasLoadingRef = useRef(false);
+  useEffect(() => {
+    // Check if loading just finished (transition from true to false)
+    if (wasLoadingRef.current && !isLoading && isInitializing && runningTaskId === 'context-analysis') {
+      // Context acquisition completed, exit initialization mode
+      console.log('[Initialization] Context acquisition completed, exiting initialization mode');
+      setIsInitializing(false);
+      setContextTaskStatus('completed');
+      setRunningTaskId(null);
+      // Refresh data
+      if (user) {
+        loadSiteContexts(user.id);
+        loadContentItems(user.id);
+      }
+    }
+    wasLoadingRef.current = isLoading;
+  }, [isLoading, isInitializing, runningTaskId, user]);
+
   const processedMessageIdsRef = useRef<Set<string>>(new Set());
   
   // Track if project has been initialized
@@ -273,7 +325,7 @@ export default function ProjectChatPage() {
       setSiteContexts(contexts);
       console.log(`[Project-Init] Loaded ${contexts.length} site contexts`);
       
-      const [convos] = await Promise.all([
+      const [convos, items] = await Promise.all([
         loadConversations(userId, projectId),
         loadContentItems(userId),
         loadContentProjects(userId),
@@ -281,32 +333,46 @@ export default function ProjectChatPage() {
 
       // Check if context is empty and auto-initiate
       const hasBrandContext = contexts.some(c => c.type === 'logo');
+      const hasContentItems = items && items.length > 0;
       
-      if (!hasBrandContext && lastInitiatedProjectId.current !== projectId) {
-        console.log('[Auto-Initiate] No brand context found, triggering context analysis...');
+      // Check if any conversation has messages
+      let hasExistingMessages = false;
+      if (convos && convos.length > 0) {
+        const msgs = await getConversationMessages(convos[0].id);
+        hasExistingMessages = msgs.length > 0;
+      }
+      
+      console.log(`[Project-Init] Status: brandContext=${hasBrandContext}, contentItems=${hasContentItems}, messages=${hasExistingMessages}`);
+      
+      // Project needs initialization if:
+      // 1. No brand context AND no messages (fresh project)
+      // 2. Has brand context but no content items AND no messages (incomplete initialization)
+      const needsInitialization = !hasExistingMessages && (!hasBrandContext || !hasContentItems);
+      
+      if (needsInitialization) {
+        // Check if we already tried to initialize this project in this session
+        if (lastInitiatedProjectId.current === projectId) {
+          // Already tried to initialize but still incomplete - redirect to projects page
+          console.log('[Auto-Initiate] Project data is incomplete after initialization attempt, redirecting to projects...');
+          router.push('/projects');
+          return;
+        }
+        
+        console.log('[Auto-Initiate] Project needs initialization, triggering context analysis...');
         lastInitiatedProjectId.current = projectId;
         
-        // Check if any conversation has messages
-        let hasExistingMessages = false;
-        if (convos && convos.length > 0) {
-          const msgs = await getConversationMessages(convos[0].id);
-          hasExistingMessages = msgs.length > 0;
-        }
-
-        if (!hasExistingMessages) {
-          // Auto-select context task and start analysis
-          setSelectedTask({
-            id: 'context-analysis',
-            type: 'context',
-            title: 'Brand & Context',
-            subtitle: 'Initializing...',
-            status: 'running',
-            data: contexts,
-          });
-          autoInitiateSiteContext(project.domain, userId, convos?.[0] || null);
-        } else {
-          setContextTaskStatus('completed');
-        }
+        // Show full-screen initialization overlay
+        setIsInitializing(true);
+        // Auto-select context task and start analysis
+        setSelectedTask({
+          id: 'context-analysis',
+          type: 'context',
+          title: 'Brand & Context',
+          subtitle: 'Initializing...',
+          status: 'running',
+          data: contexts,
+        });
+        autoInitiateSiteContext(project.domain, userId, convos?.[0] || null);
       } else {
         setContextTaskStatus('completed');
       }
@@ -352,75 +418,51 @@ I'm starting the Alternative Page planning process for ${fullUrl}. You MUST comp
 - Do not stop or ask "should I continue?" - just proceed automatically
 - Report completion only after ALL phases are done
 
-## PHASE 1: Brand Assets Collection (use 'acquire_context_field' tool)
-Collect and save the following brand assets to the database:
-- 'brand-assets' → Logo, colors, fonts, metadata
-- 'about-us' → Company story, mission, values  
-- 'products-services' → Product/service offerings
-- 'who-we-serve' → Target audience
-- 'contact-info' → Email, phone, social links
-- 'faq' → Frequently asked questions
-- 'social-proof' → Testimonials, reviews, awards
+## PHASE 1: Site Context Collection (use 'acquire_site_context' tool)
 
-Execute these in parallel batches for efficiency. Each field call requires: url="${fullUrl}", userId, projectId.
+Call the 'acquire_site_context' tool ONCE with field="all" to extract:
+- Brand assets (logo, favicon, colors, fonts, domain info)
+- Header structure and HTML
+- Footer structure and HTML
 
-## PHASE 2: Competitor Research & Saving (CRITICAL: use ONLY 'save_site_context' tool)
-After analyzing the website, identify and save at least 10 competitors to the BRAND ASSETS database:
+**CRITICAL TOOL PARAMETERS:**
+- url: "${fullUrl}"
+- field: "all" (MUST be exactly "all", "brand-assets", "header", or "footer" - no other values!)
+- userId: (from your context)
+- projectId: (from your context)
 
-**CRITICAL INSTRUCTIONS:**
-- You MUST use the 'save_site_context' tool (NOT 'save_content_item' or 'save_content_items_batch')
-- This saves to site_contexts table (Brand Assets), NOT to content_items table
-- DO NOT create a content page or save to any cluster/project
-- This is part of Brand Assets collection, just like logo, colors, etc.
+This is ONE tool call, not multiple. The "all" field extracts everything needed.
 
-Steps:
+## PHASE 2: Competitor Research & Saving (use 'save_site_context' tool)
+
+After Phase 1 completes, identify and save at least 10 competitors:
+
 1. Research competitors in the same industry/market as ${fullUrl}
-2. Find competitors offering similar products/services
-3. Use web search or your knowledge to find at least 10 competitors
-4. For each competitor, collect:
-   - Competitor name (company/product name)
-   - Competitor website URL (full URL with https://)
-5. Call 'save_site_context' tool ONCE with ALL competitors:
-   - type: 'competitors' (exactly this string)
-   - content: JSON string of array format: [{"name": "Competitor Name", "url": "https://competitor.com"}, ...]
-   - userId: (pass the userId from your context)
-   - projectId: (pass the projectId from your context)
-   
-   Example content format (must be valid JSON string):
-   [{"name": "Competitor 1", "url": "https://competitor1.com"}, {"name": "Competitor 2", "url": "https://competitor2.com"}, ...]
+2. Use web_search if needed to find relevant competitors
+3. Call 'save_site_context' tool ONCE with ALL competitors:
+   - type: "competitors"
+   - content: JSON string array format: [{"name": "Competitor Name", "url": "https://competitor.com"}, ...]
+   - userId: (from your context)
+   - projectId: (from your context)
 
-**VERY IMPORTANT:**
-- You must find and save at least 10 competitors
-- Use web search if needed to find relevant competitors
-- DO NOT use save_content_item or save_content_items_batch - those save to content library, not brand assets
-- The competitors list should appear in Brand Assets modal, not in Page Blueprint section
+## PHASE 3: Page Planning (use 'save_content_items_batch' tool)
 
-## PHASE 3: Page Planning (use 'web_search' and 'save_content_items_batch' tools)
 After competitors are saved:
 1. Use 'web_search' to research "[Competitor] alternative" for top 3-5 competitors
-2. Design alternative page strategies with:
-   - Page title: "[Your Brand] vs [Competitor]: The Best Alternative"
-   - Target keyword: "[Competitor] alternative"
-   - Key differentiators to highlight
-   - Target audience segments
-3. Create detailed content outlines for each page:
-   - H1: Main comparison headline
-   - H2s: Why switch, Feature comparison, User results, FAQ, Get Started
-   - H3s: Specific subtopics under each section
-4. **CRITICAL**: Call 'save_content_items_batch' to save ALL planned pages at once
-   - This creates content_items records with proper UUIDs
+2. Design alternative page strategies with detailed outlines
+3. Call 'save_content_items_batch' to save ALL planned pages at once:
    - Set page_type to 'alternative'
    - Set status to 'ready'
-   - The returned item_ids are the UUIDs you need for page generation later
 
 ## CRITICAL EXECUTION INSTRUCTIONS:
 - Execute ALL THREE phases in ONE continuous response
-- Do NOT stop after Phase 1 or Phase 2 - continue immediately to the next phase
+- Phase 1: Call acquire_site_context with field="all" (ONE call)
+- Phase 2: Research and save competitors
+- Phase 3: Plan and save alternative pages
 - Do NOT ask for user confirmation - proceed automatically
-- Complete Phase 1 → immediately proceed to Phase 2 → immediately proceed to Phase 3
 - Only report final completion after ALL phases are done
 
-Start executing Phase 1 now, then immediately continue to Phase 2 and Phase 3 without stopping.`;
+Start executing Phase 1 now with acquire_site_context(url="${fullUrl}", field="all"), then immediately continue to Phase 2 and Phase 3.`;
     
     console.log(`[Auto-Initiate] Sending context acquisition request for: ${fullUrl}`);
     
@@ -497,18 +539,22 @@ Start executing Phase 1 now, then immediately continue to Phase 2 and Phase 3 wi
     }
   };
 
-  const loadContentItems = async (userId: string) => {
+  const loadContentItems = async (userId: string): Promise<ContentItem[]> => {
     try {
-      const items = await getUserContentItems(userId);
+      // CRITICAL: Filter by projectId to only show current project's content items
+      const items = await getUserContentItems(userId, projectId);
       setContentItems(items);
+      return items;
     } catch (error) {
       console.error('Failed to load content items:', error);
+      return [];
     }
   };
 
   const loadContentProjects = async (userId: string) => {
     try {
-      const projects = await getUserContentProjects(userId);
+      // CRITICAL: Filter by projectId to only show current project's content projects
+      const projects = await getUserContentProjects(userId, projectId);
       setContentProjects(projects);
     } catch (error) {
       console.error('Failed to load content projects:', error);
@@ -591,6 +637,9 @@ Start executing Phase 1 now, then immediately continue to Phase 2 and Phase 3 wi
   const handleGeneratePage = async (item: ContentItem) => {
     if (!user || !currentConversation || isLoading) return;
     
+    // Check if this is a regeneration (page already has content)
+    const isRegenerate = item.status === 'generated' || !!item.generated_content;
+    
     // Set running state
     setRunningTaskId(item.id);
     setSelectedTask({
@@ -605,14 +654,30 @@ Start executing Phase 1 now, then immediately continue to Phase 2 and Phase 3 wi
     // Clear messages for new task
     setMessages([]);
     
-    const generateMessage = `Generate the alternative page for content item: ${item.id}
+    const generateMessage = isRegenerate 
+      ? `REGENERATE the alternative page for content item: ${item.id}
+
+IMPORTANT: This is a FULL REGENERATION request. You MUST:
+1. Execute the COMPLETE workflow from scratch
+2. Research competitor information again (web_search, perplexity_search)
+3. Generate ALL new content sections
+4. DO NOT skip any steps just because the page already has content
+5. Ignore any existing generated_content - create everything fresh
 
 Page Details:
 - Title: ${item.title}
 - Target Keyword: ${item.target_keyword || 'N/A'}
 - Page Type: ${item.page_type || 'alternative'}
 
-Execute the full page generation workflow using the V2 skill.`;
+Execute the FULL page generation workflow. Do NOT take shortcuts.`
+      : `Generate the alternative page for content item: ${item.id}
+
+Page Details:
+- Title: ${item.title}
+- Target Keyword: ${item.target_keyword || 'N/A'}
+- Page Type: ${item.page_type || 'alternative'}
+
+Execute the full page generation workflow.`;
 
     try {
       await saveMessage(currentConversation.id, 'user', generateMessage, Math.ceil(generateMessage.length / 4), 0);
@@ -649,6 +714,29 @@ Execute the full page generation workflow using the V2 skill.`;
     }
     return taskMessages.get(selectedTask.id) || messages;
   };
+
+  // Handle initialization complete
+  const handleInitializationComplete = async () => {
+    setIsInitializing(false);
+    setContextTaskStatus('completed');
+    // Refresh site contexts after initialization
+    if (user) {
+      await loadSiteContexts(user.id);
+      await loadContentItems(user.id);
+    }
+  };
+
+  // Show initialization overlay if in initialization mode
+  if (isInitializing && currentProject) {
+    return (
+      <SiteInitializationOverlay
+        domain={currentProject.domain}
+        messages={messages}
+        isLoading={isLoading}
+        onComplete={handleInitializationComplete}
+      />
+    );
+  }
 
   return (
     <div className="h-screen bg-[#FAFAFA] flex flex-col p-2 gap-2">
@@ -691,6 +779,7 @@ Execute the full page generation workflow using the V2 skill.`;
             isRefreshingContent={refreshingContent}
             contextTaskStatus={contextTaskStatus}
             credits={userCredits}
+            projectDomain={currentProject?.domain}
           />
         )}
 
@@ -722,6 +811,21 @@ Execute the full page generation workflow using the V2 skill.`;
               }
             }}
             onRegenerate={(item) => handleGeneratePage(item)}
+            onContentUpdate={(itemId, newContent) => {
+              // Update contentItems state with the new content
+              setContentItems(prev => prev.map(item => 
+                item.id === itemId 
+                  ? { ...item, generated_content: newContent, updated_at: new Date().toISOString() }
+                  : item
+              ));
+              // Also update selectedTask if it's the same item
+              if (selectedTask && selectedTask.id === itemId) {
+                setSelectedTask(prev => prev ? {
+                  ...prev,
+                  data: { ...(prev.data as ContentItem), generated_content: newContent, updated_at: new Date().toISOString() }
+                } : null);
+              }
+            }}
             isRegenerating={runningTaskId === selectedTask?.id && isLoading}
           />
         )}
@@ -734,6 +838,9 @@ Execute the full page generation workflow using the V2 skill.`;
           onClose={() => setIsContextModalOpen(false)}
           siteContexts={siteContexts}
           onSave={handleSaveSiteContext}
+          onRefresh={async () => {
+            if (user) await loadSiteContexts(user.id);
+          }}
           projectId={projectId}
           initialTab={contextModalInitialTab}
         />

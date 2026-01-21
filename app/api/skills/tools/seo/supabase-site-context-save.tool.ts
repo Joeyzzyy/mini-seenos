@@ -9,101 +9,96 @@ const supabase = createClient(
 );
 
 /**
- * Supabase Site Context Save Tool
- * Saves or updates site-wide context (like sitemap, logo, header, footer, and all content sections) in the database.
+ * Supabase Site Context Save Tool (Simplified)
  * 
- * IMPORTANT: Brand assets (colors, fonts, etc.) should be saved with type='logo', not as separate types.
+ * Saves site-wide context with simplified schema:
+ * - logo: brand assets (domain, colors, fonts, images)
+ * - header: navigation config + generated HTML
+ * - footer: footer config + generated HTML
+ * - competitors: competitor list
  */
 export const save_site_context = tool({
-  description: `Save or update site-wide context in the database (site_contexts table, Brand Assets).
+  description: `Save or update site-wide context in the database (site_contexts table).
   
-  For brand assets (colors, fonts, tone), use type='logo' and include the optional fields.
-  For content sections, use their specific types (hero-section, about-us, etc.) with content as JSON string.
-  For competitors list, use type='competitors' with content as JSON array: [{"name": "Competitor Name", "url": "https://competitor.com"}, ...]
-  
-  IMPORTANT: This saves to Brand Assets (site_contexts), NOT to content library (content_items).`,
+Available types:
+- **logo**: Brand assets (domain_name, colors, fonts, logos, favicons, og_image, languages)
+- **header**: Navigation structure (JSON config + HTML)
+- **footer**: Footer structure (JSON config + HTML)
+- **competitors**: Competitor list (JSON array: [{"name": "Name", "url": "https://..."}])
+
+IMPORTANT: This saves to site_contexts table, NOT to content_items.`,
+
   parameters: z.object({
-    userId: z.string().describe('The ID of the user (pass your Current User ID here)'),
-    projectId: z.string().optional().describe('The ID of the SEO project to scope this context to'),
-    type: z.enum([
-      'logo', 'header', 'footer', 'meta', 'sitemap',
-      'key-website-pages', 'landing-pages', 'blog-resources',
-      'hero-section', 'problem-statement', 'who-we-serve',
-      'use-cases', 'industries', 'products-services',
-      'social-proof-trust', 'leadership-team', 'about-us',
-      'faq', 'contact-information', 'competitors'
-    ]).describe('Type of context being saved. Use "logo" for brand assets (colors, fonts). Use "competitors" for competitor list (JSON array of {name, url}).'),
-    content: z.string().optional().describe('Text content (e.g., sitemap URLs as JSON string, code snippets, or structured content as JSON)'),
-    fileUrl: z.string().optional().describe('URL to a file (e.g., logo image URL)'),
-    // Brand asset fields (only for type='logo')
-    brandName: z.string().optional().describe('Brand name (only for type=logo)'),
-    subtitle: z.string().optional().describe('Brand subtitle (only for type=logo)'),
-    metaDescription: z.string().optional().describe('Meta description (only for type=logo)'),
+    userId: z.string().describe('The ID of the user'),
+    projectId: z.string().describe('The ID of the SEO project'),
+    type: z.enum(['logo', 'header', 'footer', 'competitors'])
+      .describe('Type of context: logo (brand assets), header, footer, or competitors'),
+    
+    // Content field (for header/footer JSON config, or competitors list)
+    content: z.string().optional().describe('JSON content (navigation config for header/footer, or competitor list for competitors)'),
+    
+    // HTML field (for header/footer generated HTML)
+    html: z.string().nullish().describe('Generated HTML (for header/footer)'),
+    
+    // Brand asset fields (for type=logo)
+    domainName: z.string().optional().describe('Website domain name (only for type=logo)'),
     ogImage: z.string().optional().describe('Open Graph image URL (only for type=logo)'),
-    favicon: z.string().optional().describe('Favicon URL (only for type=logo)'),
-    logoLight: z.string().optional().describe('Light theme logo URL (only for type=logo)'),
-    logoDark: z.string().optional().describe('Dark theme logo URL (only for type=logo)'),
-    iconLight: z.string().optional().describe('Light theme icon URL (only for type=logo)'),
-    iconDark: z.string().optional().describe('Dark theme icon URL (only for type=logo)'),
+    logoLightUrl: z.string().optional().describe('Light theme logo URL (only for type=logo)'),
+    logoDarkUrl: z.string().optional().describe('Dark theme logo URL (only for type=logo)'),
+    faviconLightUrl: z.string().optional().describe('Light theme favicon URL (only for type=logo)'),
+    faviconDarkUrl: z.string().optional().describe('Dark theme favicon URL (only for type=logo)'),
     primaryColor: z.string().optional().describe('Primary brand color hex (only for type=logo)'),
     secondaryColor: z.string().optional().describe('Secondary brand color hex (only for type=logo)'),
     headingFont: z.string().optional().describe('Heading font family (only for type=logo)'),
     bodyFont: z.string().optional().describe('Body font family (only for type=logo)'),
-    tone: z.string().optional().describe('Brand tone and voice (only for type=logo)'),
     languages: z.string().optional().describe('Supported languages (only for type=logo)'),
   }),
+
   execute: async ({ 
-    userId, projectId, type, content, fileUrl,
-    brandName, subtitle, metaDescription, ogImage, favicon,
-    logoLight, logoDark, iconLight, iconDark,
-    primaryColor, secondaryColor, headingFont, bodyFont, tone, languages
+    userId, projectId, type, content, html,
+    domainName, ogImage, logoLightUrl, logoDarkUrl, 
+    faviconLightUrl, faviconDarkUrl,
+    primaryColor, secondaryColor, headingFont, bodyFont, languages
   }) => {
     try {
-      console.log(`[save_site_context] Saving ${type} for user ${userId} ${projectId ? `for project ${projectId}` : ''}`);
+      console.log(`[save_site_context] Saving ${type} for user ${userId}, project ${projectId}`);
       
-      // First try to get existing record
-      let query = supabase
+      // Check for existing record
+      const { data: existing, error: fetchError } = await supabase
         .from('site_contexts')
         .select('id')
         .eq('user_id', userId)
-        .eq('type', type);
-      
-      if (projectId) {
-        query = query.eq('project_id', projectId);
-      } else {
-        query = query.is('project_id', null);
-      }
-
-      const { data: existing, error: fetchError } = await query.maybeSingle();
+        .eq('project_id', projectId)
+        .eq('type', type)
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
 
-      let result;
-      
-      // Prepare update data
+      // Prepare data based on type
       const updateData: any = {
-        content: content || null,
-        file_url: fileUrl || null,
-        project_id: projectId || null,
         updated_at: new Date().toISOString(),
       };
-      
-      // Add brand asset fields if provided (typically for type='logo')
-      if (brandName !== undefined) updateData.brand_name = brandName;
-      if (subtitle !== undefined) updateData.subtitle = subtitle;
-      if (metaDescription !== undefined) updateData.meta_description = metaDescription;
-      if (ogImage !== undefined) updateData.og_image = ogImage;
-      if (favicon !== undefined) updateData.favicon = favicon;
-      if (logoLight !== undefined) updateData.logo_light = logoLight;
-      if (logoDark !== undefined) updateData.logo_dark = logoDark;
-      if (iconLight !== undefined) updateData.icon_light = iconLight;
-      if (iconDark !== undefined) updateData.icon_dark = iconDark;
-      if (primaryColor !== undefined) updateData.primary_color = primaryColor;
-      if (secondaryColor !== undefined) updateData.secondary_color = secondaryColor;
-      if (headingFont !== undefined) updateData.heading_font = headingFont;
-      if (bodyFont !== undefined) updateData.body_font = bodyFont;
-      if (tone !== undefined) updateData.tone = tone;
-      if (languages !== undefined) updateData.languages = languages;
+
+      // Common fields
+      if (content !== undefined) updateData.content = content || null;
+      if (html !== undefined) updateData.html = html || null;
+
+      // Logo-specific fields
+      if (type === 'logo') {
+        if (domainName !== undefined) updateData.domain_name = domainName || null;
+        if (ogImage !== undefined) updateData.og_image = ogImage || null;
+        if (logoLightUrl !== undefined) updateData.logo_light_url = logoLightUrl || null;
+        if (logoDarkUrl !== undefined) updateData.logo_dark_url = logoDarkUrl || null;
+        if (faviconLightUrl !== undefined) updateData.favicon_light_url = faviconLightUrl || null;
+        if (faviconDarkUrl !== undefined) updateData.favicon_dark_url = faviconDarkUrl || null;
+        if (primaryColor !== undefined) updateData.primary_color = primaryColor || null;
+        if (secondaryColor !== undefined) updateData.secondary_color = secondaryColor || null;
+        if (headingFont !== undefined) updateData.heading_font = headingFont || null;
+        if (bodyFont !== undefined) updateData.body_font = bodyFont || null;
+        if (languages !== undefined) updateData.languages = languages || null;
+      }
+
+      let result;
 
       if (existing) {
         // Update existing
@@ -116,32 +111,15 @@ export const save_site_context = tool({
         
         if (error) throw error;
         result = data;
+        console.log(`[save_site_context] ✅ Updated ${type} context`);
       } else {
-        // Create new - prepare insert data
-        const insertData: any = {
+        // Create new
+        const insertData = {
           user_id: userId,
+          project_id: projectId,
           type,
-          content: content || null,
-          file_url: fileUrl || null,
-          project_id: projectId || null,
+          ...updateData,
         };
-        
-        // Add brand asset fields if provided
-        if (brandName !== undefined) insertData.brand_name = brandName;
-        if (subtitle !== undefined) insertData.subtitle = subtitle;
-        if (metaDescription !== undefined) insertData.meta_description = metaDescription;
-        if (ogImage !== undefined) insertData.og_image = ogImage;
-        if (favicon !== undefined) insertData.favicon = favicon;
-        if (logoLight !== undefined) insertData.logo_light = logoLight;
-        if (logoDark !== undefined) insertData.logo_dark = logoDark;
-        if (iconLight !== undefined) insertData.icon_light = iconLight;
-        if (iconDark !== undefined) insertData.icon_dark = iconDark;
-        if (primaryColor !== undefined) insertData.primary_color = primaryColor;
-        if (secondaryColor !== undefined) insertData.secondary_color = secondaryColor;
-        if (headingFont !== undefined) insertData.heading_font = headingFont;
-        if (bodyFont !== undefined) insertData.body_font = bodyFont;
-        if (tone !== undefined) insertData.tone = tone;
-        if (languages !== undefined) insertData.languages = languages;
         
         const { data, error } = await supabase
           .from('site_contexts')
@@ -151,6 +129,7 @@ export const save_site_context = tool({
         
         if (error) throw error;
         result = data;
+        console.log(`[save_site_context] ✅ Created ${type} context`);
       }
 
       return {
@@ -163,9 +142,7 @@ export const save_site_context = tool({
       return { 
         success: false, 
         error: error.message,
-        details: 'If you see a constraint error, please ensure the database update script has been run.'
       };
     }
   },
 });
-

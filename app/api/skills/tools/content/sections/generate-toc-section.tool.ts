@@ -12,13 +12,26 @@ This section includes:
 - Links to all page sections
 - Sticky positioning option
 
+⚠️ CRITICAL: Use ONLY these section IDs (they match the actual page sections):
+- "verdict" → Quick Verdict / Why Switch
+- "screenshots" → Screenshots / Visual Comparison
+- "comparison" → Feature Comparison Table
+- "pricing" → Pricing Comparison
+- "pros-cons" → Pros & Cons
+- "use-cases" → Use Cases / Who It's For
+- "faq" → FAQ
+- "cta" → Get Started / Final CTA
+
+DO NOT invent custom IDs. Use the exact IDs listed above.
+
 Returns HTML that can be assembled into the full page.`,
   parameters: z.object({
     sections: z.array(z.object({
-      id: z.string().describe('Section ID for anchor link'),
-      label: z.string().describe('Display label'),
+      id: z.enum(['verdict', 'screenshots', 'comparison', 'pricing', 'pros-cons', 'use-cases', 'faq', 'cta'])
+        .describe('Section ID - MUST be one of: verdict, screenshots, comparison, pricing, pros-cons, use-cases, faq, cta'),
+      label: z.string().describe('Display label for the TOC link'),
       emoji: z.string().optional().describe('Optional emoji icon'),
-    })).min(3).max(10).describe('List of sections to include in TOC'),
+    })).min(3).max(8).describe('List of sections to include in TOC'),
     sticky: z.boolean().optional().default(true).describe('Whether TOC should be sticky'),
   }),
   execute: async ({ sections, sticky }) => {

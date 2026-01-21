@@ -7,7 +7,7 @@ interface ConversationSidebarProps {
   siteContexts: SiteContext[];
   contentItems: ContentItem[];
   contentProjects: ContentProject[];
-  onEditSiteContext: (type: 'logo' | 'header' | 'footer' | 'meta' | 'sitemap') => void;
+  onEditSiteContext: (type: 'logo' | 'header' | 'footer' | 'competitors') => void;
   onSelectContentItem: (item: ContentItem) => void;
   onRefreshContent: () => void;
   onRefreshSiteContexts?: () => void;
@@ -15,7 +15,7 @@ interface ConversationSidebarProps {
   isRefreshingContent?: boolean;
   onDeleteProject: (projectId: string, projectName: string) => void;
   onDeleteContentItem: (itemId: string, itemTitle: string) => void;
-  onOpenContextModal?: (tab?: 'onsite' | 'knowledge') => void;
+  onOpenContextModal?: (tab?: 'brand' | 'competitors') => void;
 }
 
 export default function ConversationSidebar({
@@ -68,15 +68,11 @@ export default function ConversationSidebar({
   // Items without a project (Uncategorized)
   const uncategorizedItems = contentItems.filter(item => !item.project_id);
 
-  // Count acquired fields for each category
+  // Count acquired fields for each category - Simplified
   const getFieldCount = (category: string): { acquired: number; total: number } => {
     const fieldMappings: Record<string, string[]> = {
       'competitors': ['competitors'],
-      'brand-site': ['meta-info', 'logo', 'colors', 'typography', 'tone', 'languages', 'header', 'footer', 'sitemap'],
-      'hero-section': ['hero-headline', 'hero-subheadline', 'hero-cta', 'hero-media', 'hero-metrics'],
-      'pages': ['key-pages', 'landing-pages', 'blog-resources'],
-      'business-context': ['problem-statement', 'who-we-serve', 'use-cases', 'industries', 'products-services'],
-      'trust-company': ['social-proof', 'leadership-team', 'about-us', 'faq', 'contact-info'],
+      'brand-site': ['logo', 'colors', 'typography', 'languages', 'header', 'footer'],
     };
     
     const fields = fieldMappings[category] || [];
@@ -85,179 +81,50 @@ export default function ConversationSidebar({
     return { acquired, total: fields.length };
   };
 
-  // Helper function to check if a context field has value
+  // Helper function to check if a context field has value - Simplified
   const hasContextValue = (field: string): boolean => {
     const logoContext = siteContexts.find(ctx => ctx.type === 'logo');
     const headerContext = siteContexts.find(ctx => ctx.type === 'header');
     const footerContext = siteContexts.find(ctx => ctx.type === 'footer');
-    const metaContext = siteContexts.find(ctx => ctx.type === 'meta');
-    const sitemapContext = siteContexts.find(ctx => ctx.type === 'sitemap');
+    const competitorsContext = siteContexts.find(ctx => ctx.type === 'competitors');
     
-    // Helper to check if a string value is meaningful (not null, undefined, empty, or only whitespace)
     const hasStringValue = (value: string | null | undefined): boolean => {
       return !!value && value.trim().length > 0;
     };
     
-    // Helper to check if JSON content has any meaningful values (recursively checks nested objects)
     const hasJsonContent = (content: string | null | undefined): boolean => {
       if (!content || !content.trim()) return false;
-      
       try {
         const parsed = JSON.parse(content);
-        
-        // Handle array type
-        if (Array.isArray(parsed)) {
-          return parsed.length > 0 && parsed.some(item => 
-            typeof item === 'object' ? hasJsonContent(JSON.stringify(item)) : hasStringValue(String(item))
-          );
-        }
-        
-        // Handle object type - recursively check all values
+        if (Array.isArray(parsed)) return parsed.length > 0;
         if (typeof parsed === 'object' && parsed !== null) {
-          return Object.values(parsed).some(val => {
-            if (val === null || val === undefined) return false;
-            if (typeof val === 'object') {
-              // Recursively check nested objects/arrays
-              return hasJsonContent(JSON.stringify(val));
-            }
-            // For primitive values, check if they're meaningful strings
-            return hasStringValue(String(val));
-          });
+          return Object.values(parsed).some(val => val !== null && val !== undefined);
         }
-        
-        // For primitive JSON values (string, number, boolean)
         return hasStringValue(String(parsed));
       } catch {
-        // If not valid JSON, treat as regular string and check if it has content
         return hasStringValue(content);
-      }
-    };
-
-    const hasSpecificJsonField = (content: string | null | undefined, fieldName: string): boolean => {
-      if (!content || !content.trim()) return false;
-      try {
-        const parsed = JSON.parse(content);
-        if (typeof parsed === 'object' && parsed !== null) {
-          const v = (parsed as any)[fieldName];
-          return !!v && String(v).trim().length > 0;
-        }
-        return false;
-      } catch {
-        return false;
       }
     };
     
     switch (field) {
-      case 'meta-info':
-        return hasStringValue(logoContext?.brand_name) || 
-               hasStringValue(logoContext?.subtitle) || 
-               hasStringValue(logoContext?.meta_description) ||
-               hasStringValue(logoContext?.og_image) ||
-               hasStringValue(logoContext?.favicon);
       case 'logo':
-        return hasStringValue(logoContext?.file_url) || 
-               hasStringValue(logoContext?.logo_light_url) || 
-               hasStringValue(logoContext?.logo_dark_url) ||
-               hasStringValue(logoContext?.logo_light) || 
-               hasStringValue(logoContext?.logo_dark);
+        return hasStringValue(logoContext?.logo_light_url) || hasStringValue(logoContext?.file_url);
       case 'colors':
-        return hasStringValue(logoContext?.primary_color) || 
-               hasStringValue(logoContext?.secondary_color);
+        return hasStringValue(logoContext?.primary_color) || hasStringValue(logoContext?.secondary_color);
       case 'typography':
-        return hasStringValue(logoContext?.heading_font) || 
-               hasStringValue(logoContext?.body_font);
-      case 'tone':
-        return hasStringValue(logoContext?.tone);
+        return hasStringValue(logoContext?.heading_font) || hasStringValue(logoContext?.body_font);
       case 'languages':
         return hasStringValue(logoContext?.languages);
       case 'header':
-        return hasStringValue(headerContext?.content);
+        return hasStringValue(headerContext?.content) || hasStringValue(headerContext?.html);
       case 'footer':
-        return hasStringValue(footerContext?.content);
-      case 'meta-tags':
-        return hasStringValue(metaContext?.content);
-      case 'sitemap':
-        return hasJsonContent(sitemapContext?.content);
-      case 'problem-statement':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'problem-statement')?.content);
-      case 'who-we-serve':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'who-we-serve')?.content);
-      case 'use-cases':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'use-cases')?.content);
-      case 'industries':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'industries')?.content);
-      case 'products-services':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'products-services')?.content);
-      case 'social-proof':
-        return hasJsonContent(siteContexts.find(ctx => ctx.type === 'social-proof-trust')?.content);
-      case 'about-us':
-        return hasJsonContent(siteContexts.find(ctx => ctx.type === 'about-us')?.content);
-      case 'leadership-team':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'leadership-team')?.content);
-      case 'faq':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'faq')?.content);
-      case 'contact-info':
-        return hasJsonContent(siteContexts.find(ctx => ctx.type === 'contact-information')?.content);
+        return hasStringValue(footerContext?.content) || hasStringValue(footerContext?.html);
       case 'competitors':
-        return hasJsonContent(siteContexts.find(ctx => ctx.type === 'competitors')?.content);
-      case 'key-pages':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'key-website-pages')?.content);
-      case 'landing-pages':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'landing-pages')?.content);
-      case 'blog-resources':
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'blog-resources')?.content);
-      case 'hero-headline':
-        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'headline');
-      case 'hero-subheadline':
-        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'subheadline');
-      case 'hero-cta':
-        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'callToAction');
-      case 'hero-media':
-        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'media');
-      case 'hero-metrics':
-        return hasSpecificJsonField(siteContexts.find(ctx => ctx.type === 'hero-section')?.content, 'metrics');
-      // Category-level checks for simplified sidebar
-      // STRICT: All fields must be filled for the red dot to disappear
+        return hasJsonContent(competitorsContext?.content);
       case 'brand-site':
-        // All Brand & Site fields must have value (except header/footer which are optional)
-        return hasStringValue(logoContext?.brand_name) && 
-               hasStringValue(logoContext?.meta_description) &&
-               (hasStringValue(logoContext?.file_url) || hasStringValue(logoContext?.logo_light_url) || hasStringValue(logoContext?.logo_dark_url)) &&
-               hasStringValue(logoContext?.primary_color) &&
-               hasStringValue(logoContext?.heading_font) &&
-               hasStringValue(logoContext?.tone) &&
-               hasStringValue(logoContext?.languages);
-      case 'pages':
-        // All Pages fields must have value
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'key-website-pages')?.content) &&
-               hasStringValue(siteContexts.find(ctx => ctx.type === 'landing-pages')?.content) &&
-               hasStringValue(siteContexts.find(ctx => ctx.type === 'blog-resources')?.content);
-      case 'business-context':
-        // All Business Context fields must have value
-        return hasStringValue(siteContexts.find(ctx => ctx.type === 'problem-statement')?.content) &&
-               hasStringValue(siteContexts.find(ctx => ctx.type === 'who-we-serve')?.content) &&
-               hasStringValue(siteContexts.find(ctx => ctx.type === 'use-cases')?.content) &&
-               hasStringValue(siteContexts.find(ctx => ctx.type === 'industries')?.content) &&
-               hasStringValue(siteContexts.find(ctx => ctx.type === 'products-services')?.content);
-      case 'trust-company':
-        // All Trust & Company fields must have value
-        return hasJsonContent(siteContexts.find(ctx => ctx.type === 'social-proof-trust')?.content) &&
-               hasJsonContent(siteContexts.find(ctx => ctx.type === 'about-us')?.content) &&
-               hasStringValue(siteContexts.find(ctx => ctx.type === 'leadership-team')?.content) &&
-               hasStringValue(siteContexts.find(ctx => ctx.type === 'faq')?.content) &&
-               hasJsonContent(siteContexts.find(ctx => ctx.type === 'contact-information')?.content);
-      case 'hero-section':
-        // Hero section needs headline at minimum
-        const heroContent = siteContexts.find(ctx => ctx.type === 'hero-section')?.content;
-        if (!heroContent) return false;
-        try {
-          const hero = JSON.parse(heroContent);
-          return hasStringValue(hero?.headline) && 
-                 hasStringValue(hero?.subheadline) && 
-                 hasStringValue(hero?.callToAction);
-        } catch {
-          return false;
-        }
+        // Brand site is complete if logo and colors are set
+        return (hasStringValue(logoContext?.logo_light_url) || hasStringValue(logoContext?.file_url)) &&
+               (hasStringValue(logoContext?.primary_color) || hasStringValue(logoContext?.secondary_color));
       default:
         return false;
     }

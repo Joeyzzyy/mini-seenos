@@ -146,7 +146,7 @@ export default function SocialProofEditor({
                   <div className="flex flex-wrap gap-1 mb-2">
                     {review.awards.map((award, i) => (
                       <span key={i} className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">
-                        🏆 {award}
+                        {award}
                       </span>
                     ))}
                   </div>

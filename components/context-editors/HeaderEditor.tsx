@@ -1,7 +1,55 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { generateHeaderHTML, defaultHeaderConfig } from '@/lib/templates/default-header';
+
+// Scaled Preview Component - fits content to container without scrollbars
+function ScaledPreview({ html, contentHeight }: { html: string; contentHeight: number }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.35);
+  const desktopWidth = 1280;
+  
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const newScale = containerWidth / desktopWidth;
+        setScale(newScale);
+      }
+    };
+    
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
+  
+  const scaledHeight = contentHeight * scale;
+  
+  return (
+    <div>
+      <label className="block text-xs font-medium text-[#374151] mb-1.5">Preview</label>
+      <div 
+        ref={containerRef}
+        className="border border-[#E5E5E5] rounded overflow-hidden bg-white"
+        style={{ height: `${scaledHeight}px` }}
+      >
+        <iframe 
+          srcDoc={html}
+          className="border-none bg-white"
+          title="Preview"
+          sandbox="allow-same-origin allow-scripts"
+          style={{ 
+            width: `${desktopWidth}px`, 
+            height: `${contentHeight}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+          }}
+        />
+      </div>
+      <p className="text-[10px] text-[#9CA3AF] mt-1">Preview scaled. Local images replaced with your logo.</p>
+    </div>
+  );
+}
 
 interface HeaderConfig {
   siteName: string;
@@ -89,23 +137,37 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
     const html = generateHeaderHTML(headerConfig);
     const processedContent = preprocessHTML(html, headerConfig.logo);
     
+    // Desktop width for rendering
+    const desktopWidth = 1280;
+    
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=${desktopWidth}">
   <title>Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; background: white; }
+    html, body { 
+      margin: 0; 
+      padding: 0; 
+      overflow: hidden;
+      width: ${desktopWidth}px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; 
+      background: white;
+    }
     img { max-width: 100%; height: auto; object-fit: contain; }
+    /* Force show all elements (override responsive hiding) */
+    .md\\:flex { display: flex !important; }
+    .md\\:block { display: block !important; }
+    .md\\:hidden { display: none !important; }
+    .hidden.md\\:flex { display: flex !important; }
+    .hidden.md\\:block { display: block !important; }
   </style>
 </head>
 <body>
-  <div style="transform: scale(0.75); transform-origin: top left; width: 133.33%; min-height: 100vh;">
-    ${processedContent}
-  </div>
+  ${processedContent}
 </body>
 </html>`;
   };
@@ -234,19 +296,7 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs font-medium text-[#374151] mb-1.5">Preview</label>
-        <div className="border border-[#E5E5E5] rounded overflow-hidden bg-white">
-          <iframe 
-            srcDoc={generatePreviewHTML()}
-            className="w-full border-none bg-white h-[80px]"
-            title="Header preview"
-            sandbox="allow-same-origin allow-scripts"
-            style={{ display: 'block' }}
-          />
-        </div>
-        <p className="text-[10px] text-[#9CA3AF] mt-1">Preview scaled. Local images replaced with your logo.</p>
-      </div>
+      <ScaledPreview html={generatePreviewHTML()} contentHeight={80} />
     </div>
   );
 }

@@ -50,8 +50,14 @@ Returns HTML that can be assembled into the full page.`,
       label: z.string().describe('e.g., "Status", "Price/mo", "Templates"'),
     })).min(2).max(4).describe('2-4 key comparison metrics'),
     bottom_line: z.string().describe('Final recommendation paragraph'),
+    // EEAT T06: Methodology transparency for trust signals
+    methodology: z.object({
+      research_approach: z.string().optional().describe('How the comparison was conducted'),
+      factors_evaluated: z.array(z.string()).optional().describe('Key factors evaluated'),
+      last_verified: z.string().optional().describe('When data was last verified'),
+    }).optional(),
   }),
-  execute: async ({ brand, competitor, verdict, stats, bottom_line }) => {
+  execute: async ({ brand, competitor, verdict, stats, bottom_line, methodology }) => {
     const brandInitial = brand.name.charAt(0).toUpperCase();
     const competitorInitial = competitor.name.charAt(0).toUpperCase();
     
@@ -196,6 +202,41 @@ Returns HTML that can be assembled into the full page.`,
           </div>
         </div>
       </div>
+      
+      <!-- EEAT T06: Methodology Transparency -->
+      ${methodology ? `
+      <div class="mt-4 md:mt-6 p-4 md:p-5 rounded-xl bg-gray-50 border border-gray-100">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+          </div>
+          <div class="text-xs text-gray-500">
+            <p class="font-medium text-gray-600 mb-1">How We Evaluated</p>
+            <p class="leading-relaxed">
+              ${methodology.research_approach ? escapeHtml(methodology.research_approach) : 'Our team conducted hands-on testing and analysis of both platforms.'}
+              ${methodology.factors_evaluated?.length ? ` Key factors: ${methodology.factors_evaluated.map(f => escapeHtml(f)).join(', ')}.` : ''}
+              ${methodology.last_verified ? ` Data last verified: ${escapeHtml(methodology.last_verified)}.` : ''}
+            </p>
+          </div>
+        </div>
+      </div>
+      ` : `
+      <div class="mt-4 md:mt-6 p-4 md:p-5 rounded-xl bg-gray-50 border border-gray-100">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+          </div>
+          <div class="text-xs text-gray-500">
+            <p class="font-medium text-gray-600 mb-1">How We Evaluated</p>
+            <p class="leading-relaxed">Our team conducted hands-on testing and analysis of both platforms, evaluating features, pricing, user experience, and real-world performance.</p>
+          </div>
+        </div>
+      </div>
+      `}
     </div>
   </section>`;
 

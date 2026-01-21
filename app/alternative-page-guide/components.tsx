@@ -167,7 +167,7 @@ export function ClusterNav({
   return (
     <nav className="mb-12 p-6 bg-white/5 border border-white/10 rounded-xl" aria-label="Topic Cluster">
       <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-        📚 Alternative Page Guide Series
+        Alternative Page Guide Series
       </h3>
       <ul className="space-y-2">
         <li>

@@ -64,10 +64,8 @@ Workflow:
       cta: z.string().optional().describe('HTML from generate_cta_section'),
       custom: z.array(z.string()).optional().describe('Additional custom section HTML'),
     }),
-    theme_switcher: z.boolean().optional().default(false).describe('Include theme color switcher in header'),
-    footer_html: z.string().optional().describe('Custom footer HTML'),
   }),
-  execute: async ({ item_id, page_title, seo, brand, competitor_name, sections, theme_switcher, footer_html }) => {
+  execute: async ({ item_id, page_title, seo, brand, competitor_name, sections }) => {
     // ========================================
     // CRITICAL: Validate required sections
     // ========================================
@@ -76,17 +74,60 @@ Workflow:
     
     const missingSections: string[] = [];
     const missingRecommended: string[] = [];
+    const invalidSections: string[] = [];
+    
+    // Helper to check if content is valid (not just ellipsis or placeholder)
+    const isValidSectionContent = (content: string | undefined): boolean => {
+      if (!content) return false;
+      const trimmed = content.trim();
+      // Reject pure ellipsis, placeholder text, or very short content
+      if (/^\.{2,}$/.test(trimmed)) return false; // "...", "....", etc.
+      if (/^\[.*\]$/.test(trimmed)) return false; // "[placeholder]", "[content]", etc.
+      if (trimmed.length < 50) return false; // Too short to be valid HTML section
+      if (!trimmed.includes('<')) return false; // Must contain HTML tags
+      return true;
+    };
     
     for (const section of requiredSections) {
       if (!sections[section]) {
         missingSections.push(section);
+      } else if (!isValidSectionContent(sections[section])) {
+        invalidSections.push(section);
       }
     }
     
     for (const section of recommendedSections) {
       if (!sections[section]) {
         missingRecommended.push(section);
+      } else if (!isValidSectionContent(sections[section])) {
+        invalidSections.push(section);
       }
+    }
+    
+    // BLOCK execution if sections contain invalid placeholder content
+    if (invalidSections.length > 0) {
+      const errorMsg = `INVALID SECTION CONTENT DETECTED: ${invalidSections.join(', ')}
+
+These sections contain placeholder text ("...", "[content]", etc.) instead of actual HTML content.
+This is NOT acceptable - you MUST provide the FULL HTML content for each section.
+
+CRITICAL: DO NOT use "..." or any placeholder text. Generate the COMPLETE HTML for each section.
+
+Go back and call the section generator tools again to get the FULL HTML content:
+${invalidSections.map(s => `- generate_${s === 'cta' ? 'cta_section' : s === 'comparison' ? 'comparison_table' : s + '_section'}`).join('\n')}
+
+Then call this tool again with the complete HTML content for each section.`;
+      
+      console.error(`[assemble_alternative_page_v2] ERROR: ${errorMsg}`);
+      console.error(`[assemble_alternative_page_v2] Invalid sections content preview:`, 
+        invalidSections.map(s => `${s}: "${(sections as any)[s]?.substring(0, 100)}..."`).join('\n'));
+      
+      return {
+        success: false,
+        error: errorMsg,
+        invalid_sections: invalidSections,
+        sections_provided: Object.entries(sections).filter(([_, v]) => v).map(([k]) => k),
+      };
     }
     
     // BLOCK execution if required sections are missing
@@ -117,8 +158,16 @@ DO NOT skip sections. Go back and generate the missing sections, then call this 
     }
     
     // Generate CSS color variables from brand colors
-    const primaryHsl = hexToHsl(brand.primary_color || '#0ea5e9');
-    const secondaryHsl = hexToHsl(brand.secondary_color || '#8b5cf6');
+    // Ensure we have valid hex colors (not empty strings)
+    const primaryColor = brand.primary_color && brand.primary_color.trim() && brand.primary_color.startsWith('#') 
+      ? brand.primary_color 
+      : '#0ea5e9';
+    const secondaryColor = brand.secondary_color && brand.secondary_color.trim() && brand.secondary_color.startsWith('#')
+      ? brand.secondary_color 
+      : '#8b5cf6';
+    
+    const primaryHsl = hexToHsl(primaryColor);
+    const secondaryHsl = hexToHsl(secondaryColor);
     
     // Assemble all section HTML in order
     // Screenshots moved up after verdict for better visual impact
@@ -136,34 +185,8 @@ DO NOT skip sections. Go back and generate the missing sections, then call this 
       ...(sections.custom || []),
     ].filter(Boolean).join('\n');
 
-    // Generate theme switcher HTML if enabled
-    const themeSwitcherHtml = theme_switcher ? `
-      <!-- Theme Switcher -->
-      <div class="fixed top-4 right-4 z-50 flex gap-2">
-        <button onclick="setTheme('blue')" class="w-8 h-8 rounded-full bg-sky-500 shadow-lg hover:scale-110 transition-transform border-2 border-white" title="Ocean Blue"></button>
-        <button onclick="setTheme('emerald')" class="w-8 h-8 rounded-full bg-emerald-500 shadow-lg hover:scale-110 transition-transform border-2 border-white" title="Emerald Green"></button>
-        <button onclick="setTheme('violet')" class="w-8 h-8 rounded-full bg-violet-500 shadow-lg hover:scale-110 transition-transform border-2 border-white" title="Violet Purple"></button>
-      </div>` : '';
-
-    // Generate footer if not provided - Minimalist black/white with brand logo
-    const brandInitial = brand.name.charAt(0).toUpperCase();
-    const footerLogoHtml = brand.logo_url 
-      ? `<img src="${escapeHtml(brand.logo_url)}" alt="${escapeHtml(brand.name)}" class="w-8 h-8 rounded-lg object-contain" onerror="this.outerHTML='<div class=\\'w-8 h-8 rounded-lg bg-brand-icon flex items-center justify-center\\'><span class=\\'text-sm font-bold text-white\\'>${brandInitial}</span></div>'">`
-      : `<div class="w-8 h-8 rounded-lg bg-brand-icon flex items-center justify-center"><span class="text-sm font-bold text-white">${brandInitial}</span></div>`;
-    
-    const finalFooterHtml = footer_html || `
-    <!-- Footer - White background, brand color for links -->
-    <footer class="bg-white border-t border-gray-200 py-12 px-4 md:px-6">
-      <div class="max-w-5xl mx-auto">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div class="flex items-center gap-2">
-            ${footerLogoHtml}
-            <span class="font-semibold text-gray-900">${escapeHtml(brand.name)}</span>
-          </div>
-          <p class="text-sm text-gray-500">© ${new Date().getFullYear()} ${escapeHtml(brand.name)}. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>`;
+    // NOTE: Footer is added by merge_html_with_site_contexts tool from site_contexts database
+    // DO NOT add footer here to avoid duplicate footers
 
     // Generate Schema.org structured data
     const schemaMarkup = generateSchemaMarkup(page_title, seo.meta_description, brand.name, competitor_name, seo.canonical_url);
@@ -406,11 +429,9 @@ DO NOT skip sections. Go back and generate the missing sections, then call this 
   ${schemaMarkup}
 </head>
 <body class="bg-white text-gray-900 antialiased">
-  ${themeSwitcherHtml}
-  
   ${sectionOrder}
   
-  ${finalFooterHtml}
+  <!-- Footer will be added by merge_html_with_site_contexts -->
   
   <!-- Scroll to Top Button -->
   <button id="scrollTop" class="scroll-top-btn fixed bottom-6 right-6 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all z-50" onclick="window.scrollTo({top:0,behavior:'smooth'})">
@@ -441,30 +462,6 @@ DO NOT skip sections. Go back and generate the missing sections, then call this 
       });
     });
     
-    ${theme_switcher ? `
-    // Theme Switcher
-    const themes = {
-      blue: { h: 199, s: 89 },
-      emerald: { h: 160, s: 84 },
-      violet: { h: 263, s: 70 }
-    };
-    
-    function setTheme(name) {
-      const theme = themes[name];
-      if (!theme) return;
-      
-      const root = document.documentElement;
-      root.style.setProperty('--brand-500', \`hsl(\${theme.h}, \${theme.s}%, 50%)\`);
-      root.style.setProperty('--brand-600', \`hsl(\${theme.h}, \${theme.s}%, 45%)\`);
-      root.style.setProperty('--brand-700', \`hsl(\${theme.h}, \${theme.s}%, 38%)\`);
-      
-      localStorage.setItem('theme', name);
-    }
-    
-    // Load saved theme
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) setTheme(savedTheme);
-    ` : ''}
   </script>
 </body>
 </html>`;
@@ -539,8 +536,10 @@ function hexToHsl(hex: string): { h: number; s: number; l: number } {
   return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
 }
 
-// Helper: Generate Schema.org markup
+// Helper: Generate Schema.org markup with EEAT compliance
 function generateSchemaMarkup(title: string, description: string, brand: string, competitor: string, url?: string): string {
+  const currentDate = new Date().toISOString().split('T')[0];
+  
   const schemas = [
     {
       "@context": "https://schema.org",
@@ -548,8 +547,23 @@ function generateSchemaMarkup(title: string, description: string, brand: string,
       "headline": title,
       "description": description,
       "articleSection": "Product Comparison",
-      "datePublished": new Date().toISOString().split('T')[0],
-      "dateModified": new Date().toISOString().split('T')[0],
+      "datePublished": currentDate,
+      "dateModified": currentDate,
+      // EEAT E01: Author identity for expertise signals
+      "author": {
+        "@type": "Organization",
+        "name": brand,
+        "url": url || "/",
+      },
+      // EEAT A02: Publisher entity for authority signals
+      "publisher": {
+        "@type": "Organization",
+        "name": brand,
+        "url": url || "/",
+      },
+      // EEAT T06: Editorial transparency
+      "isAccessibleForFree": true,
+      "inLanguage": "en-US",
     },
     {
       "@context": "https://schema.org",

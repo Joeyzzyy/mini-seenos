@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import ConfirmModal from '@/components/ConfirmModal';
+import PricingModal from '@/components/PricingModal';
 
 interface TopBarProps {
   onDomainsClick?: () => void;
@@ -12,11 +13,13 @@ interface TopBarProps {
   showBackToProjects?: boolean;
   credits?: number;
   subscriptionTier?: string;
+  onCreditsUpdate?: (newCredits: number, newTier: string) => void;
 }
 
-export default function TopBar({ onDomainsClick, user: propUser, showBackToProjects, credits = 1, subscriptionTier = 'free' }: TopBarProps) {
+export default function TopBar({ onDomainsClick, user: propUser, showBackToProjects, credits = 1, subscriptionTier = 'free', onCreditsUpdate }: TopBarProps) {
   const [user, setUser] = useState<User | null>(propUser || null);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   useEffect(() => {
     if (propUser !== undefined) {
@@ -64,64 +67,41 @@ export default function TopBar({ onDomainsClick, user: propUser, showBackToProje
       {/* Right side function buttons and user info */}
       {user && (
         <div className="flex items-center gap-3">
-          {/* Function Buttons */}
-          <div className="flex items-center gap-2">
-            {/* Back to Projects Button */}
-            {showBackToProjects && (
-              <Link
+          {/* Navigation Links */}
+          {showBackToProjects && (
+            <nav className="flex items-center gap-1 text-xs">
+              <a
                 href="/projects"
-                className="flex flex-col items-center gap-0.5 px-2 py-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-all"
-                title="Back to Projects"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-2 py-1 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded transition-all"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
-                <span className="text-[9px] font-medium">Home</span>
-              </Link>
-            )}
+                Back to Projects
+              </a>
+            </nav>
+          )}
 
-            {/* Verified Domains Button (for Publishing) */}
-            {onDomainsClick && (
-              <button
-                onClick={onDomainsClick}
-                className="flex flex-col items-center gap-0.5 px-2 py-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-all cursor-pointer"
-                title="Manage Verified Domains"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                </svg>
-                <span className="text-[9px] font-medium">Domains</span>
-              </button>
-            )}
-
-          </div>
-
-          <div className="w-px h-8 bg-[#E5E5E5]"></div>
+          {showBackToProjects && <div className="w-px h-5 bg-[#E5E5E5]"></div>}
 
           {/* Plan & Credits Display */}
-          <a
-            href="/#pricing"
-            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-full hover:from-amber-100 hover:to-orange-100 transition-all"
-            title="View Pricing"
+          <button
+            onClick={() => setShowPricingModal(true)}
+            className="flex items-center gap-2 px-2.5 py-1 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-all cursor-pointer"
+            title="升级计划"
           >
-            <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
-              subscriptionTier === 'pro' 
-                ? 'bg-purple-100 text-purple-700' 
-                : subscriptionTier === 'standard'
-                ? 'bg-blue-100 text-blue-700'
-                : subscriptionTier === 'starter'
-                ? 'bg-green-100 text-green-700'
-                : 'bg-gray-100 text-gray-600'
-            }`}>
+            <span className="text-[10px] text-[#9CA3AF]">Your Subscription:</span>
+            <span className="text-[10px] font-medium uppercase text-[#374151]">
               {subscriptionTier}
             </span>
-            <div className="flex items-center gap-1">
-              <svg className="w-3 h-3 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
-              </svg>
-              <span className="text-xs font-semibold text-amber-700">{credits}</span>
-            </div>
-          </a>
+            <span className="text-[10px] text-[#D1D5DB]">·</span>
+            <span className="text-xs font-medium text-[#374151]">{credits} credits</span>
+            <svg className="w-3 h-3 text-[#9A8FEA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+          </button>
 
           {/* User Info */}
           <div className="flex items-center gap-2">
@@ -177,6 +157,18 @@ export default function TopBar({ onDomainsClick, user: propUser, showBackToProje
           isDangerous
         />
       )}
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        currentCredits={credits}
+        currentTier={subscriptionTier}
+        onPaymentSuccess={(newCredits, newTier) => {
+          setShowPricingModal(false);
+          onCreditsUpdate?.(newCredits, newTier);
+        }}
+      />
     </div>
   );
 }

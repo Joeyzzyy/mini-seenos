@@ -62,30 +62,35 @@ export async function GET(request: NextRequest) {
         updated_at: ctx.updated_at,
       };
 
-      // Only 'logo' type needs the brand asset columns
+      // 'logo' type stores brand settings (simplified)
       if (ctx.type === 'logo') {
         return {
           ...base,
+          // Simplified fields (prefer new fields, fallback to legacy)
+          logo_url: ctx.logo_url || ctx.logo_light_url || ctx.file_url,
+          favicon_url: ctx.favicon_url || ctx.favicon_light_url,
+          // Legacy fields for backward compatibility
           file_url: ctx.file_url,
-          brand_name: ctx.brand_name,
-          subtitle: ctx.subtitle,
-          meta_description: ctx.meta_description,
+          logo_light_url: ctx.logo_light_url,
+          domain_name: ctx.domain_name,
           og_image: ctx.og_image,
-          favicon: ctx.favicon,
-          logo_light: ctx.logo_light,
-          logo_dark: ctx.logo_dark,
-          icon_light: ctx.icon_light,
-          icon_dark: ctx.icon_dark,
           primary_color: ctx.primary_color,
           secondary_color: ctx.secondary_color,
           heading_font: ctx.heading_font,
           body_font: ctx.body_font,
-          tone: ctx.tone,
           languages: ctx.languages,
         };
       }
 
-      // Other types just need content
+      // Header/footer types need the html field
+      if (ctx.type === 'header' || ctx.type === 'footer') {
+        return {
+          ...base,
+          html: ctx.html,
+        };
+      }
+
+      // competitors type just needs content (JSON array)
       return base;
     });
 
@@ -113,10 +118,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { 
-      type, content, fileUrl, projectId,
-      brandName, subtitle, metaDescription, ogImage, favicon,
-      logoLight, logoDark, iconLight, iconDark,
-      primaryColor, secondaryColor, headingFont, bodyFont, tone, languages 
+      type, content, fileUrl, projectId, html,
+      logoUrl, faviconUrl, // Simplified fields
+      domainName, ogImage, primaryColor, secondaryColor, 
+      headingFont, bodyFont, languages 
     } = body;
 
     console.log('POST /api/site-contexts - User:', user.id, 'Type:', type, 'Project:', projectId);
@@ -128,14 +133,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validTypes = [
-      'logo', 'header', 'footer', 'meta', 'sitemap',
-      'key-website-pages', 'landing-pages', 'blog-resources',
-      'hero-section', 'problem-statement', 'who-we-serve',
-      'use-cases', 'industries', 'products-services',
-      'social-proof-trust', 'leadership-team', 'about-us',
-      'faq', 'contact-information', 'competitors'
-    ];
+    const validTypes = ['logo', 'header', 'footer', 'competitors'];
 
     if (!validTypes.includes(type)) {
       return NextResponse.json(
@@ -174,6 +172,12 @@ export async function POST(request: NextRequest) {
 
     let context;
 
+    // Helper to convert empty strings to null
+    const toNullIfEmpty = (val: string | undefined): string | null => {
+      if (val === undefined) return undefined as any;
+      return val && val.trim() ? val.trim() : null;
+    };
+
     const updateData: any = {
       content: content || null,
       file_url: fileUrl || null,
@@ -181,22 +185,29 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString(),
     };
 
-    // Add brand asset fields if provided
-    if (brandName !== undefined) updateData.brand_name = brandName;
-    if (subtitle !== undefined) updateData.subtitle = subtitle;
-    if (metaDescription !== undefined) updateData.meta_description = metaDescription;
-    if (ogImage !== undefined) updateData.og_image = ogImage;
-    if (favicon !== undefined) updateData.favicon = favicon;
-    if (logoLight !== undefined) updateData.logo_light = logoLight;
-    if (logoDark !== undefined) updateData.logo_dark = logoDark;
-    if (iconLight !== undefined) updateData.icon_light = iconLight;
-    if (iconDark !== undefined) updateData.icon_dark = iconDark;
-    if (primaryColor !== undefined) updateData.primary_color = primaryColor;
-    if (secondaryColor !== undefined) updateData.secondary_color = secondaryColor;
-    if (headingFont !== undefined) updateData.heading_font = headingFont;
-    if (bodyFont !== undefined) updateData.body_font = bodyFont;
-    if (tone !== undefined) updateData.tone = tone;
-    if (languages !== undefined) updateData.languages = languages;
+    // Add html field if provided (for header/footer)
+    if (html !== undefined) updateData.html = html || null;
+
+    // Add brand settings if provided (for logo type)
+    // Convert empty strings to null for cleaner data
+    // Simplified: single logo_url and favicon_url fields
+    if (logoUrl !== undefined) {
+      const url = toNullIfEmpty(logoUrl);
+      updateData.logo_url = url;
+      updateData.logo_light_url = url; // Also set legacy field for compatibility
+    }
+    if (faviconUrl !== undefined) {
+      const url = toNullIfEmpty(faviconUrl);
+      updateData.favicon_url = url;
+      updateData.favicon_light_url = url; // Also set legacy field for compatibility
+    }
+    if (domainName !== undefined) updateData.domain_name = toNullIfEmpty(domainName);
+    if (ogImage !== undefined) updateData.og_image = toNullIfEmpty(ogImage);
+    if (primaryColor !== undefined) updateData.primary_color = toNullIfEmpty(primaryColor);
+    if (secondaryColor !== undefined) updateData.secondary_color = toNullIfEmpty(secondaryColor);
+    if (headingFont !== undefined) updateData.heading_font = toNullIfEmpty(headingFont);
+    if (bodyFont !== undefined) updateData.body_font = toNullIfEmpty(bodyFont);
+    if (languages !== undefined) updateData.languages = toNullIfEmpty(languages);
 
     if (existing) {
       // Update existing
@@ -231,22 +242,29 @@ export async function POST(request: NextRequest) {
         project_id: projectId || null,
       };
 
-      // Add brand asset fields if provided
-      if (brandName !== undefined) insertData.brand_name = brandName;
-      if (subtitle !== undefined) insertData.subtitle = subtitle;
-      if (metaDescription !== undefined) insertData.meta_description = metaDescription;
-      if (ogImage !== undefined) insertData.og_image = ogImage;
-      if (favicon !== undefined) insertData.favicon = favicon;
-      if (logoLight !== undefined) insertData.logo_light = logoLight;
-      if (logoDark !== undefined) insertData.logo_dark = logoDark;
-      if (iconLight !== undefined) insertData.icon_light = iconLight;
-      if (iconDark !== undefined) insertData.icon_dark = iconDark;
-      if (primaryColor !== undefined) insertData.primary_color = primaryColor;
-      if (secondaryColor !== undefined) insertData.secondary_color = secondaryColor;
-      if (headingFont !== undefined) insertData.heading_font = headingFont;
-      if (bodyFont !== undefined) insertData.body_font = bodyFont;
-      if (tone !== undefined) insertData.tone = tone;
-      if (languages !== undefined) insertData.languages = languages;
+      // Add html field if provided (for header/footer)
+      if (html !== undefined) insertData.html = html || null;
+
+      // Add brand settings if provided (for logo type)
+      // Convert empty strings to null for cleaner data
+      // Simplified: single logo_url and favicon_url fields
+      if (logoUrl !== undefined) {
+        const url = toNullIfEmpty(logoUrl);
+        insertData.logo_url = url;
+        insertData.logo_light_url = url; // Also set legacy field for compatibility
+      }
+      if (faviconUrl !== undefined) {
+        const url = toNullIfEmpty(faviconUrl);
+        insertData.favicon_url = url;
+        insertData.favicon_light_url = url; // Also set legacy field for compatibility
+      }
+      if (domainName !== undefined) insertData.domain_name = toNullIfEmpty(domainName);
+      if (ogImage !== undefined) insertData.og_image = toNullIfEmpty(ogImage);
+      if (primaryColor !== undefined) insertData.primary_color = toNullIfEmpty(primaryColor);
+      if (secondaryColor !== undefined) insertData.secondary_color = toNullIfEmpty(secondaryColor);
+      if (headingFont !== undefined) insertData.heading_font = toNullIfEmpty(headingFont);
+      if (bodyFont !== undefined) insertData.body_font = toNullIfEmpty(bodyFont);
+      if (languages !== undefined) insertData.languages = toNullIfEmpty(languages);
 
       const { data, error } = await supabase
         .from('site_contexts')

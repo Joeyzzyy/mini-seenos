@@ -30,6 +30,7 @@ interface TaskListProps {
   isRefreshingContent?: boolean;
   contextTaskStatus: TaskStatus;
   credits?: number;
+  projectDomain?: string;
 }
 
 export default function TaskList({
@@ -47,6 +48,7 @@ export default function TaskList({
   isRefreshingContent = false,
   contextTaskStatus,
   credits = 1,
+  projectDomain,
 }: TaskListProps) {
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
 
@@ -255,7 +257,10 @@ export default function TaskList({
       {/* Header */}
       <div className="px-4 py-3 border-b border-[#E5E5E5] shrink-0">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-[#111827]">Tasks</h2>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-[#9CA3AF]">Current Project:</span>
+            <h2 className="text-sm font-bold text-[#111827] truncate max-w-[140px]">{projectDomain || 'Unknown'}</h2>
+          </div>
           <div className="flex items-center gap-1">
             <button
               onClick={() => {
@@ -296,10 +301,10 @@ export default function TaskList({
           </button>
         </div>
 
-        {/* Page Tasks */}
+        {/* Your Page Blueprint */}
         <div className="p-2">
           <div className="flex items-center justify-between px-2 py-1 mb-2">
-            <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider">Page Tasks</span>
+            <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider">Your Page Blueprint</span>
             <span className="px-1.5 py-0.5 bg-[#F3F4F6] text-[#6B7280] text-[10px] font-medium rounded">
               {contentItems.length}
             </span>
@@ -311,7 +316,7 @@ export default function TaskList({
                 <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
                 <polyline points="13 2 13 9 20 9" />
               </svg>
-              <p className="text-xs text-[#9CA3AF]">No page tasks yet</p>
+              <p className="text-xs text-[#9CA3AF]">No pages yet</p>
               <p className="text-[10px] text-[#D1D5DB] mt-1">Pages will appear after context analysis</p>
             </div>
           ) : (

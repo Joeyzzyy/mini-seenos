@@ -5,9 +5,9 @@ import { z } from 'zod';
  * Generate the final CTA section.
  * 
  * MINIMALIST COLOR SYSTEM:
- * - Dark gray background (not colored)
+ * - Light gray background (consistent with other sections)
  * - Primary CTA button uses brand color
- * - Secondary CTA is white/transparent
+ * - Secondary CTA has gray border
  * - Trust badges use brand color for checkmarks
  */
 export const generate_cta_section = tool({
@@ -15,14 +15,14 @@ export const generate_cta_section = tool({
   
 This section includes:
 - Compelling headline and description
-- Primary CTA button (brand color) and secondary button (white)
-- Dark gray background with subtle grid pattern
+- Primary CTA button (brand color) and secondary button (gray border)
+- Light gray background with subtle grid pattern (consistent with other sections)
 - Trust badges with brand-colored checkmarks
 
 COLOR RULES:
-- Background: dark gray (#111827) - NOT colored
+- Background: light gray (bg-gray-50) - consistent with other sections
 - Primary CTA button: brand color (btn-primary)
-- Secondary CTA: white border, transparent
+- Secondary CTA: gray border (btn-secondary style)
 - Checkmarks: brand color
 
 Returns HTML that can be assembled into the full page.`,
@@ -52,15 +52,15 @@ Returns HTML that can be assembled into the full page.`,
 
     const html = `
   <!-- Final CTA Section -->
-  <section id="cta" class="py-16 md:py-24 px-4 md:px-6 bg-gray-900 relative overflow-hidden">
-    <!-- Subtle Grid Pattern - White lines on dark -->
-    <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+  <section id="cta" class="py-16 md:py-24 px-4 md:px-6 bg-gray-50 relative overflow-hidden">
+    <!-- Subtle Grid Pattern - Consistent with other sections -->
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
     
     <div class="relative max-w-3xl mx-auto text-center">
-      <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 md:mb-6 leading-tight">
+      <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
         ${escapeHtml(headline)}
       </h2>
-      <p class="text-base md:text-lg text-gray-400 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
+      <p class="text-base md:text-lg text-gray-600 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
         ${escapeHtml(description)}
       </p>
       
@@ -70,15 +70,15 @@ Returns HTML that can be assembled into the full page.`,
           ${escapeHtml(primary_cta.text)}
         </a>
         ${secondary_cta ? `
-        <!-- Secondary CTA - White border, transparent -->
-        <a href="${escapeHtml(secondary_cta.url)}" class="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-transparent text-white font-semibold rounded-xl text-sm md:text-base border border-white/20 hover:bg-white/10 transition-all duration-200 text-center">
+        <!-- Secondary CTA - Gray border, consistent with btn-secondary -->
+        <a href="${escapeHtml(secondary_cta.url)}" class="w-full sm:w-auto btn-secondary px-6 md:px-8 py-3 md:py-4 rounded-xl text-sm md:text-base text-center">
           ${escapeHtml(secondary_cta.text)}
         </a>
         ` : ''}
       </div>
       
       ${trustBadgesHtml ? `
-      <div class="flex flex-wrap items-center justify-center gap-4 text-xs md:text-sm text-gray-400">
+      <div class="flex flex-wrap items-center justify-center gap-4 text-xs md:text-sm text-gray-500">
         ${trustBadgesHtml}
       </div>
       ` : ''}

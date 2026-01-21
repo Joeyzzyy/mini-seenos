@@ -5,7 +5,7 @@ Allow: /
 
 # Disallow private/app areas
 Disallow: /api/
-Disallow: /chat/
+Disallow: /project/
 Disallow: /projects/
 Disallow: /feedbacks/
 Disallow: /share/

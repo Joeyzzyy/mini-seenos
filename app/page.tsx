@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
+import PricingModal from '@/components/PricingModal';
 
 export default function HomePage() {
   const router = useRouter();
@@ -11,6 +12,29 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'standard' | 'pro' | null>(null);
+  const [userCredits, setUserCredits] = useState(1);
+  const [subscriptionTier, setSubscriptionTier] = useState('free');
+
+  // Fetch user credits
+  const fetchUserCredits = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      
+      const response = await fetch('/api/user/credits', {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUserCredits(data.credits ?? 1);
+        setSubscriptionTier(data.subscription_tier ?? 'free');
+      }
+    } catch (error) {
+      console.error('Failed to fetch credits:', error);
+    }
+  };
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -21,6 +45,9 @@ export default function HomePage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session?.user) {
+        fetchUserCredits();
+      }
     });
 
     const {
@@ -28,6 +55,9 @@ export default function HomePage() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setError(null);
+      if (session?.user) {
+        fetchUserCredits();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -80,6 +110,27 @@ export default function HomePage() {
     }
   };
 
+  // Handle buy plan click
+  const handleBuyPlan = async (plan: 'starter' | 'standard' | 'pro') => {
+    if (!user) {
+      // Not logged in - trigger Google login first
+      setSelectedPlan(plan);
+      await handleGoogleLogin();
+      return;
+    }
+    // Logged in - show pricing modal
+    setSelectedPlan(plan);
+    setShowPricingModal(true);
+  };
+
+  // Handle payment success
+  const handlePaymentSuccess = (newCredits: number, newTier: string) => {
+    setUserCredits(newCredits);
+    setSubscriptionTier(newTier);
+    setShowPricingModal(false);
+    setSelectedPlan(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
@@ -104,6 +155,39 @@ export default function HomePage() {
             </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
+            {/* Comparisons Dropdown */}
+            <div className="hidden sm:block relative group">
+              <button className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
+                Comparisons
+                <svg className="w-3 h-3 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-2 min-w-[280px] shadow-xl">
+                  <a href="/seopages-pro-alternatives" className="block px-3 py-2 text-sm text-white hover:bg-white/10 rounded-lg transition-colors font-medium">
+                    🆚 SEOPages.pro vs 38 Tools
+                  </a>
+                  <div className="border-t border-white/5 my-1"></div>
+                  <a href="/seopages-pro-alternatives/jasper-ai" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                    vs Jasper AI
+                  </a>
+                  <a href="/seopages-pro-alternatives/surfer-seo" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                    vs Surfer SEO
+                  </a>
+                  <a href="/seopages-pro-alternatives/ahrefs" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                    vs Ahrefs
+                  </a>
+                  <a href="/seopages-pro-alternatives/semrush" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                    vs SEMrush
+                  </a>
+                  <a href="/seopages-pro-alternatives" className="block px-3 py-2 text-sm text-[#9A8FEA] hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                    View all 38 comparisons →
+                  </a>
+                </div>
+              </div>
+            </div>
+            
             {/* Guide Dropdown */}
             <div className="hidden sm:block relative group">
               <button className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
@@ -115,7 +199,7 @@ export default function HomePage() {
               <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                 <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-2 min-w-[280px] shadow-xl">
                   <a href="/alternative-page-guide" className="block px-3 py-2 text-sm text-white hover:bg-white/10 rounded-lg transition-colors font-medium">
-                    📚 Alternative Page Guide
+                    Alternative Page Guide
                   </a>
                   <div className="border-t border-white/5 my-1"></div>
                   <a href="/alternative-page-guide/what-are-alternative-pages" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
@@ -449,10 +533,10 @@ export default function HomePage() {
                 </li>
               </ul>
               <button
-                disabled
-                className="w-full py-2.5 sm:py-3 border border-white/10 text-gray-500 font-medium rounded-lg sm:rounded-xl cursor-not-allowed text-sm"
+                onClick={() => handleBuyPlan('starter')}
+                className="w-full py-2.5 sm:py-3 border border-white/20 text-white font-medium rounded-lg sm:rounded-xl hover:bg-white/10 transition-all text-sm"
               >
-                Coming Soon
+                {user ? 'Buy Now' : 'Sign in to Buy'}
               </button>
             </div>
 
@@ -501,10 +585,10 @@ export default function HomePage() {
                 </li>
               </ul>
               <button
-                disabled
-                className="w-full py-2.5 sm:py-3 bg-white/20 text-gray-400 font-semibold rounded-lg sm:rounded-xl cursor-not-allowed text-sm"
+                onClick={() => handleBuyPlan('standard')}
+                className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-[#FFAF40] via-[#9A8FEA] to-[#65B4FF] text-white font-semibold rounded-lg sm:rounded-xl hover:opacity-90 transition-all text-sm"
               >
-                Coming Soon
+                {user ? 'Buy Now' : 'Sign in to Buy'}
               </button>
             </div>
 
@@ -556,10 +640,10 @@ export default function HomePage() {
                 </li>
               </ul>
               <button
-                disabled
-                className="w-full py-2.5 sm:py-3 border border-white/10 text-gray-500 font-medium rounded-lg sm:rounded-xl cursor-not-allowed text-sm"
+                onClick={() => handleBuyPlan('pro')}
+                className="w-full py-2.5 sm:py-3 border border-white/20 text-white font-medium rounded-lg sm:rounded-xl hover:bg-white/10 transition-all text-sm"
               >
-                Coming Soon
+                {user ? 'Buy Now' : 'Sign in to Buy'}
               </button>
             </div>
           </div>
@@ -646,6 +730,18 @@ export default function HomePage() {
           {error}
         </div>
       )}
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => {
+          setShowPricingModal(false);
+          setSelectedPlan(null);
+        }}
+        currentCredits={userCredits}
+        currentTier={subscriptionTier}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 }
