@@ -18,25 +18,40 @@ const PLANS = [
     name: 'Starter',
     price: 9.9,
     credits: 10,
-    description: 'Perfect to get started',
-    features: ['10 page credits', 'Basic support', '30-day validity'],
+    features: [
+      { text: '10', highlight: true, suffix: ' Alternative Pages' },
+      { text: 'AI-Powered Content' },
+      { text: 'Production-Ready HTML' },
+      { text: 'SEO Optimized' },
+    ],
   },
   {
     id: 'standard',
     name: 'Standard',
     price: 19.9,
     credits: 20,
-    description: 'Most popular',
     popular: true,
-    features: ['20 page credits', 'Priority support', '60-day validity', 'Batch generation'],
+    features: [
+      { text: '20', highlight: true, suffix: ' Alternative Pages' },
+      { text: 'AI-Powered Content' },
+      { text: 'Production-Ready HTML' },
+      { text: 'SEO Optimized' },
+      { text: 'Priority Support' },
+    ],
   },
   {
     id: 'pro',
     name: 'Pro',
     price: 39.9,
     credits: 50,
-    description: 'For power users',
-    features: ['50 page credits', 'Dedicated support', '90-day validity', 'Batch generation', 'API access'],
+    features: [
+      { text: '50', highlight: true, suffix: ' Alternative Pages' },
+      { text: 'AI-Powered Content' },
+      { text: 'Production-Ready HTML' },
+      { text: 'SEO Optimized' },
+      { text: 'Priority Support' },
+      { text: 'Perfect for Crowded Markets' },
+    ],
   },
 ];
 
@@ -166,18 +181,18 @@ export default function PricingModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
       
       {/* Modal */}
-      <div className="relative bg-[#1a1a2e] border border-[#2d2d44] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-4">
+      <div className="relative bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto mx-4">
         {/* Header */}
-        <div className="sticky top-0 bg-[#1a1a2e] border-b border-[#2d2d44] px-6 py-4 flex justify-between items-center">
+        <div className="sticky top-0 bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/5 px-6 py-5 flex justify-between items-center z-10">
           <div>
             <h2 className="text-2xl font-bold text-white">Upgrade Your Plan</h2>
             <p className="text-gray-400 text-sm mt-1">
-              Current: {currentCredits} credits · {currentTier} plan
+              Current: <span className="text-white font-medium">{currentCredits} credits</span> · {currentTier} plan
             </p>
           </div>
           <button
@@ -194,118 +209,162 @@ export default function PricingModal({
         <div className="p-6">
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-3">
+              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               {error}
             </div>
           )}
 
-          {/* Plans Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* Plans Grid - Same as homepage */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
             {PLANS.map((plan) => (
               <div
                 key={plan.id}
                 onClick={() => handlePlanSelect(plan.id)}
-                className={`relative cursor-pointer rounded-xl border-2 p-6 transition-all duration-200 ${
+                className={`relative p-6 sm:p-8 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-300 ${
+                  plan.popular
+                    ? 'bg-gradient-to-br from-[#9A8FEA]/20 via-[#65B4FF]/10 to-transparent border-[#9A8FEA]/30 sm:scale-105 order-first sm:order-none'
+                    : 'bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10'
+                } ${
                   selectedPlan === plan.id
-                    ? 'border-blue-500 bg-blue-500/10 scale-[1.02]'
-                    : 'border-[#2d2d44] hover:border-[#3d3d54] bg-[#0d0d1a]'
-                } ${plan.popular ? 'ring-2 ring-yellow-500/50' : ''}`}
+                    ? 'border-2 border-[#9A8FEA] ring-2 ring-[#9A8FEA]/30'
+                    : 'border hover:border-white/20'
+                }`}
               >
+                {/* Popular Badge */}
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-1 bg-gradient-to-r from-[#FFAF40] via-[#9A8FEA] to-[#65B4FF] rounded-full text-[10px] sm:text-xs font-semibold text-white whitespace-nowrap">
                     MOST POPULAR
                   </div>
                 )}
-                
-                <div className="text-center mb-4">
-                  <h3 className="text-xl font-bold text-white">{plan.name}</h3>
-                  <p className="text-gray-400 text-sm">{plan.description}</p>
+
+                {/* Selected Indicator */}
+                {selectedPlan === plan.id && (
+                  <div className="absolute top-4 right-4">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#9A8FEA] to-[#65B4FF] flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+
+                {/* Plan Name & Price */}
+                <div className={`mb-4 sm:mb-6 ${plan.popular ? 'mt-2 sm:mt-0' : ''}`}>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-300 mb-2">{plan.name}</h3>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl sm:text-5xl font-bold text-white">${plan.price}</span>
+                    <span className="text-gray-500 text-sm">one-time</span>
+                  </div>
                 </div>
-                
-                <div className="text-center mb-6">
-                  <span className="text-4xl font-bold text-white">${plan.price}</span>
-                  <span className="text-gray-400 ml-1">USD</span>
-                </div>
-                
-                <div className="text-center mb-6">
-                  <span className="inline-block bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-medium">
-                    {plan.credits} credits
-                  </span>
-                </div>
-                
-                <ul className="space-y-2">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center text-sm text-gray-300">
-                      <svg className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                {/* Features */}
+                <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-center gap-3 text-gray-300">
+                      <svg className="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      {feature}
+                      <span>
+                        {feature.highlight ? (
+                          <><strong className="text-white">{feature.text}</strong>{feature.suffix}</>
+                        ) : (
+                          feature.text
+                        )}
+                      </span>
                     </li>
                   ))}
                 </ul>
-                
-                {selectedPlan === plan.id && (
-                  <div className="absolute top-4 right-4">
-                    <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                    </svg>
-                  </div>
-                )}
+
+                {/* Select Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePlanSelect(plan.id);
+                  }}
+                  className={`w-full py-2.5 sm:py-3 font-medium rounded-lg sm:rounded-xl transition-all text-sm ${
+                    plan.popular
+                      ? 'bg-gradient-to-r from-[#FFAF40] via-[#9A8FEA] to-[#65B4FF] text-white font-semibold hover:opacity-90'
+                      : selectedPlan === plan.id
+                      ? 'bg-white text-black'
+                      : 'border border-white/20 text-white hover:bg-white/10'
+                  }`}
+                >
+                  {selectedPlan === plan.id ? 'Selected' : 'Select Plan'}
+                </button>
               </div>
             ))}
           </div>
 
-          {/* PayPal Button */}
+          {/* PayPal Button Section */}
           {selectedPlan && (
             <div className="max-w-md mx-auto">
-              <PayPalScriptProvider
-                options={{
-                  clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '',
-                  currency: 'USD',
-                  intent: 'capture',
-                }}
-              >
-                <div className={isProcessing ? 'opacity-50 pointer-events-none' : ''}>
-                  <PayPalButtons
-                    style={{
-                      layout: 'vertical',
-                      color: 'blue',
-                      shape: 'rect',
-                      label: 'paypal',
-                      height: 50,
-                    }}
-                    createOrder={createOrder}
-                    onApprove={onApprove}
-                    onError={onError}
-                    onCancel={onCancel}
-                    disabled={isProcessing}
-                  />
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
+                <div className="text-center mb-4">
+                  <p className="text-gray-400 text-sm">
+                    Selected: <span className="text-white font-semibold">{PLANS.find(p => p.id === selectedPlan)?.name} Plan</span>
+                  </p>
+                  <p className="text-2xl font-bold text-white mt-1">
+                    ${PLANS.find(p => p.id === selectedPlan)?.price} USD
+                  </p>
                 </div>
-              </PayPalScriptProvider>
-              
-              {isProcessing && (
-                <div className="text-center mt-4">
-                  <div className="inline-flex items-center text-blue-400">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Processing payment...
+                
+                <PayPalScriptProvider
+                  options={{
+                    clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '',
+                    currency: 'USD',
+                    intent: 'capture',
+                  }}
+                >
+                  <div className={isProcessing ? 'opacity-50 pointer-events-none' : ''}>
+                    <PayPalButtons
+                      style={{
+                        layout: 'vertical',
+                        color: 'blue',
+                        shape: 'rect',
+                        label: 'paypal',
+                        height: 50,
+                      }}
+                      createOrder={createOrder}
+                      onApprove={onApprove}
+                      onError={onError}
+                      onCancel={onCancel}
+                      disabled={isProcessing}
+                    />
                   </div>
-                </div>
-              )}
+                </PayPalScriptProvider>
+                
+                {isProcessing && (
+                  <div className="text-center mt-4">
+                    <div className="inline-flex items-center text-[#9A8FEA]">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Processing payment...
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Security Notice */}
-          <div className="mt-8 text-center text-gray-500 text-xs">
-            <div className="flex items-center justify-center gap-2 mb-2">
+          {/* Security Notice & Guarantee */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 text-gray-500 text-sm mb-3">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              30-day money-back guarantee. No questions asked.
+            </div>
+            <p className="text-gray-500 text-xs flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
-              Secure payment powered by PayPal
-            </div>
-            <p>Credits will be added instantly after payment</p>
+              Secure payment powered by PayPal · Credits added instantly
+            </p>
           </div>
         </div>
       </div>
