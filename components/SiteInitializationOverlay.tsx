@@ -17,7 +17,7 @@ interface SiteInitializationOverlayProps {
   onComplete?: () => void;
 }
 
-// Phase card component - minimal text-only design
+// Phase card component - minimal, elegant design
 const PhaseCard = ({ phase, index, totalPhases }: { phase: InitializationPhase; index: number; totalPhases: number }) => {
   const isActive = phase.status === 'running';
   const isCompleted = phase.status === 'completed';
@@ -29,27 +29,27 @@ const PhaseCard = ({ phase, index, totalPhases }: { phase: InitializationPhase; 
     >
       <div 
         className={`
-          flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-400
+          flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all duration-400
           ${isActive 
-            ? 'bg-white shadow-sm border border-gray-100' 
+            ? 'bg-white/80 backdrop-blur-sm' 
             : 'bg-transparent'
           }
         `}
       >
-        {/* Step number / Status */}
+        {/* Step indicator */}
         <div 
           className={`
-            flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300
+            flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium transition-all duration-300
             ${isActive 
-              ? 'bg-black text-white' 
+              ? 'bg-gray-900 text-white' 
               : isCompleted
-                ? 'bg-emerald-500 text-white'
-                : 'bg-gray-100 text-gray-400'
+                ? 'bg-gray-200 text-gray-500'
+                : 'bg-gray-100 text-gray-300'
             }
           `}
         >
           {isCompleted ? (
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           ) : (
@@ -60,14 +60,14 @@ const PhaseCard = ({ phase, index, totalPhases }: { phase: InitializationPhase; 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <h3 
-            className={`text-sm font-medium transition-colors duration-300 ${
-              isActive ? 'text-gray-900' : isCompleted ? 'text-gray-600' : 'text-gray-400'
+            className={`text-sm transition-colors duration-300 ${
+              isActive ? 'text-gray-900 font-medium' : isCompleted ? 'text-gray-400' : 'text-gray-300'
             }`}
           >
             {phase.name}
           </h3>
           {isActive && (
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-[11px] text-gray-400 mt-0.5">
               {phase.description}
             </p>
           )}
@@ -76,7 +76,7 @@ const PhaseCard = ({ phase, index, totalPhases }: { phase: InitializationPhase; 
         {/* Loading indicator for active */}
         {isActive && (
           <div className="flex-shrink-0">
-            <div className="w-4 h-4 border-2 border-gray-200 border-t-gray-600 rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-[1.5px] border-gray-200 border-t-gray-400 rounded-full animate-spin" />
           </div>
         )}
       </div>
@@ -249,85 +249,65 @@ export default function SiteInitializationOverlay({
           }}
         />
         
-        {/* Gradient orbs */}
+        {/* Subtle gradient orbs - very light */}
         <div 
-          className="absolute w-[800px] h-[800px] -top-60 -right-60 rounded-full opacity-20 animate-pulse"
+          className="absolute w-[600px] h-[600px] -top-40 -right-40 rounded-full opacity-[0.08]"
           style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, rgba(139, 92, 246, 0) 70%)',
-            animationDuration: '4s',
+            background: 'radial-gradient(circle, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 70%)',
           }}
         />
         <div 
-          className="absolute w-[600px] h-[600px] -bottom-40 -left-40 rounded-full opacity-15"
+          className="absolute w-[500px] h-[500px] -bottom-32 -left-32 rounded-full opacity-[0.05]"
           style={{
-            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, rgba(236, 72, 153, 0) 70%)',
-            animation: 'pulse 5s ease-in-out infinite 1s',
+            background: 'radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0) 70%)',
           }}
         />
-        
-        {/* Particles */}
-        <ParticleField />
       </div>
       
       {/* Content container */}
       <div className="relative z-10 w-full max-w-md mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-8">
-          {/* Logo animation */}
-          <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6">
-            {/* Animated glow ring */}
-            <div className="absolute -inset-2 bg-gradient-to-r from-[#9A8FEA] via-[#65B4FF] to-[#9A8FEA] rounded-full blur-lg opacity-40 animate-pulse" style={{ animationDuration: '3s' }} />
-            <div className="absolute -inset-1 rounded-full border border-violet-200/50 animate-spin-slow" style={{ animationDuration: '10s' }} />
-            
-            {/* Logo */}
-            <div className="relative w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-xl shadow-violet-200/30">
+          {/* Logo - clean, minimal */}
+          <div className="relative inline-flex items-center justify-center w-16 h-16 mb-5">
+            <div className="relative w-14 h-14 rounded-xl bg-white flex items-center justify-center shadow-sm border border-gray-100">
               <img 
                 src="/new-logo.png" 
                 alt="seopages.pro" 
-                className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(154,143,234,0.5)]"
+                className="w-9 h-9 object-contain"
               />
             </div>
           </div>
           
           {/* Title */}
-          <h1 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">
-            Finding Comparison & Listicle Opportunities
+          <h1 className="text-lg font-semibold text-gray-800 mb-2">
+            Setting up your workspace
           </h1>
           
           {/* Domain badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-100 shadow-sm">
-            <div className="relative w-2 h-2">
-              <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
-              <div className="relative w-2 h-2 rounded-full bg-emerald-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-gray-100">
+            <div className="relative w-1.5 h-1.5">
+              <div className="absolute inset-0 rounded-full bg-gray-400 animate-ping opacity-50" />
+              <div className="relative w-1.5 h-1.5 rounded-full bg-gray-400" />
             </div>
-            <span className="text-sm font-medium text-gray-700">{domain}</span>
+            <span className="text-xs text-gray-500">{domain}</span>
           </div>
         </div>
         
         {/* Progress section */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Progress</span>
-              <span className="text-xs text-gray-400">•</span>
-              <span className="text-xs text-gray-400">{formatTime(elapsedTime)}</span>
-            </div>
-            <span className="text-xs font-bold text-violet-600">{Math.round(progress)}%</span>
+        <div className="mb-5">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[11px] text-gray-400">{formatTime(elapsedTime)}</span>
+            <span className="text-[11px] text-gray-400">{Math.round(progress)}%</span>
           </div>
           
-          {/* Progress bar */}
-          <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
-            {/* Animated shimmer */}
-            <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-            
+          {/* Progress bar - thin and subtle */}
+          <div className="relative h-1 bg-gray-100 rounded-full overflow-hidden">
             {/* Progress fill */}
             <div 
-              className="h-full bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 rounded-full transition-all duration-1000 ease-out relative"
+              className="h-full bg-gray-300 rounded-full transition-all duration-1000 ease-out"
               style={{ width: `${progress}%` }}
-            >
-              {/* Glow effect */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-purple-400 rounded-full blur-md opacity-60" />
-            </div>
+            />
           </div>
         </div>
         
@@ -340,16 +320,16 @@ export default function SiteInitializationOverlay({
         
         {/* Tip - shown after 10 seconds */}
         {showTip && (
-          <div className="animate-fade-in bg-amber-50/80 border border-amber-100 rounded-xl px-4 py-3 text-center">
-            <p className="text-xs text-amber-700">
-              First-time setup typically takes 1-2 minutes. We're analyzing your entire website to create the best strategies.
+          <div className="animate-fade-in bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-center">
+            <p className="text-[11px] text-gray-400">
+              First-time setup takes 1-2 minutes
             </p>
           </div>
         )}
       </div>
       
-      {/* Bottom gradient line */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 opacity-80" />
+      {/* Bottom line - subtle */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-200" />
       
       {/* Custom styles */}
       <style jsx>{`
