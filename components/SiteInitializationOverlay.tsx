@@ -120,7 +120,6 @@ export default function SiteInitializationOverlay({
   isLoading,
   onComplete 
 }: SiteInitializationOverlayProps) {
-  const [statusMessage, setStatusMessage] = useState('Establishing connection...');
   const [showTip, setShowTip] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [hasError, setHasError] = useState(false);
@@ -141,7 +140,6 @@ export default function SiteInitializationOverlay({
     );
     if (errorMsg) {
       setHasError(true);
-      setStatusMessage('An error occurred. Redirecting to workspace...');
       // Auto-complete after short delay to exit initialization mode
       setTimeout(() => {
         if (onComplete) onComplete();
@@ -153,7 +151,6 @@ export default function SiteInitializationOverlay({
   useEffect(() => {
     if (elapsedTime >= 180 && !hasError) { // 3 minutes
       console.log('[Initialization] Timeout reached, exiting initialization mode');
-      setStatusMessage('Taking longer than expected. Entering workspace...');
       setTimeout(() => {
         if (onComplete) onComplete();
       }, 1500);
@@ -239,18 +236,8 @@ export default function SiteInitializationOverlay({
     ];
   }, [messages, isLoading]);
   
-  // Update status message based on current phase
+  // Check if all phases completed
   useEffect(() => {
-    const runningIdx = phases.findIndex(p => p.status === 'running');
-    const statusMessages = [
-      'Connecting to your website...',
-      'Analyzing your brand identity...',
-      'Researching market competitors...',
-      'Creating page strategies...',
-    ];
-    setStatusMessage(statusMessages[runningIdx >= 0 ? runningIdx : 0]);
-    
-    // Check if all completed
     const allCompleted = phases.every(p => p.status === 'completed');
     if (allCompleted && onComplete) {
       setTimeout(onComplete, 1200);
@@ -325,7 +312,7 @@ export default function SiteInitializationOverlay({
           
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">
-            Setting Up Your Workspace
+            Finding Comparison & Listicle Opportunities
           </h1>
           
           {/* Domain badge */}
@@ -372,22 +359,14 @@ export default function SiteInitializationOverlay({
           ))}
         </div>
         
-        {/* Status message */}
-        <div className="text-center space-y-3">
-          <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
-            <span className="inline-block w-1 h-1 rounded-full bg-violet-400 animate-pulse" />
-            {statusMessage}
-          </p>
-          
-          {/* Tip */}
-          {showTip && (
-            <div className="animate-fade-in bg-amber-50/80 border border-amber-100 rounded-xl px-4 py-3">
-              <p className="text-xs text-amber-700">
-                First-time setup typically takes 1-2 minutes. We're analyzing your entire website to create the best strategies.
-              </p>
-            </div>
-          )}
-        </div>
+        {/* Tip - shown after 10 seconds */}
+        {showTip && (
+          <div className="animate-fade-in bg-amber-50/80 border border-amber-100 rounded-xl px-4 py-3 text-center">
+            <p className="text-xs text-amber-700">
+              First-time setup typically takes 1-2 minutes. We're analyzing your entire website to create the best strategies.
+            </p>
+          </div>
+        )}
       </div>
       
       {/* Bottom gradient line */}
