@@ -42,6 +42,7 @@ export default function ProjectChatPage() {
 
   // State
   const [user, setUser] = useState<User | null>(null);
+  const userRef = useRef<User | null>(null);
   const [currentProject, setCurrentProject] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
@@ -159,14 +160,21 @@ export default function ProjectChatPage() {
     },
     onFinish: async (message: any) => {
       const messageId = message.id || `${message.role}-${message.content?.slice(0, 50)}`;
-      if (processedMessageIdsRef.current.has(messageId)) return;
-      
       const conversation = currentConversationRef.current;
       const currentRunningTaskId = runningTaskIdRef.current; // Use ref to get latest value
       
-      console.log('[onFinish] Called with taskId:', currentRunningTaskId, 'conversation:', !!conversation, 'user:', !!user);
+      // Log at the very beginning for debugging
+      console.log('[onFinish] START - taskId:', currentRunningTaskId, 'msgId:', messageId, 'alreadyProcessed:', processedMessageIdsRef.current.has(messageId));
       
-      if (conversation && user) {
+      if (processedMessageIdsRef.current.has(messageId)) {
+        console.log('[onFinish] Skipping - already processed');
+        return;
+      }
+      
+      const currentUser = userRef.current; // Use ref to get latest user value
+      console.log('[onFinish] Processing - conversation:', !!conversation, 'user:', !!currentUser);
+      
+      if (conversation && currentUser) {
         processedMessageIdsRef.current.add(messageId);
         try {
           const estimatedOutputTokens = Math.ceil((message.content || '').length / 4);
@@ -181,7 +189,7 @@ export default function ProjectChatPage() {
           
           // Refresh content after generation completes
           if (currentRunningTaskId && currentRunningTaskId !== 'context-analysis') {
-            await loadContentItems(user.id);
+            await loadContentItems(currentUser.id);
             
             // Auto-switch to preview: fetch the updated content item and update selectedTask
             try {
@@ -206,8 +214,8 @@ export default function ProjectChatPage() {
           
           // Refresh contexts after context task completes
           if (currentRunningTaskId === 'context-analysis') {
-            await loadSiteContexts(user.id);
-            await loadContentItems(user.id);
+            await loadSiteContexts(currentUser.id);
+            await loadContentItems(currentUser.id);
             setContextTaskStatus('completed');
             
             // Trigger page planning after context acquisition completes
@@ -216,7 +224,7 @@ export default function ProjectChatPage() {
               console.log('[onFinish] Context acquisition completed, triggering page planning...');
               // Delay to ensure competitors data is fully saved
               setTimeout(() => {
-                triggerPagePlanningAfterInit(user.id);
+                triggerPagePlanningAfterInit(currentUser.id);
               }, 2000);
             }
           }
@@ -274,9 +282,13 @@ export default function ProjectChatPage() {
   
   // Helper function to trigger page planning via API (used after initialization)
   const triggerPagePlanningAfterInit = async (userId: string) => {
+    console.log('[triggerPagePlanningAfterInit] Called for user:', userId, 'project:', projectId);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
+      if (!session?.access_token) {
+        console.log('[triggerPagePlanningAfterInit] No session, aborting');
+        return;
+      }
 
       // Fetch fresh site contexts to get competitors
       const { data: contexts } = await supabase
@@ -293,6 +305,7 @@ export default function ProjectChatPage() {
         competitors = competitorsContext?.content ? JSON.parse(competitorsContext.content) : [];
       } catch {}
 
+      console.log('[Init-PagePlanning] Competitors found:', competitors.length);
       if (competitors.length === 0) {
         console.log('[Init-PagePlanning] No competitors found, skipping page planning');
         return;
@@ -303,7 +316,7 @@ export default function ProjectChatPage() {
       const brandName = domainName.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split('.')[0];
       const capitalizedBrandName = brandName.charAt(0).toUpperCase() + brandName.slice(1);
 
-      console.log(`[Init-PagePlanning] Creating pages for ${competitors.length} competitors, brand: ${capitalizedBrandName}`);
+      console.log(`[Init-PagePlanning] About to call API - brand: ${capitalizedBrandName}, competitors: ${competitors.length}`);
       setPlanningPages(true);
 
       const response = await fetch('/api/context-acquisition/competitors/create-pages', {
@@ -370,6 +383,7 @@ export default function ProjectChatPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
+        userRef.current = session.user;
         fetchUserCredits(); // Load user credits
         if (projectInitializedRef.current !== projectId) {
           initProject(session.user.id);
@@ -383,6 +397,7 @@ export default function ProjectChatPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser(session.user);
+        userRef.current = session.user;
         if (projectInitializedRef.current !== projectId) {
           initProject(session.user.id);
           projectInitializedRef.current = projectId;
