@@ -65,15 +65,33 @@ export default function TaskList({
   projectDomain,
 }: TaskListProps) {
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
+  const [typeFilter, setTypeFilter] = useState<'all' | 'alternative' | 'listicle'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'planned' | 'generated'>('all');
 
-  // Group items by project (keep original order)
+  // Calculate counts for filters
+  const counts = {
+    all: contentItems.length,
+    alternative: contentItems.filter(item => item.page_type === 'alternative').length,
+    listicle: contentItems.filter(item => item.page_type === 'listicle').length,
+    planned: contentItems.filter(item => item.status === 'planned').length,
+    generated: contentItems.filter(item => item.status === 'generated').length,
+  };
+
+  // Apply filters to content items
+  const filteredItems = contentItems.filter(item => {
+    const matchesType = typeFilter === 'all' || item.page_type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+    return matchesType && matchesStatus;
+  });
+
+  // Group filtered items by project (keep original order)
   const groupedContent = contentProjects.map(project => ({
     ...project,
-    items: contentItems.filter(item => item.project_id === project.id)
+    items: filteredItems.filter(item => item.project_id === project.id)
   }));
 
-  // Items without a project (Uncategorized)
-  const uncategorizedItems = contentItems.filter(item => !item.project_id);
+  // Filtered items without a project (Uncategorized)
+  const uncategorizedItems = filteredItems.filter(item => !item.project_id);
 
   // Auto-expand first project when content loads
   useEffect(() => {
@@ -439,11 +457,81 @@ export default function TaskList({
                   <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
                 </svg>
               </button>
-              <span className="px-1.5 py-0.5 bg-[#F3F4F6] text-[#6B7280] text-[10px] font-medium rounded">
-                {contentItems.length}
-              </span>
             </div>
           </div>
+          
+          {/* Filter Tabs */}
+          {contentItems.length > 0 && (
+            <div className="px-2 mb-3 space-y-2">
+              {/* Type Filter */}
+              <div className="flex items-center gap-1 flex-wrap">
+                <button
+                  onClick={() => setTypeFilter('all')}
+                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
+                    typeFilter === 'all' 
+                      ? 'bg-[#111827] text-white' 
+                      : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                  }`}
+                >
+                  All <span className="opacity-70">{counts.all}</span>
+                </button>
+                <button
+                  onClick={() => setTypeFilter('alternative')}
+                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
+                    typeFilter === 'alternative' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                  }`}
+                >
+                  1v1 <span className="opacity-70">{counts.alternative}</span>
+                </button>
+                <button
+                  onClick={() => setTypeFilter('listicle')}
+                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
+                    typeFilter === 'listicle' 
+                      ? 'bg-purple-600 text-white' 
+                      : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+                  }`}
+                >
+                  Listicle <span className="opacity-70">{counts.listicle}</span>
+                </button>
+              </div>
+              
+              {/* Status Filter */}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setStatusFilter('all')}
+                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
+                    statusFilter === 'all' 
+                      ? 'bg-[#111827] text-white' 
+                      : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                  }`}
+                >
+                  All Status
+                </button>
+                <button
+                  onClick={() => setStatusFilter('planned')}
+                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
+                    statusFilter === 'planned' 
+                      ? 'bg-amber-500 text-white' 
+                      : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
+                  }`}
+                >
+                  Planned <span className="opacity-70">{counts.planned}</span>
+                </button>
+                <button
+                  onClick={() => setStatusFilter('generated')}
+                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
+                    statusFilter === 'generated' 
+                      ? 'bg-emerald-500 text-white' 
+                      : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                  }`}
+                >
+                  Generated <span className="opacity-70">{counts.generated}</span>
+                </button>
+              </div>
+            </div>
+          )}
           
           {/* Discovering Competitors Loading State */}
           {isDiscoveringCompetitors && (
@@ -506,6 +594,20 @@ export default function TaskList({
               </svg>
               <p className="text-xs text-[#9CA3AF]">No pages yet</p>
               <p className="text-[10px] text-[#D1D5DB] mt-1">Pages will appear after context analysis</p>
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="px-3 py-6 text-center">
+              <svg className="w-8 h-8 text-[#E5E5E5] mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              <p className="text-xs text-[#9CA3AF]">No matching pages</p>
+              <button 
+                onClick={() => { setTypeFilter('all'); setStatusFilter('all'); }}
+                className="text-[10px] text-blue-500 hover:underline mt-1"
+              >
+                Clear filters
+              </button>
             </div>
           ) : (
             <div className="space-y-1 relative">
