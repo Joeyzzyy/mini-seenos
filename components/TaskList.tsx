@@ -462,74 +462,72 @@ export default function TaskList({
           
           {/* Filter Tabs */}
           {contentItems.length > 0 && (
-            <div className="px-2 mb-3 space-y-2">
+            <div className="px-2 mb-3 flex items-center gap-1 flex-wrap">
               {/* Type Filter */}
-              <div className="flex items-center gap-1 flex-wrap">
-                <button
-                  onClick={() => setTypeFilter('all')}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
-                    typeFilter === 'all' 
-                      ? 'bg-[#111827] text-white' 
-                      : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
-                  }`}
-                >
-                  All <span className="opacity-70">{counts.all}</span>
-                </button>
-                <button
-                  onClick={() => setTypeFilter('alternative')}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
-                    typeFilter === 'alternative' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                  }`}
-                >
-                  1v1 <span className="opacity-70">{counts.alternative}</span>
-                </button>
-                <button
-                  onClick={() => setTypeFilter('listicle')}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
-                    typeFilter === 'listicle' 
-                      ? 'bg-purple-600 text-white' 
-                      : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
-                  }`}
-                >
-                  Listicle <span className="opacity-70">{counts.listicle}</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setTypeFilter('all')}
+                className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${
+                  typeFilter === 'all' 
+                    ? 'bg-[#111827] text-white' 
+                    : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                }`}
+              >
+                All {counts.all}
+              </button>
+              <button
+                onClick={() => setTypeFilter('alternative')}
+                className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${
+                  typeFilter === 'alternative' 
+                    ? 'bg-[#111827] text-white' 
+                    : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                }`}
+              >
+                1v1 {counts.alternative}
+              </button>
+              <button
+                onClick={() => setTypeFilter('listicle')}
+                className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${
+                  typeFilter === 'listicle' 
+                    ? 'bg-[#111827] text-white' 
+                    : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                }`}
+              >
+                Listicle {counts.listicle}
+              </button>
+              
+              <span className="text-[#E5E7EB]">|</span>
               
               {/* Status Filter */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setStatusFilter('all')}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
-                    statusFilter === 'all' 
-                      ? 'bg-[#111827] text-white' 
-                      : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
-                  }`}
-                >
-                  All Status
-                </button>
-                <button
-                  onClick={() => setStatusFilter('planned')}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
-                    statusFilter === 'planned' 
-                      ? 'bg-amber-500 text-white' 
-                      : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
-                  }`}
-                >
-                  Planned <span className="opacity-70">{counts.planned}</span>
-                </button>
-                <button
-                  onClick={() => setStatusFilter('generated')}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded-full transition-colors ${
-                    statusFilter === 'generated' 
-                      ? 'bg-emerald-500 text-white' 
-                      : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
-                  }`}
-                >
-                  Generated <span className="opacity-70">{counts.generated}</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setStatusFilter('all')}
+                className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${
+                  statusFilter === 'all' 
+                    ? 'bg-[#111827] text-white' 
+                    : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setStatusFilter('planned')}
+                className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${
+                  statusFilter === 'planned' 
+                    ? 'bg-[#111827] text-white' 
+                    : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                }`}
+              >
+                Todo {counts.planned}
+              </button>
+              <button
+                onClick={() => setStatusFilter('generated')}
+                className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${
+                  statusFilter === 'generated' 
+                    ? 'bg-[#111827] text-white' 
+                    : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                }`}
+              >
+                Done {counts.generated}
+              </button>
             </div>
           )}
           
