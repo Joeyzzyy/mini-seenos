@@ -280,7 +280,7 @@ export default function ProjectChatPage() {
   const wasLoadingRef = useRef(false);
   const hasTriggeredPagePlanningRef = useRef(false);
   
-  // Helper function to trigger page planning via API (used after initialization)
+  // Helper function to discover competitors AND create page plans (used after initialization)
   const triggerPagePlanningAfterInit = async (userId: string) => {
     console.log('[triggerPagePlanningAfterInit] Called for user:', userId, 'project:', projectId);
     try {
@@ -290,36 +290,53 @@ export default function ProjectChatPage() {
         return;
       }
 
-      // Fetch fresh site contexts to get competitors
+      setPlanningPages(true);
+
+      // Get domain from logo context
       const { data: contexts } = await supabase
         .from('site_contexts')
         .select('*')
         .eq('user_id', userId)
         .eq('project_id', projectId);
 
-      const competitorsContext = contexts?.find((c: any) => c.type === 'competitors');
       const logoContext = contexts?.find((c: any) => c.type === 'logo');
-      
-      let competitors: any[] = [];
-      try {
-        competitors = competitorsContext?.content ? JSON.parse(competitorsContext.content) : [];
-      } catch {}
-
-      console.log('[Init-PagePlanning] Competitors found:', competitors.length);
-      if (competitors.length === 0) {
-        console.log('[Init-PagePlanning] No competitors found, skipping page planning');
-        return;
-      }
-
-      // Get brand name
       const domainName = (logoContext as any)?.domain_name || currentProject?.domain || '';
       const brandName = domainName.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split('.')[0];
       const capitalizedBrandName = brandName.charAt(0).toUpperCase() + brandName.slice(1);
+      const fullUrl = domainName.startsWith('http') ? domainName : `https://${domainName}`;
 
-      console.log(`[Init-PagePlanning] About to call API - brand: ${capitalizedBrandName}, competitors: ${competitors.length}`);
-      setPlanningPages(true);
+      // STEP 1: Discover competitors using API (same as Auto-Fetch in CompetitorsModal)
+      console.log('[Init-Competitors] Discovering competitors for:', fullUrl);
+      const competitorsResponse = await fetch('/api/context-acquisition/competitors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          url: fullUrl,
+          userId,
+          projectId,
+        }),
+      });
 
-      const response = await fetch('/api/context-acquisition/competitors/create-pages', {
+      const competitorsResult = await competitorsResponse.json();
+      console.log('[Init-Competitors] Result:', competitorsResult);
+
+      if (!competitorsResult.success || !competitorsResult.competitors?.length) {
+        console.log('[Init-Competitors] No competitors found');
+        setToast({ isOpen: true, message: 'No competitors found. You can add them manually.' });
+        return;
+      }
+
+      const competitors = competitorsResult.competitors;
+      console.log(`[Init-PagePlanning] Discovered ${competitors.length} competitors, creating page plans...`);
+
+      // Refresh site contexts to show competitors
+      await loadSiteContexts(userId);
+
+      // STEP 2: Create page plans using API (same logic as CompetitorsModal)
+      const pagesResponse = await fetch('/api/context-acquisition/competitors/create-pages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -332,15 +349,15 @@ export default function ProjectChatPage() {
         }),
       });
 
-      const result = await response.json();
-      console.log(`[Init-PagePlanning] Result:`, result);
+      const pagesResult = await pagesResponse.json();
+      console.log(`[Init-PagePlanning] Result:`, pagesResult);
 
       // Refresh BOTH content projects and content items (projects first!)
       await loadContentProjects(userId);
       await loadContentItems(userId);
 
-      if (result.created > 0) {
-        setToast({ isOpen: true, message: `Created ${result.created} page plans!` });
+      if (pagesResult.created > 0) {
+        setToast({ isOpen: true, message: `Found ${competitors.length} competitors, created ${pagesResult.created} page plans!` });
       }
     } catch (error) {
       console.error('[Init-PagePlanning] Error:', error);
@@ -513,53 +530,28 @@ export default function ProjectChatPage() {
     const fullUrl = domain.startsWith('http') ? domain : `https://${domain}`;
     const prompt = `[Auto-initiated by system]
 
-I'm starting the Alternative Page planning process for ${fullUrl}. You MUST complete BOTH PHASES in ONE continuous execution without stopping or asking for confirmation.
-
-## EXECUTION RULES:
-- Complete ALL phases in ONE go - do not wait for user confirmation
-- Execute phases sequentially: Phase 1 → Phase 2
-- Do not stop or ask "should I continue?" - just proceed automatically
-- Report completion only after ALL phases are done
-
-## PHASE 1: Site Context Collection (use 'acquire_site_context' tool)
+## Site Context Collection for ${fullUrl}
 
 Call the 'acquire_site_context' tool ONCE with field="all" to extract:
 - Brand assets (logo, favicon, colors, fonts, domain info)
-- Header structure and HTML
+- Header structure and HTML  
 - Footer structure and HTML
 
-**CRITICAL TOOL PARAMETERS:**
+**TOOL PARAMETERS:**
 - url: "${fullUrl}"
-- field: "all" (MUST be exactly "all", "brand-assets", "header", or "footer" - no other values!)
+- field: "all" (MUST be exactly "all")
 - userId: (from your context)
 - projectId: (from your context)
 
-This is ONE tool call, not multiple. The "all" field extracts everything needed.
+This is ONE tool call. The "all" field extracts everything needed.
 
-## PHASE 2: Competitor Research & Saving (use 'save_site_context' tool)
+**NOTE:** After you complete this, the system will AUTOMATICALLY:
+1. Discover competitors using AI analysis
+2. Generate page plans (alternative + listicle pages)
 
-After Phase 1 completes, identify and save at least 10 competitors:
+You do NOT need to search for competitors manually - just complete the site context collection.
 
-1. Research competitors in the same industry/market as ${fullUrl}
-2. Use web_search and perplexity_search to find relevant competitors
-3. For each competitor, gather: name, website URL, and brief description
-4. Call 'save_site_context' tool ONCE with ALL competitors:
-   - type: "competitors"
-   - content: JSON string array format: [{"name": "Competitor Name", "url": "https://competitor.com", "description": "Brief description"}, ...]
-   - userId: (from your context)
-   - projectId: (from your context)
-
-**IMPORTANT:** After saving competitors, the system will AUTOMATICALLY generate page plans (alternative pages + listicle pages). You do NOT need to create page plans manually.
-
-## CRITICAL EXECUTION INSTRUCTIONS:
-- Execute BOTH phases in ONE continuous response
-- Phase 1: Call acquire_site_context with field="all" (ONE call)
-- Phase 2: Research and save competitors (the more the better, aim for 10-15)
-- Page plans will be auto-generated after competitors are saved
-- Do NOT ask for user confirmation - proceed automatically
-- Only report final completion after BOTH phases are done
-
-Start executing Phase 1 now with acquire_site_context(url="${fullUrl}", field="all"), then immediately continue to Phase 2.`;
+Start now with acquire_site_context(url="${fullUrl}", field="all").`;
     
     console.log(`[Auto-Initiate] Sending context acquisition request for: ${fullUrl}`);
     
