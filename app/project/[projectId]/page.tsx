@@ -66,6 +66,7 @@ export default function ProjectChatPage() {
   const [refreshingBrandAssets, setRefreshingBrandAssets] = useState(false);
   const [refreshingCompetitors, setRefreshingCompetitors] = useState(false);
   const [refreshingContent, setRefreshingContent] = useState(false);
+  const [discoveringCompetitors, setDiscoveringCompetitors] = useState(false);
   const [planningPages, setPlanningPages] = useState(false);
   const [selectedContentItem, setSelectedContentItem] = useState<ContentItem | null>(null);
   const [toast, setToast] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: '' });
@@ -290,8 +291,6 @@ export default function ProjectChatPage() {
         return;
       }
 
-      setPlanningPages(true);
-
       // Get domain from logo context
       const { data: contexts } = await supabase
         .from('site_contexts')
@@ -305,7 +304,8 @@ export default function ProjectChatPage() {
       const capitalizedBrandName = brandName.charAt(0).toUpperCase() + brandName.slice(1);
       const fullUrl = domainName.startsWith('http') ? domainName : `https://${domainName}`;
 
-      // STEP 1: Discover competitors using API (same as Auto-Fetch in CompetitorsModal)
+      // STEP 1: Discover competitors using API
+      setDiscoveringCompetitors(true);
       console.log('[Init-Competitors] Discovering competitors for:', fullUrl);
       const competitorsResponse = await fetch('/api/context-acquisition/competitors', {
         method: 'POST',
@@ -323,6 +323,8 @@ export default function ProjectChatPage() {
       const competitorsResult = await competitorsResponse.json();
       console.log('[Init-Competitors] Result:', competitorsResult);
 
+      setDiscoveringCompetitors(false);
+      
       if (!competitorsResult.success || !competitorsResult.competitors?.length) {
         console.log('[Init-Competitors] No competitors found');
         setToast({ isOpen: true, message: 'No competitors found. You can add them manually.' });
@@ -332,10 +334,13 @@ export default function ProjectChatPage() {
       const competitors = competitorsResult.competitors;
       console.log(`[Init-PagePlanning] Discovered ${competitors.length} competitors, creating page plans...`);
 
-      // Refresh site contexts to show competitors
+      // Refresh site contexts FIRST to show competitors in UI
       await loadSiteContexts(userId);
 
-      // STEP 2: Create page plans using API (same logic as CompetitorsModal)
+      // NOW show "Planning pages..." indicator (competitors are already visible)
+      setPlanningPages(true);
+
+      // STEP 2: Create page plans using API
       const pagesResponse = await fetch('/api/context-acquisition/competitors/create-pages', {
         method: 'POST',
         headers: {
@@ -362,6 +367,7 @@ export default function ProjectChatPage() {
     } catch (error) {
       console.error('[Init-PagePlanning] Error:', error);
     } finally {
+      setDiscoveringCompetitors(false);
       setPlanningPages(false);
     }
   };
@@ -954,6 +960,7 @@ Execute the full page generation workflow.`;
             isRefreshingBrandAssets={refreshingBrandAssets}
             isRefreshingCompetitors={refreshingCompetitors}
             isRefreshingContent={refreshingContent}
+            isDiscoveringCompetitors={discoveringCompetitors}
             isPlanningPages={planningPages}
             contextTaskStatus={contextTaskStatus}
             credits={userCredits}
