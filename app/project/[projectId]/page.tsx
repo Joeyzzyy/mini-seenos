@@ -258,6 +258,71 @@ export default function ProjectChatPage() {
 
   // Auto-exit initialization mode when context acquisition completes
   const wasLoadingRef = useRef(false);
+  const hasTriggeredPagePlanningRef = useRef(false);
+  
+  // Helper function to trigger page planning via API (used after initialization)
+  const triggerPagePlanningAfterInit = async (userId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      // Fetch fresh site contexts to get competitors
+      const { data: contexts } = await supabase
+        .from('site_contexts')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('project_id', projectId);
+
+      const competitorsContext = contexts?.find((c: any) => c.type === 'competitors');
+      const logoContext = contexts?.find((c: any) => c.type === 'logo');
+      
+      let competitors: any[] = [];
+      try {
+        competitors = competitorsContext?.content ? JSON.parse(competitorsContext.content) : [];
+      } catch {}
+
+      if (competitors.length === 0) {
+        console.log('[Init-PagePlanning] No competitors found, skipping page planning');
+        return;
+      }
+
+      // Get brand name
+      const domainName = (logoContext as any)?.domain_name || currentProject?.domain || '';
+      const brandName = domainName.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split('.')[0];
+      const capitalizedBrandName = brandName.charAt(0).toUpperCase() + brandName.slice(1);
+
+      console.log(`[Init-PagePlanning] Creating pages for ${competitors.length} competitors, brand: ${capitalizedBrandName}`);
+      setPlanningPages(true);
+
+      const response = await fetch('/api/context-acquisition/competitors/create-pages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          projectId,
+          brandName: capitalizedBrandName,
+          competitors,
+        }),
+      });
+
+      const result = await response.json();
+      console.log(`[Init-PagePlanning] Result:`, result);
+
+      // Refresh content items
+      await loadContentItems(userId);
+
+      if (result.created > 0) {
+        setToast({ isOpen: true, message: `Created ${result.created} page plans!` });
+      }
+    } catch (error) {
+      console.error('[Init-PagePlanning] Error:', error);
+    } finally {
+      setPlanningPages(false);
+    }
+  };
+  
   useEffect(() => {
     // Check if loading just finished (transition from true to false)
     if (wasLoadingRef.current && !isLoading && isInitializing && runningTaskId === 'context-analysis') {
@@ -266,10 +331,20 @@ export default function ProjectChatPage() {
       setIsInitializing(false);
       setContextTaskStatus('completed');
       setRunningTaskId(null);
-      // Refresh data
+      
+      // Refresh data and trigger page planning
       if (user) {
         loadSiteContexts(user.id);
         loadContentItems(user.id);
+        
+        // Auto-trigger page planning after initialization (with delay to ensure data is saved)
+        if (!hasTriggeredPagePlanningRef.current) {
+          hasTriggeredPagePlanningRef.current = true;
+          setTimeout(() => {
+            console.log('[Initialization] Triggering automatic page planning...');
+            triggerPagePlanningAfterInit(user.id);
+          }, 2000); // Wait 2s for competitors to be saved
+        }
       }
     }
     wasLoadingRef.current = isLoading;
@@ -414,11 +489,11 @@ export default function ProjectChatPage() {
     const fullUrl = domain.startsWith('http') ? domain : `https://${domain}`;
     const prompt = `[Auto-initiated by system]
 
-I'm starting the Alternative Page planning process for ${fullUrl}. You MUST complete ALL THREE PHASES in ONE continuous execution without stopping or asking for confirmation. Do not pause between phases - execute them sequentially in a single response.
+I'm starting the Alternative Page planning process for ${fullUrl}. You MUST complete BOTH PHASES in ONE continuous execution without stopping or asking for confirmation.
 
 ## EXECUTION RULES:
 - Complete ALL phases in ONE go - do not wait for user confirmation
-- Execute phases sequentially: Phase 1 → Phase 2 → Phase 3
+- Execute phases sequentially: Phase 1 → Phase 2
 - Do not stop or ask "should I continue?" - just proceed automatically
 - Report completion only after ALL phases are done
 
@@ -442,31 +517,25 @@ This is ONE tool call, not multiple. The "all" field extracts everything needed.
 After Phase 1 completes, identify and save at least 10 competitors:
 
 1. Research competitors in the same industry/market as ${fullUrl}
-2. Use web_search if needed to find relevant competitors
-3. Call 'save_site_context' tool ONCE with ALL competitors:
+2. Use web_search and perplexity_search to find relevant competitors
+3. For each competitor, gather: name, website URL, and brief description
+4. Call 'save_site_context' tool ONCE with ALL competitors:
    - type: "competitors"
-   - content: JSON string array format: [{"name": "Competitor Name", "url": "https://competitor.com"}, ...]
+   - content: JSON string array format: [{"name": "Competitor Name", "url": "https://competitor.com", "description": "Brief description"}, ...]
    - userId: (from your context)
    - projectId: (from your context)
 
-## PHASE 3: Page Planning (use 'save_content_items_batch' tool)
-
-After competitors are saved:
-1. Use 'web_search' to research "[Competitor] alternative" for top 3-5 competitors
-2. Design alternative page strategies with detailed outlines
-3. Call 'save_content_items_batch' to save ALL planned pages at once:
-   - Set page_type to 'alternative'
-   - Set status to 'ready'
+**IMPORTANT:** After saving competitors, the system will AUTOMATICALLY generate page plans (alternative pages + listicle pages). You do NOT need to create page plans manually.
 
 ## CRITICAL EXECUTION INSTRUCTIONS:
-- Execute ALL THREE phases in ONE continuous response
+- Execute BOTH phases in ONE continuous response
 - Phase 1: Call acquire_site_context with field="all" (ONE call)
-- Phase 2: Research and save competitors
-- Phase 3: Plan and save alternative pages
+- Phase 2: Research and save competitors (the more the better, aim for 10-15)
+- Page plans will be auto-generated after competitors are saved
 - Do NOT ask for user confirmation - proceed automatically
-- Only report final completion after ALL phases are done
+- Only report final completion after BOTH phases are done
 
-Start executing Phase 1 now with acquire_site_context(url="${fullUrl}", field="all"), then immediately continue to Phase 2 and Phase 3.`;
+Start executing Phase 1 now with acquire_site_context(url="${fullUrl}", field="all"), then immediately continue to Phase 2.`;
     
     console.log(`[Auto-Initiate] Sending context acquisition request for: ${fullUrl}`);
     
