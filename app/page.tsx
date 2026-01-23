@@ -440,6 +440,66 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Best Alternatives Guides Section */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8 sm:mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full mb-4">
+              <span className="text-xs sm:text-sm text-purple-400 font-medium">📋 Listicle Pages</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Best Alternatives Guides</h2>
+            <p className="text-gray-400 text-sm sm:text-base max-w-xl mx-auto">
+              Expert-tested &quot;Best X Alternatives&quot; listicles. These ranked lists are what AI search engines cite for &quot;best tool&quot; queries.
+            </p>
+          </div>
+
+          {/* Listicle Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+            {[
+              { name: 'Jasper AI', slug: 'jasper-ai', count: 6, icon: '✍️' },
+              { name: 'Surfer SEO', slug: 'surfer-seo', count: 6, icon: '📊' },
+              { name: 'Ahrefs', slug: 'ahrefs', count: 6, icon: '🔗' },
+              { name: 'SEMrush', slug: 'semrush', count: 6, icon: '📈' },
+              { name: 'Copy.ai', slug: 'copy-ai', count: 6, icon: '🤖' },
+            ].map((item) => (
+              <a
+                key={item.slug}
+                href={`/best-alternatives/${item.slug}`}
+                className="group relative p-4 bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl hover:border-purple-500/50 hover:bg-white/[0.08] transition-all overflow-hidden"
+              >
+                {/* Hover glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                <div className="relative">
+                  <div className="text-2xl mb-2">{item.icon}</div>
+                  <div className="text-white font-medium text-sm mb-1">Best {item.name}</div>
+                  <div className="text-white font-medium text-sm">Alternatives</div>
+                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/10">
+                    <span className="text-[10px] text-gray-500">{item.count} tools compared</span>
+                    <svg className="w-3 h-3 text-purple-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {/* View All Link */}
+          <div className="text-center">
+            <a
+              href="/best-alternatives"
+              className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              View all listicle guides
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="py-16 sm:py-24 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
