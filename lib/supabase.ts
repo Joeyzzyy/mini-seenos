@@ -819,11 +819,11 @@ export async function deleteSEOProject(projectId: string): Promise<void> {
     }
   }
   
-  // 2. Delete content_items
+  // 2. Delete content_items (linked via seo_project_id)
   const { error: itemsError } = await supabase
     .from('content_items')
     .delete()
-    .eq('project_id', projectId);
+    .eq('seo_project_id', projectId);
   
   if (itemsError) {
     console.error('[deleteSEOProject] Failed to delete content_items:', itemsError);
@@ -831,11 +831,11 @@ export async function deleteSEOProject(projectId: string): Promise<void> {
     console.log('[deleteSEOProject] Deleted content_items');
   }
   
-  // 3. Delete content_projects
+  // 3. Delete content_projects (linked via seo_project_id)
   const { error: projectsError } = await supabase
     .from('content_projects')
     .delete()
-    .eq('project_id', projectId);
+    .eq('seo_project_id', projectId);
   
   if (projectsError) {
     console.error('[deleteSEOProject] Failed to delete content_projects:', projectsError);
