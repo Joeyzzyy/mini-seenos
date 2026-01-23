@@ -52,11 +52,15 @@ export default function HomePage() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       setError(null);
       if (session?.user) {
         fetchUserCredits();
+        // Redirect to projects on successful sign in
+        if (event === 'SIGNED_IN') {
+          router.push('/projects');
+        }
       }
     });
 
