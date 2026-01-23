@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { LISTICLE_PAGES, getListiclePageBySlug, BRAND_INFO, ListicleProduct } from '../data';
 import FAQSection from '../FAQSection';
 import ScrollToTop from '../ScrollToTop';
+import Header from '@/components/shared/Header';
+import Footer from '@/components/shared/Footer';
 
 // Generate static paths for all listicle pages
 export function generateStaticParams() {
@@ -365,23 +367,7 @@ export default async function ListicleDetailPage({ params }: { params: Promise<{
       
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-          <div className="container mx-auto px-6 py-4 max-w-7xl">
-            <div className="flex items-center justify-between gap-8">
-              <Link href="/" className="flex items-center">
-                <img src={BRAND_INFO.logoUrl} alt="SEOPages.pro" className="h-8 w-auto" />
-              </Link>
-              <nav className="hidden md:flex items-center space-x-6 flex-1 justify-center">
-                <Link href="/" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">Home</Link>
-                <Link href="/best-alternatives" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">Best Alternatives</Link>
-                <Link href="/seopages-pro-alternatives" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">Comparisons</Link>
-              </nav>
-              <Link href={BRAND_INFO.ctaUrl} className="hidden md:block px-6 py-2.5 text-sm font-medium rounded-lg bg-gray-900 text-white hover:opacity-90 transition-all">
-                Get Started
-              </Link>
-            </div>
-          </div>
-        </header>
+        <Header theme="light" />
 
         <main>
           {/* Hero Section */}
@@ -618,50 +604,7 @@ export default async function ListicleDetailPage({ params }: { params: Promise<{
         </main>
 
         {/* Footer */}
-        <footer className="bg-white border-t border-gray-100">
-          <div className="container mx-auto px-4 py-12 max-w-6xl">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div className="md:col-span-1">
-                <Link href="/" className="flex items-center gap-2 mb-4">
-                  <img src={BRAND_INFO.logoUrl} alt="SEOPages.pro" className="h-8 w-auto" />
-                  <span className="text-sm italic" style={{ fontFamily: '"Playfair Display", Georgia, serif' }}>
-                    seopages<span className="text-[#9A8FEA]">.</span>pro
-                  </span>
-                </Link>
-                <p className="text-xs text-gray-500">
-                  AI-powered alternative page generator for SEO professionals.
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold uppercase tracking-wider mb-4 text-gray-900">Product</h4>
-                <ul className="space-y-3">
-                  <li><Link href="/" className="text-sm text-gray-600 hover:text-gray-900">Home</Link></li>
-                  <li><Link href="/#features" className="text-sm text-gray-600 hover:text-gray-900">Features</Link></li>
-                  <li><Link href="/#pricing" className="text-sm text-gray-600 hover:text-gray-900">Pricing</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold uppercase tracking-wider mb-4 text-gray-900">Resources</h4>
-                <ul className="space-y-3">
-                  <li><Link href="/best-alternatives" className="text-sm text-gray-600 hover:text-gray-900">Best Alternatives</Link></li>
-                  <li><Link href="/seopages-pro-alternatives" className="text-sm text-gray-600 hover:text-gray-900">Comparisons</Link></li>
-                  <li><Link href="/alternative-page-guide" className="text-sm text-gray-600 hover:text-gray-900">Guide</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold uppercase tracking-wider mb-4 text-gray-900">Legal</h4>
-                <ul className="space-y-3">
-                  <li><Link href="/privacy" className="text-sm text-gray-600 hover:text-gray-900">Privacy Policy</Link></li>
-                  <li><Link href="/terms" className="text-sm text-gray-600 hover:text-gray-900">Terms of Service</Link></li>
-                  <li><a href="mailto:wps_zy@126.com" className="text-sm text-gray-600 hover:text-gray-900">Contact Us</a></li>
-                </ul>
-              </div>
-            </div>
-            <div className="border-t border-gray-100 mt-8 pt-8 text-sm text-center text-gray-500">
-              <p>&copy; {currentYear} seopages.pro. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
+        <Footer theme="light" />
 
         {/* Scroll to Top Button */}
         <ScrollToTop />

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { COMPETITORS, getCompetitorBySlug, getFaviconUrl, BRAND, Competitor } from '../data';
+import Header from '@/components/shared/Header';
+import Footer from '@/components/shared/Footer';
 
 // Generate static paths for all competitors
 export function generateStaticParams() {
@@ -354,29 +356,7 @@ export default async function CompetitorComparisonPage({ params }: { params: Pro
         `}} />
         
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-2">
-                <img src={BRAND.logoUrl} alt={BRAND.name} className="h-8 w-auto" />
-                <span className="text-lg italic font-serif">
-                  seopages<span className="text-[#9A8FEA]">.</span>pro
-                </span>
-              </Link>
-              <nav className="hidden md:flex items-center gap-6">
-                <Link href="/seopages-pro-alternatives" className="text-sm text-gray-600 hover:text-gray-900">All Comparisons</Link>
-                <Link href="/#features" className="text-sm text-gray-600 hover:text-gray-900">Features</Link>
-                <Link href="/#pricing" className="text-sm text-gray-600 hover:text-gray-900">Pricing</Link>
-                <Link href="/projects" className="btn-primary text-sm py-2 px-4">Get Started</Link>
-              </nav>
-              <button className="md:hidden p-2 rounded-lg hover:bg-gray-100" aria-label="Menu">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </header>
+        <Header theme="light" />
         
         {/* Hero Section */}
         <section className="relative overflow-hidden pt-20 md:pt-28 pb-16 md:pb-24 px-4 md:px-6 bg-white">
@@ -1326,82 +1306,8 @@ export default async function CompetitorComparisonPage({ params }: { params: Pro
           </div>
         </section>
         
-        {/* Footer - EEAT T01/T02 Legal Compliance & Contact */}
-        <footer className="bg-gray-900 text-gray-400 py-12 px-6">
-          <div className="max-w-6xl mx-auto">
-            {/* Main Footer Content */}
-            <div className="grid md:grid-cols-4 gap-8 mb-8">
-              {/* Brand */}
-              <div className="md:col-span-1">
-                <div className="flex items-center gap-2 mb-4">
-                  <img src={BRAND.logoUrl} alt={BRAND.name} className="h-8 w-auto invert" />
-                  <span className="text-white italic font-serif">
-                    seopages<span className="text-[#9A8FEA]">.</span>pro
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 mb-4">
-                  AI-powered alternative page generator for SEO professionals.
-                </p>
-                {/* Trust Badges */}
-                <div className="flex items-center gap-3 text-xs">
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-800 rounded">
-                    <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
-                    <span className="text-gray-400">SSL Secure</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Navigation */}
-              <div>
-                <h4 className="text-white font-semibold mb-4 text-sm">Product</h4>
-                <ul className="space-y-2 text-sm">
-                  <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-                  <li><Link href="/#features" className="hover:text-white transition-colors">Features</Link></li>
-                  <li><Link href="/#pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                  <li><Link href="/projects" className="hover:text-white transition-colors">Get Started</Link></li>
-                </ul>
-              </div>
-              
-              {/* Resources */}
-              <div>
-                <h4 className="text-white font-semibold mb-4 text-sm">Resources</h4>
-                <ul className="space-y-2 text-sm">
-                  <li><Link href="/seopages-pro-alternatives" className="hover:text-white transition-colors">Comparisons</Link></li>
-                  <li><Link href="/alternative-page-guide" className="hover:text-white transition-colors">Guide</Link></li>
-                  <li><Link href="/build-guide" className="hover:text-white transition-colors">Build Guide</Link></li>
-                </ul>
-              </div>
-              
-              {/* Contact & Legal */}
-              <div>
-                <h4 className="text-white font-semibold mb-4 text-sm">Contact &amp; Legal</h4>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <a href="mailto:support@seopages.pro" className="hover:text-white transition-colors flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                      </svg>
-                      support@seopages.pro
-                    </a>
-                  </li>
-                  <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                  <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-                  <li><Link href="/feedbacks" className="hover:text-white transition-colors">Feedback</Link></li>
-                </ul>
-              </div>
-            </div>
-            
-            {/* Bottom Bar */}
-            <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
-              <p>© 2026 {BRAND.name}. All rights reserved.</p>
-              <p className="text-gray-500 text-xs">
-                Product names, logos, and trademarks are the property of their respective owners.
-              </p>
-            </div>
-          </div>
-        </footer>
+        {/* Footer */}
+        <Footer theme="light" />
         
         {/* Scroll to Top Button */}
         <button 
