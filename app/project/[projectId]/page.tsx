@@ -335,7 +335,8 @@ export default function ProjectChatPage() {
       const result = await response.json();
       console.log(`[Init-PagePlanning] Result:`, result);
 
-      // Refresh content items
+      // Refresh BOTH content projects and content items (projects first!)
+      await loadContentProjects(userId);
       await loadContentItems(userId);
 
       if (result.created > 0) {
@@ -641,7 +642,8 @@ Start executing Phase 1 now with acquire_site_context(url="${fullUrl}", field="a
       console.log('[loadContentItems] Fetching items for user:', userId, 'project:', projectId);
       const items = await getUserContentItems(userId, projectId);
       console.log('[loadContentItems] Loaded', items.length, 'items');
-      setContentItems(items);
+      // Create new array to ensure React detects the change
+      setContentItems([...items]);
       return items;
     } catch (error) {
       console.error('Failed to load content items:', error);
@@ -721,7 +723,8 @@ Start executing Phase 1 now with acquire_site_context(url="${fullUrl}", field="a
 
       console.log(`[PlanPages] Result:`, result);
 
-      // Refresh content items to show new pages
+      // Refresh BOTH content projects and content items (projects first!)
+      await loadContentProjects(currentUser.id);
       await loadContentItems(currentUser.id);
 
       if (result.created > 0) {
