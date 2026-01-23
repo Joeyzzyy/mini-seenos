@@ -32,86 +32,131 @@ export default function SiteHeader({ variant = 'default' }: SiteHeaderProps) {
     <nav className={`fixed top-0 left-0 right-0 z-50 ${variant === 'transparent' ? 'bg-[#0A0A0A]/80' : 'bg-[#0A0A0A]/80'} backdrop-blur-xl border-b border-white/5`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 sm:gap-3">
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#9A8FEA] via-[#65B4FF] to-[#9A8FEA] rounded-full blur-md opacity-60 animate-[glow_3s_ease-in-out_infinite]" />
-            <img src="/new-logo.png" alt="SEOPages" className="relative h-8 sm:h-10 w-auto drop-shadow-[0_0_8px_rgba(154,143,234,0.5)]" />
-          </div>
-          <span className="text-white text-lg sm:text-xl italic tracking-wide" style={{ fontFamily: '"Playfair Display", Georgia, serif' }}>
-            seopages<span className="text-[#9A8FEA]">.</span>pro
+          <img src="/new-logo.png" alt="SEOPages" className="h-8 sm:h-10 w-auto" />
+          <span className="text-white text-lg sm:text-xl font-medium tracking-tight">
+            SEOPages<span className="text-gray-500">.</span>pro
           </span>
         </Link>
         
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Comparisons Dropdown */}
-          <div className="hidden sm:block relative group">
-            <button className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
-              Comparisons
+          {/* Comparisons Mega Dropdown */}
+          <div className="hidden lg:block relative group">
+            <button className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 py-2">
+              54 Comparisons
               <svg className="w-3 h-3 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-              <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-2 min-w-[280px] shadow-xl">
-                <Link href="/seopages-pro-alternatives" className="block px-3 py-2 text-sm text-white hover:bg-white/10 rounded-lg transition-colors font-medium">
-                  🆚 SEOPages.pro vs 38 Tools
-                </Link>
-                <div className="border-t border-white/5 my-1"></div>
-                <Link href="/seopages-pro-alternatives/jasper-ai" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  vs Jasper AI
-                </Link>
-                <Link href="/seopages-pro-alternatives/surfer-seo" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  vs Surfer SEO
-                </Link>
-                <Link href="/seopages-pro-alternatives/ahrefs" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  vs Ahrefs
-                </Link>
-                <Link href="/seopages-pro-alternatives/semrush" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  vs SEMrush
-                </Link>
-                <Link href="/seopages-pro-alternatives" className="block px-3 py-2 text-sm text-[#9A8FEA] hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  View all 38 comparisons →
-                </Link>
+            <div className="fixed left-0 right-0 top-[56px] pt-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div className="bg-[#111111] border-b border-white/10 shadow-2xl">
+                <div className="max-w-7xl mx-auto px-6 py-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-white font-semibold">SEOPages.pro vs 54 Tools</h3>
+                      <p className="text-gray-500 text-sm">1v1 comparison pages — all AI-generated</p>
+                    </div>
+                    <Link href="/seopages-pro-alternatives" className="text-sm text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
+                      View All 54
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-6 gap-2">
+                    {[
+                      { name: 'Jasper AI', slug: 'jasper-ai' },
+                      { name: 'Surfer SEO', slug: 'surfer-seo' },
+                      { name: 'Ahrefs', slug: 'ahrefs' },
+                      { name: 'SEMrush', slug: 'semrush' },
+                      { name: 'Copy.ai', slug: 'copy-ai' },
+                      { name: 'Frase', slug: 'frase' },
+                      { name: 'ChatGPT', slug: 'chatgpt' },
+                      { name: 'Claude', slug: 'claude' },
+                      { name: 'Clearscope', slug: 'clearscope' },
+                      { name: 'MarketMuse', slug: 'marketmuse' },
+                      { name: 'Writesonic', slug: 'writesonic' },
+                      { name: 'Rytr', slug: 'rytr' },
+                      { name: 'Moz Pro', slug: 'moz-pro' },
+                      { name: 'Unbounce', slug: 'unbounce' },
+                      { name: 'Webflow', slug: 'webflow' },
+                      { name: 'Rank Math', slug: 'rank-math' },
+                      { name: 'Yoast SEO', slug: 'yoast-seo' },
+                      { name: 'Perplexity', slug: 'perplexity' },
+                    ].map((item) => (
+                      <Link
+                        key={item.slug}
+                        href={`/seopages-pro-alternatives/${item.slug}`}
+                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors group/item"
+                      >
+                        <img 
+                          src={`https://www.google.com/s2/favicons?domain=${item.slug.replace(/-/g, '')}.com&sz=32`}
+                          alt={item.name}
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-gray-400 group-hover/item:text-white truncate">{item.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          
-          {/* Guide Dropdown */}
-          <div className="hidden sm:block relative group">
-            <button className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
-              Guide
+
+          {/* Listicles Mega Dropdown */}
+          <div className="hidden lg:block relative group">
+            <button className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 py-2">
+              64 Listicles
               <svg className="w-3 h-3 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-              <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-2 min-w-[280px] shadow-xl">
-                <Link href="/alternative-page-guide" className="block px-3 py-2 text-sm text-white hover:bg-white/10 rounded-lg transition-colors font-medium">
-                  Alternative Page Guide
-                </Link>
-                <div className="border-t border-white/5 my-1"></div>
-                <Link href="/alternative-page-guide/what-are-alternative-pages" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  What Are Alternative Pages?
-                </Link>
-                <Link href="/alternative-page-guide/alternative-page-seo-best-practices" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  SEO Best Practices
-                </Link>
-                <Link href="/alternative-page-guide/alternative-page-vs-landing-page" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  Alternative vs Landing Page
-                </Link>
-                <Link href="/alternative-page-guide/how-to-write-alternative-page-copy" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  How to Write Copy
-                </Link>
-                <Link href="/alternative-page-guide/alternative-page-examples" className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  Page Examples
-                </Link>
+            <div className="fixed left-0 right-0 top-[56px] pt-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div className="bg-[#111111] border-b border-white/10 shadow-2xl">
+                <div className="max-w-7xl mx-auto px-6 py-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-white font-semibold">Best Alternatives Guides</h3>
+                      <p className="text-gray-500 text-sm">Ranked listicle pages — all AI-generated</p>
+                    </div>
+                    <Link href="/best-alternatives" className="text-sm text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
+                      View All 64
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { name: 'Jasper AI Alternatives', slug: 'jasper-ai' },
+                      { name: 'Surfer SEO Alternatives', slug: 'surfer-seo' },
+                      { name: 'Ahrefs Alternatives', slug: 'ahrefs' },
+                      { name: 'SEMrush Alternatives', slug: 'semrush' },
+                      { name: 'ChatGPT Alternatives', slug: 'chatgpt' },
+                      { name: 'Best AI SEO Tools', slug: 'ai-seo-tools' },
+                      { name: 'Best AI Writing Tools', slug: 'ai-writing-tools' },
+                      { name: 'Keyword Research Tools', slug: 'keyword-research-tools' },
+                      { name: 'Rank Tracking Tools', slug: 'rank-tracking-tools' },
+                      { name: 'Content Optimization', slug: 'content-optimization-tools' },
+                      { name: 'Local SEO Tools', slug: 'local-seo-tools' },
+                      { name: 'AI Chatbots', slug: 'ai-chatbots' },
+                      { name: 'SEO Chrome Extensions', slug: 'seo-chrome-extensions' },
+                      { name: 'SEO for Agencies', slug: 'seo-tools-agencies' },
+                      { name: 'SEO for E-commerce', slug: 'seo-tools-ecommerce' },
+                    ].map((item) => (
+                      <Link
+                        key={item.slug}
+                        href={`/best-alternatives/${item.slug}`}
+                        className="p-2 rounded-lg hover:bg-white/5 transition-colors group/item"
+                      >
+                        <span className="text-sm text-gray-400 group-hover/item:text-white">{item.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           
-          <Link href="/#features" className="hidden sm:block text-sm text-gray-400 hover:text-white transition-colors">
+          {/* Guide Link */}
+          <Link href="/alternative-page-guide" className="hidden lg:block text-sm text-gray-400 hover:text-white transition-colors">Guide</Link>
+          <Link href="/#features" className="hidden lg:block text-sm text-gray-400 hover:text-white transition-colors">
             Features
           </Link>
-          <Link href="/#pricing" className="hidden sm:block text-sm text-gray-400 hover:text-white transition-colors">
+          <Link href="/#pricing" className="hidden lg:block text-sm text-gray-400 hover:text-white transition-colors">
             Pricing
           </Link>
           

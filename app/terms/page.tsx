@@ -68,7 +68,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-semibold mb-4 text-white">6. Payment and Refunds</h2>
             <p className="text-gray-300 leading-relaxed mb-4">
-              <strong className="text-white">Free Tier:</strong> Every Google user receives 1 free page generation with full features.
+              <strong className="text-white">Starter Plan:</strong> 10 pages for $4.9 with full features.
             </p>
             <p className="text-gray-300 leading-relaxed mb-4">
               <strong className="text-white">Paid Plans:</strong> Payments are one-time purchases, not subscriptions. Credits do not expire.

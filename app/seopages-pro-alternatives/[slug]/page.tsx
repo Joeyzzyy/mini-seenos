@@ -153,7 +153,7 @@ export default async function CompetitorComparisonPage({ params }: { params: Pro
     },
     {
       q: `Does ${BRAND.name} offer a free trial?`,
-      a: `Yes, ${BRAND.name} offers a free tier so you can try the platform before committing. Generate your first alternative page for free and see the quality yourself.`,
+      a: `${BRAND.name} offers affordable pricing starting at just $0.49 per page. Try our Starter plan with 10 pages for $4.9 and see the quality yourself.`,
     },
     {
       q: `What makes ${BRAND.name}'s alternative pages better?`,
@@ -1294,7 +1294,7 @@ export default async function CompetitorComparisonPage({ params }: { params: Pro
                 <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
                 </svg>
-                <span>No credit card required</span>
+                <span>One-time payment</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">

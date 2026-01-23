@@ -448,6 +448,147 @@ export const COMPETITORS: Competitor[] = [
     keyFeatures: ['AI writer', 'SEO scoring', 'Fact-checking', 'Workflows'],
     weaknesses: ['Learning curve', 'Generic content', 'No alternative page templates'],
   },
+
+  {
+    slug: 'notion-ai',
+    name: 'Notion AI',
+    category: 'AI Writing',
+    tagline: 'AI assistant in your workspace',
+    website: 'notion.so',
+    description: 'Notion AI brings AI writing and editing capabilities directly into the Notion workspace.',
+    pricing: '$10/member/mo add-on (requires Notion subscription)',
+    keyFeatures: ['Integrated in Notion', 'Summarization', 'Translation', 'Writing assistance', 'Q&A on pages'],
+    weaknesses: ['Requires Notion subscription', 'Limited to Notion', 'No SEO features', 'No export-ready pages'],
+  },
+  {
+    slug: 'grammarly',
+    name: 'Grammarly',
+    category: 'Writing Assistant',
+    tagline: 'AI writing and grammar assistant',
+    website: 'grammarly.com',
+    description: 'Grammarly helps improve writing with grammar checking, tone detection, and AI suggestions.',
+    pricing: 'Free tier, Premium $12/mo, Business $15/member/mo',
+    keyFeatures: ['Grammar & spelling', 'Tone detection', 'GrammarlyGO AI', 'Plagiarism checker', 'Browser extension'],
+    weaknesses: ['Editing focus only', 'No content generation', 'No SEO tools', 'No page creation'],
+  },
+
+  // ============================================
+  // Enterprise SEO Platforms (5)
+  // ============================================
+  {
+    slug: 'brightedge',
+    name: 'BrightEdge',
+    category: 'Enterprise SEO',
+    tagline: 'Enterprise SEO platform',
+    website: 'brightedge.com',
+    description: 'BrightEdge is an enterprise SEO platform with AI-powered recommendations and content performance tracking.',
+    pricing: 'Enterprise custom pricing (typically $3,000+/mo)',
+    keyFeatures: ['DataCube keyword database', 'ContentIQ audit', 'StoryBuilder reporting', 'AI recommendations', 'Intent signal analysis'],
+    weaknesses: ['Enterprise pricing only', 'Complex implementation', 'No content generation', 'No comparison pages'],
+  },
+  {
+    slug: 'conductor',
+    name: 'Conductor',
+    category: 'Enterprise SEO',
+    tagline: 'Organic marketing platform',
+    website: 'conductor.com',
+    description: 'Conductor is an enterprise organic marketing platform combining SEO, content, and competitive intelligence.',
+    pricing: 'Enterprise custom pricing (typically $2,000+/mo)',
+    keyFeatures: ['Searchlight platform', 'Content guidance', 'Competitive tracking', 'Site audits', 'Reporting dashboards'],
+    weaknesses: ['Enterprise-only pricing', 'Complex setup', 'No page generation', 'No alternative page tools'],
+  },
+  {
+    slug: 'seoclarity',
+    name: 'seoClarity',
+    category: 'Enterprise SEO',
+    tagline: 'Enterprise SEO platform',
+    website: 'seoclarity.net',
+    description: 'seoClarity is an enterprise SEO platform with comprehensive data and AI-driven insights.',
+    pricing: 'Enterprise custom pricing (typically $3,000+/mo)',
+    keyFeatures: ['Clarity Grid data', 'Content optimization', 'Rank intelligence', 'Site audits', 'API access'],
+    weaknesses: ['Enterprise pricing', 'Steep learning curve', 'No content creation', 'No comparison templates'],
+  },
+  {
+    slug: 'botify',
+    name: 'Botify',
+    category: 'Technical SEO',
+    tagline: 'Enterprise technical SEO platform',
+    website: 'botify.com',
+    description: 'Botify specializes in technical SEO for large websites with advanced crawling and log file analysis.',
+    pricing: 'Enterprise custom pricing',
+    keyFeatures: ['Advanced crawling', 'Log file analysis', 'JavaScript rendering', 'PageWorkers automation', 'Enterprise scale'],
+    weaknesses: ['Technical focus only', 'Enterprise pricing', 'No content tools', 'No page generation'],
+  },
+  {
+    slug: 'lumar',
+    name: 'Lumar',
+    category: 'Technical SEO',
+    tagline: 'Website intelligence platform',
+    website: 'lumar.io',
+    description: 'Lumar (formerly Deepcrawl) provides website intelligence and technical SEO auditing for enterprise sites.',
+    pricing: 'Custom pricing based on site size',
+    keyFeatures: ['Deep crawling', 'Accessibility audits', 'Analytics integration', 'Monitoring', 'API access'],
+    weaknesses: ['Technical SEO only', 'Custom pricing', 'No content features', 'No comparison pages'],
+  },
+
+  // ============================================
+  // Website Builders (5)
+  // ============================================
+  {
+    slug: 'webflow',
+    name: 'Webflow',
+    category: 'Website Builder',
+    tagline: 'Visual web development platform',
+    website: 'webflow.com',
+    description: 'Webflow is a visual web development platform that combines design freedom with clean code output.',
+    pricing: 'Free tier, Basic $14/mo, CMS $23/mo, Business $39/mo',
+    keyFeatures: ['Visual designer', 'CMS capabilities', 'Hosting included', 'Clean HTML/CSS', 'Animations'],
+    weaknesses: ['Learning curve', 'No AI content', 'No SEO optimization', 'No comparison templates'],
+  },
+  {
+    slug: 'framer',
+    name: 'Framer',
+    category: 'Website Builder',
+    tagline: 'Design and publish sites',
+    website: 'framer.com',
+    description: 'Framer is a modern website builder focused on design-first approach with AI-powered features.',
+    pricing: 'Free tier, Mini $5/mo, Basic $15/mo, Pro $30/mo',
+    keyFeatures: ['AI website builder', 'Design-first approach', 'CMS features', 'Animations', 'Hosting included'],
+    weaknesses: ['Limited SEO tools', 'No content optimization', 'No comparison pages', 'Design focus only'],
+  },
+  {
+    slug: 'squarespace',
+    name: 'Squarespace',
+    category: 'Website Builder',
+    tagline: 'All-in-one website platform',
+    website: 'squarespace.com',
+    description: 'Squarespace is an all-in-one website builder with beautiful templates and e-commerce features.',
+    pricing: 'Personal $16/mo, Business $23/mo, Commerce $27/mo+',
+    keyFeatures: ['Beautiful templates', 'E-commerce built-in', 'Domains included', 'Analytics', 'Email marketing'],
+    weaknesses: ['Template-based limits', 'No AI content', 'Basic SEO tools', 'No comparison pages'],
+  },
+  {
+    slug: 'wix',
+    name: 'Wix',
+    category: 'Website Builder',
+    tagline: 'Website builder for everyone',
+    website: 'wix.com',
+    description: 'Wix is a popular website builder with drag-and-drop editing and AI-powered design assistance.',
+    pricing: 'Free tier, Light $17/mo, Core $29/mo, Business $36/mo',
+    keyFeatures: ['ADI AI builder', 'Drag-and-drop editor', '800+ templates', 'App market', 'E-commerce'],
+    weaknesses: ['SEO limitations', 'No content AI', 'No comparison templates', 'Code access limited'],
+  },
+  {
+    slug: 'elementor',
+    name: 'Elementor',
+    category: 'WordPress Builder',
+    tagline: 'WordPress page builder',
+    website: 'elementor.com',
+    description: 'Elementor is the leading WordPress page builder with visual editing and extensive widget library.',
+    pricing: 'Free version, Essential $59/yr, Expert $199/yr, Agency $399/yr',
+    keyFeatures: ['Visual drag-drop', '100+ widgets', 'Theme builder', 'Popup builder', 'WooCommerce integration'],
+    weaknesses: ['WordPress only', 'No AI content', 'No SEO optimization', 'No comparison templates'],
+  },
 ];
 
 // Get competitor by slug
@@ -487,19 +628,18 @@ export const BRAND = {
     'SEO + GEO (AI search) optimized output',
   ],
   // REAL pricing from homepage:
-  // Starter: $9.9 one-time (10 pages)
-  // Standard: $19.9 one-time (20 pages) - MOST POPULAR
-  // Pro: $39.9 one-time (50 pages)
-  // + 1 FREE page for every Google user
+  // Starter: $4.9 one-time (10 pages)
+  // Standard: $9.9 one-time (20 pages) - MOST POPULAR
+  // Pro: $19.9 one-time (50 pages)
   pricing: {
     model: 'one-time',
-    freeTier: '1 free page',
+    freeTier: null,
     plans: [
-      { name: 'Starter', price: '$9.9', pages: 10 },
-      { name: 'Standard', price: '$19.9', pages: 20, popular: true },
-      { name: 'Pro', price: '$39.9', pages: 50 },
+      { name: 'Starter', price: '$4.9', pages: 10 },
+      { name: 'Standard', price: '$9.9', pages: 20, popular: true },
+      { name: 'Pro', price: '$19.9', pages: 50 },
     ],
-    displayPrice: 'From $9.9 one-time',
+    displayPrice: 'From $4.9 one-time',
   },
   cta: {
     primary: 'Generate Your Alternative Page',

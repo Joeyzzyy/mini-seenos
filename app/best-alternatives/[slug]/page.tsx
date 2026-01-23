@@ -571,7 +571,7 @@ export default async function ListicleDetailPage({ params }: { params: Promise<{
                 Ready to Try the Best {page.targetProduct} Alternative?
               </h2>
               <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
-                {BRAND_INFO.name} is our #1 pick for {currentYear}. Get started with a free page and see the difference for yourself.
+                {BRAND_INFO.name} is our #1 pick for {currentYear}. Get started with 10 pages for just $4.9.
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
@@ -590,7 +590,7 @@ export default async function ListicleDetailPage({ params }: { params: Promise<{
               </div>
               
               <div className="flex flex-wrap items-center justify-center gap-4 text-xs md:text-sm text-gray-500">
-                {['Free trial', 'No credit card required', 'Generate pages in minutes'].map((item) => (
+                {['10 pages for $4.9', 'One-time payment', 'Generate pages in minutes'].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <svg className="w-4 h-4 text-[#9A8FEA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

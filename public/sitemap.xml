@@ -3,7 +3,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://seopages.pro/</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -11,7 +11,7 @@
   <!-- Alternative Page Guide - Pillar Page -->
   <url>
     <loc>https://seopages.pro/alternative-page-guide</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -19,290 +19,767 @@
   <!-- Alternative Page Guide - Cluster Pages -->
   <url>
     <loc>https://seopages.pro/alternative-page-guide/what-are-alternative-pages</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
   <url>
     <loc>https://seopages.pro/alternative-page-guide/alternative-page-seo-best-practices</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
   <url>
     <loc>https://seopages.pro/alternative-page-guide/alternative-page-vs-landing-page</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
   <url>
     <loc>https://seopages.pro/alternative-page-guide/alternative-page-examples</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
   <url>
     <loc>https://seopages.pro/alternative-page-guide/how-to-write-alternative-page-copy</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
-  <!-- SEOPages.pro Alternatives Hub -->
+  <!-- ============================================ -->
+  <!-- SEOPages.pro Alternatives Hub (50 comparisons) -->
+  <!-- ============================================ -->
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- SEOPages.pro vs Competitor Pages (38 comparisons) -->
-  <!-- AI Writing & Content Tools -->
+  <!-- AI Writing & Content Tools (15) -->
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/jasper-ai</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/copy-ai</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/writesonic</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/surfer-seo</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/frase</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/marketmuse</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/clearscope</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/neuronwriter</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/growthbar</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/scalenut</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/contentshake-ai</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/koala-ai</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/article-forge</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/rytr</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/anyword</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
-  <!-- SEO Tools & Suites -->
+  <!-- SEO Tools & Suites (9) -->
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/ahrefs</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/semrush</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/moz-pro</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/ubersuggest</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/serpstat</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/se-ranking</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/spyfu</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/mangools</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/raven-tools</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
-  <!-- Landing Page Builders -->
+  <!-- Landing Page Builders (5) -->
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/unbounce</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/instapage</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/leadpages</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/clickfunnels</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/carrd</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
-  <!-- WordPress SEO Plugins -->
+  <!-- WordPress SEO & Other Tools (9) -->
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/rank-math</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/yoast-seo</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/all-in-one-seo</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Technical SEO Tools -->
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/screaming-frog</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/sitebulb</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/page-optimizer-pro</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/surgegraph</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/wordlift</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://seopages.pro/seopages-pro-alternatives/outranking</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
+  <!-- AI Writing Assistants (2) -->
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/notion-ai</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/grammarly</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Enterprise SEO Platforms (5) - NEW -->
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/brightedge</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/conductor</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/seoclarity</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/botify</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/lumar</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Website Builders (5) - NEW -->
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/webflow</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/framer</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/squarespace</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/wix</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/seopages-pro-alternatives/elementor</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ============================================ -->
+  <!-- Best Alternatives Hub (63 listicles) -->
+  <!-- ============================================ -->
+  <url>
+    <loc>https://seopages.pro/best-alternatives</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Product Alternatives (38) -->
+  <url>
+    <loc>https://seopages.pro/best-alternatives/jasper-ai</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/surfer-seo</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/ahrefs</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/semrush</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/copy-ai</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/writesonic</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/frase</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/unbounce</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/moz-pro</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/rank-math</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/ubersuggest</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/clearscope</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/spyfu</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/rytr</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/anyword</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/scalenut</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/marketmuse</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/leadpages</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/clickfunnels</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/yoast-seo</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/neuronwriter</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/growthbar</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/koala-ai</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/article-forge</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/serpstat</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/se-ranking</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/mangools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/instapage</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/carrd</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/screaming-frog</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/sitebulb</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/page-optimizer-pro</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/surgegraph</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/wordlift</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/outranking</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/all-in-one-seo</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/raven-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/contentshake-ai</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Industry & Use-Case Listicles (10) -->
+  <url>
+    <loc>https://seopages.pro/best-alternatives/ai-writing-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/seo-tools-small-business</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/free-seo-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/ai-content-ecommerce</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/landing-page-builders-saas</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/content-marketing-tools-startups</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/technical-seo-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/best-seo-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/ai-tools-content-marketing</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/wordpress-seo-plugins</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Function-Based Listicles (6) - NEW -->
+  <url>
+    <loc>https://seopages.pro/best-alternatives/keyword-research-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/rank-tracking-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/link-building-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/ai-seo-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/seo-chrome-extensions</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/content-optimization-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Industry-Based Listicles (4) - NEW -->
+  <url>
+    <loc>https://seopages.pro/best-alternatives/seo-tools-agencies</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/seo-tools-ecommerce</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/enterprise-seo-platforms</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/local-seo-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- AI Content Listicles (3) - NEW -->
+  <url>
+    <loc>https://seopages.pro/best-alternatives/ai-copywriting-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/free-ai-writing-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/ai-blog-writers</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Other Listicles (2) - NEW -->
+  <url>
+    <loc>https://seopages.pro/best-alternatives/website-builders-seo</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://seopages.pro/best-alternatives/backlink-analysis-tools</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ============================================ -->
+  <!-- Other Pages -->
+  <!-- ============================================ -->
+  
   <!-- Build Guide -->
   <url>
     <loc>https://seopages.pro/build-guide</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -310,14 +787,13 @@
   <!-- Legal Pages -->
   <url>
     <loc>https://seopages.pro/privacy</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
-
   <url>
     <loc>https://seopages.pro/terms</loc>
-    <lastmod>2026-01-21</lastmod>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

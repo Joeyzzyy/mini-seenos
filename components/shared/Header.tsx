@@ -14,12 +14,9 @@ export default function Header({ theme = 'light' }: HeaderProps) {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 sm:gap-3">
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#9A8FEA] via-[#65B4FF] to-[#9A8FEA] rounded-full blur-md opacity-60 animate-[glow_3s_ease-in-out_infinite]" />
-            <img src="/new-logo.png" alt="SEOPages" className="relative h-8 sm:h-10 w-auto drop-shadow-[0_0_8px_rgba(154,143,234,0.5)]" />
-          </div>
-          <span className={`text-lg sm:text-xl italic tracking-wide ${isDark ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: '"Playfair Display", Georgia, serif' }}>
-            seopages<span className="text-[#9A8FEA]">.</span>pro
+          <img src="/new-logo.png" alt="SEOPages" className="h-8 sm:h-10 w-auto" />
+          <span className={`text-lg sm:text-xl font-medium tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            SEOPages<span className={isDark ? 'text-gray-500' : 'text-gray-400'}>.</span>pro
           </span>
         </Link>
 
@@ -34,9 +31,9 @@ export default function Header({ theme = 'light' }: HeaderProps) {
               </svg>
             </button>
             <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-              <div className={`${isDark ? 'bg-[#1A1A1A] border-white/10' : 'bg-white border-gray-200 shadow-lg'} border rounded-xl p-2 min-w-[280px]`}>
+              <div className={`${isDark ? 'bg-[#1A1A1A] border-white/10' : 'bg-white border-gray-200 shadow-lg'} border rounded-xl p-2 min-w-[240px]`}>
                 <Link href="/seopages-pro-alternatives" className={`block px-3 py-2 text-sm ${isDark ? 'text-white hover:bg-white/10' : 'text-gray-900 hover:bg-gray-100'} rounded-lg transition-colors font-medium`}>
-                  🆚 SEOPages.pro vs 38 Tools
+                  All 54 Comparisons
                 </Link>
                 <div className={`border-t ${isDark ? 'border-white/5' : 'border-gray-100'} my-1`}></div>
                 <Link href="/seopages-pro-alternatives/jasper-ai" className={`block px-3 py-2 text-sm ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'} rounded-lg transition-colors`}>
@@ -51,9 +48,6 @@ export default function Header({ theme = 'light' }: HeaderProps) {
                 <Link href="/seopages-pro-alternatives/semrush" className={`block px-3 py-2 text-sm ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'} rounded-lg transition-colors`}>
                   vs SEMrush
                 </Link>
-                <Link href="/seopages-pro-alternatives" className={`block px-3 py-2 text-sm text-[#9A8FEA] ${isDark ? 'hover:text-white hover:bg-white/5' : 'hover:text-[#7B6FD1] hover:bg-gray-50'} rounded-lg transition-colors`}>
-                  View all 38 comparisons →
-                </Link>
               </div>
             </div>
           </div>
@@ -61,31 +55,28 @@ export default function Header({ theme = 'light' }: HeaderProps) {
           {/* Listicles Dropdown */}
           <div className="hidden sm:block relative group">
             <button className={`text-sm ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors flex items-center gap-1`}>
-              Best Alternatives
+              Listicles
               <svg className="w-3 h-3 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-              <div className={`${isDark ? 'bg-[#1A1A1A] border-white/10' : 'bg-white border-gray-200 shadow-lg'} border rounded-xl p-2 min-w-[280px]`}>
+              <div className={`${isDark ? 'bg-[#1A1A1A] border-white/10' : 'bg-white border-gray-200 shadow-lg'} border rounded-xl p-2 min-w-[240px]`}>
                 <Link href="/best-alternatives" className={`block px-3 py-2 text-sm ${isDark ? 'text-white hover:bg-white/10' : 'text-gray-900 hover:bg-gray-100'} rounded-lg transition-colors font-medium`}>
-                  📋 Best Alternatives Guides
+                  All 64 Listicles
                 </Link>
                 <div className={`border-t ${isDark ? 'border-white/5' : 'border-gray-100'} my-1`}></div>
                 <Link href="/best-alternatives/jasper-ai" className={`block px-3 py-2 text-sm ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'} rounded-lg transition-colors`}>
-                  Best Jasper AI Alternatives
-                </Link>
-                <Link href="/best-alternatives/surfer-seo" className={`block px-3 py-2 text-sm ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'} rounded-lg transition-colors`}>
-                  Best Surfer SEO Alternatives
+                  Jasper AI Alternatives
                 </Link>
                 <Link href="/best-alternatives/ahrefs" className={`block px-3 py-2 text-sm ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'} rounded-lg transition-colors`}>
-                  Best Ahrefs Alternatives
+                  Ahrefs Alternatives
                 </Link>
-                <Link href="/best-alternatives/semrush" className={`block px-3 py-2 text-sm ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'} rounded-lg transition-colors`}>
-                  Best SEMrush Alternatives
+                <Link href="/best-alternatives/ai-seo-tools" className={`block px-3 py-2 text-sm ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'} rounded-lg transition-colors`}>
+                  Best AI SEO Tools
                 </Link>
-                <Link href="/best-alternatives" className={`block px-3 py-2 text-sm text-[#9A8FEA] ${isDark ? 'hover:text-white hover:bg-white/5' : 'hover:text-[#7B6FD1] hover:bg-gray-50'} rounded-lg transition-colors`}>
-                  View all guides →
+                <Link href="/best-alternatives/ai-writing-tools" className={`block px-3 py-2 text-sm ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'} rounded-lg transition-colors`}>
+                  Best AI Writing Tools
                 </Link>
               </div>
             </div>

@@ -315,7 +315,7 @@ export function GuideHero({
             href="/projects" 
             className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#FFAF40] via-[#9A8FEA] to-[#65B4FF] text-white font-semibold rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
           >
-            Try Free Page Generator
+            Try Page Generator
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/>
             </svg>
@@ -520,7 +520,7 @@ export function FinalCTA() {
         href="/projects" 
         className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#FFAF40] via-[#9A8FEA] to-[#65B4FF] text-white font-semibold rounded-xl hover:opacity-90 transition-all"
       >
-        Start Free - No Credit Card
+        Get Started - $4.9 for 10 Pages
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/>
         </svg>
