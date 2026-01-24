@@ -44,12 +44,13 @@ Returns HTML that can be assembled into the full page.`,
     verdict: z.object({
       headline: z.string().describe('e.g., "It depends on your needs" or "Brand wins for X"'),
       summary: z.string().describe('2-3 sentence summary of who should use which'),
+      bottom_line: z.string().optional().describe('Final recommendation paragraph (can also be at top level)'),
     }),
     stats: z.array(z.object({
       value: z.string().describe('e.g., "Beta", "$16+", "65+"'),
       label: z.string().describe('e.g., "Status", "Price/mo", "Templates"'),
     })).min(2).max(4).describe('2-4 key comparison metrics'),
-    bottom_line: z.string().describe('Final recommendation paragraph'),
+    bottom_line: z.string().optional().describe('Final recommendation paragraph'),
     // EEAT T06: Methodology transparency for trust signals
     methodology: z.object({
       research_approach: z.string().optional().describe('How the comparison was conducted'),
@@ -57,7 +58,9 @@ Returns HTML that can be assembled into the full page.`,
       last_verified: z.string().optional().describe('When data was last verified'),
     }).optional(),
   }),
-  execute: async ({ brand, competitor, verdict, stats, bottom_line, methodology }) => {
+  execute: async ({ brand, competitor, verdict, stats, bottom_line: topLevelBottomLine, methodology }) => {
+    // Support bottom_line at either top level or inside verdict object
+    const bottom_line = topLevelBottomLine || verdict.bottom_line || verdict.summary;
     const brandInitial = brand.name.charAt(0).toUpperCase();
     const competitorInitial = competitor.name.charAt(0).toUpperCase();
     
