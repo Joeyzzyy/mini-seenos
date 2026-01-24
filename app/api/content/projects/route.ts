@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
 /**
  * GET /api/content/projects
@@ -23,12 +20,7 @@ export async function GET(req: Request) {
     }
     
     // Use service role client to bypass RLS
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
+    const supabase = createServerSupabaseAdmin();
     
     let query = supabase
       .from('content_projects')

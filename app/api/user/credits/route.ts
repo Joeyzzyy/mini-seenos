@@ -1,33 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Helper to create authenticated Supabase client
-async function createAuthenticatedClient(request: NextRequest) {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: {
-        persistSession: false,
-      },
-      global: {
-        headers: {
-          Authorization: request.headers.get('Authorization') || '',
-        },
-      },
-    }
-  );
-}
-
-// Create a Supabase client with the service role for admin operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createAuthenticatedServerClient, createServerSupabaseAdmin } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createAuthenticatedClient(request);
+    const supabase = createAuthenticatedServerClient(request.headers.get('Authorization'));
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
@@ -40,6 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Try to get user profile with credits
+    const supabaseAdmin = createServerSupabaseAdmin();
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('credits, subscription_tier, subscription_status')
@@ -68,11 +45,9 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching user credits:', error);
-    return NextResponse.json({
-      credits: 1,
-      subscription_tier: 'free',
-      subscription_status: 'inactive',
-      error: 'Failed to fetch credits',
-    });
+    return NextResponse.json(
+      { error: 'Failed to fetch credits' },
+      { status: 500 }
+    );
   }
 }

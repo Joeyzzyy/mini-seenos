@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClientOptions } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
@@ -9,6 +9,7 @@ if (isMissingConfig && typeof window !== 'undefined') {
   console.warn('⚠️ Supabase environment variables are missing. Auth features will not work.');
 }
 
+// Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const isSupabaseConfigured = !isMissingConfig;
 
@@ -25,7 +26,53 @@ export function getServiceSupabase() {
     auth: {
       autoRefreshToken: false,
       persistSession: false
-    }
+    },
+  });
+}
+
+/**
+ * Creates a Supabase client.
+ * Use this in API routes instead of importing createClient directly.
+ * @param key - The Supabase key (anon or service role)
+ * @param options - Additional Supabase client options
+ */
+export function createSupabaseClient(
+  key: string = supabaseAnonKey,
+  options: SupabaseClientOptions<'public'> = {}
+) {
+  return createClient(supabaseUrl, key, options);
+}
+
+/**
+ * Creates an authenticated Supabase client for API routes.
+ * @param authHeader - The Authorization header from the request
+ */
+export function createAuthenticatedSupabaseClient(authHeader: string | null) {
+  return createSupabaseClient(supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+    },
+    global: {
+      headers: {
+        Authorization: authHeader || '',
+      },
+    },
+  });
+}
+
+/**
+ * Creates a Supabase admin client with service role key.
+ */
+export function createSupabaseAdmin() {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not configured');
+  }
+  return createSupabaseClient(serviceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
   });
 }
 

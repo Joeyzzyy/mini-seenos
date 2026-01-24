@@ -22,6 +22,7 @@ import {
   getSiteContexts,
   getSEOProjectById
 } from '@/lib/supabase';
+import { useToast } from '@/components/Toast';
 import type { Conversation, FileRecord, ContentItem, ContentProject, SiteContext } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import TopBar from '@/components/TopBar';
@@ -39,6 +40,7 @@ export default function ProjectChatPage() {
   const params = useParams();
   const projectId = params.projectId as string;
   const router = useRouter();
+  const { showToast } = useToast();
 
   // State
   const [user, setUser] = useState<User | null>(null);
@@ -112,9 +114,13 @@ export default function ProjectChatPage() {
         const data = await response.json();
         setUserCredits(data.credits ?? 1);
         setSubscriptionTier(data.subscription_tier ?? 'free');
+      } else {
+        console.error('Failed to fetch user credits: HTTP', response.status);
+        showToast('Failed to fetch subscription info. Please check your network connection.', 'error', 5000);
       }
     } catch (error) {
       console.error('Failed to fetch user credits:', error);
+      showToast('Failed to fetch subscription info. Please check your network connection.', 'error', 5000);
     }
   };
 
@@ -658,6 +664,7 @@ Start now with acquire_site_context(url="${fullUrl}", field="all").`;
       return items;
     } catch (error) {
       console.error('Failed to load content items:', error);
+      showToast('Failed to load content items. Please check your network connection.', 'error', 5000);
       return [];
     }
   };
@@ -669,6 +676,7 @@ Start now with acquire_site_context(url="${fullUrl}", field="all").`;
       setContentProjects(projects);
     } catch (error) {
       console.error('Failed to load content projects:', error);
+      showToast('Failed to load content projects. Please check your network connection.', 'error', 5000);
     }
   };
 
@@ -760,7 +768,7 @@ Start now with acquire_site_context(url="${fullUrl}", field="all").`;
       setDeletingCluster(null);
     } catch (error) {
       console.error('Failed to delete cluster:', error);
-      alert('Failed to delete cluster. Please try again.');
+      showToast('Failed to delete cluster. Please try again.', 'error', 5000);
     }
   };
 
@@ -772,7 +780,7 @@ Start now with acquire_site_context(url="${fullUrl}", field="all").`;
       setDeletingContentItem(null);
     } catch (error) {
       console.error('Failed to delete content item:', error);
-      alert('Failed to delete item. Please try again.');
+      showToast('Failed to delete item. Please try again.', 'error', 5000);
     }
   };
 

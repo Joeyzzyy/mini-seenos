@@ -10,8 +10,10 @@ import TopBar from '@/components/TopBar';
 import DomainsModal from '@/components/DomainsModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import PricingModal from '@/components/PricingModal';
+import { useToast } from '@/components/Toast';
 
 export default function ProjectsPage() {
+  const { showToast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [projects, setProjects] = useState<SEOProject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,9 +52,13 @@ export default function ProjectsPage() {
             setShowPricingModal(true);
           }, 500);
         }
+      } else {
+        console.error('Failed to fetch user credits: HTTP', response.status);
+        showToast('Failed to fetch subscription info. Please check your network connection.', 'error', 5000);
       }
     } catch (error) {
       console.error('Failed to fetch user credits:', error);
+      showToast('Failed to fetch subscription info. Please check your network connection.', 'error', 5000);
     }
   };
 

@@ -58,8 +58,8 @@ export default function TopBar({ onDomainsClick, user: propUser, credits = 1, su
           <div className="absolute -inset-1 bg-gradient-to-r from-[#9A8FEA] via-[#65B4FF] to-[#9A8FEA] rounded-full blur-md opacity-50 animate-[glow_3s_ease-in-out_infinite]" />
           <img src="/new-logo.png" alt="SEOPages" className="relative h-8 w-auto drop-shadow-[0_0_6px_rgba(154,143,234,0.4)]" />
         </div>
-        <span className="text-lg italic text-[#111827] tracking-wide" style={{ fontFamily: '"Playfair Display", Georgia, serif' }}>
-          seopages<span className="text-[#9A8FEA]">.</span>pro
+        <span className="text-lg font-semibold tracking-tight text-[#111827]">
+          seopages<span className="text-[#9A8FEA]">.</span><span className="text-[#6B7280]">pro</span>
         </span>
       </Link>
 

@@ -2,10 +2,12 @@
 
 import { useEffect } from 'react';
 import { setupGlobalFetchInterceptor } from '@/lib/api-client';
+import { ToastProvider } from '@/components/Toast';
 
 /**
  * Global providers component that sets up:
  * - 401 fetch interceptor (auto logout on unauthorized)
+ * - Toast notifications
  * - Other global client-side setup
  */
 export default function GlobalProviders({ children }: { children: React.ReactNode }) {
@@ -14,5 +16,5 @@ export default function GlobalProviders({ children }: { children: React.ReactNod
     setupGlobalFetchInterceptor();
   }, []);
 
-  return <>{children}</>;
+  return <ToastProvider>{children}</ToastProvider>;
 }

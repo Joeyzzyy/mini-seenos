@@ -10,17 +10,28 @@ interface PricingModalProps {
   currentCredits: number;
   currentTier: string;
   onPaymentSuccess: (newCredits: number, newTier: string) => void;
-  initialPlan?: 'starter' | 'standard' | 'pro' | null;
+  initialPlan?: 'single' | 'starter' | 'standard' | 'pro' | null;
 }
 
 const PLANS = [
   {
+    id: 'single',
+    name: 'Single Page',
+    price: 0.5,
+    credits: 1,
+    perPage: 0.5,
+    features: [
+      { text: '1', highlight: true, suffix: ' Alternative Page' },
+      { text: 'AI-Powered Content' },
+      { text: 'Production-Ready HTML' },
+    ],
+  },
+  {
     id: 'starter',
     name: 'Starter',
-    price: 1,
-    originalPrice: 9.9,
+    price: 4.9,
     credits: 10,
-    limitedTime: true,
+    perPage: 0.49,
     features: [
       { text: '10', highlight: true, suffix: ' Alternative Pages' },
       { text: 'AI-Powered Content' },
@@ -31,8 +42,9 @@ const PLANS = [
   {
     id: 'standard',
     name: 'Standard',
-    price: 19.9,
+    price: 9.9,
     credits: 20,
+    perPage: 0.495,
     popular: true,
     features: [
       { text: '20', highlight: true, suffix: ' Alternative Pages' },
@@ -45,15 +57,16 @@ const PLANS = [
   {
     id: 'pro',
     name: 'Pro',
-    price: 39.9,
+    price: 19.9,
     credits: 50,
+    perPage: 0.40,
     features: [
       { text: '50', highlight: true, suffix: ' Alternative Pages' },
       { text: 'AI-Powered Content' },
       { text: 'Production-Ready HTML' },
       { text: 'SEO Optimized' },
       { text: 'Priority Support' },
-      { text: 'Perfect for Crowded Markets' },
+      { text: 'Best for Crowded Markets' },
     ],
   },
 ];
@@ -246,28 +259,17 @@ function ModalContent({
                 <div>
                   <h3 className="text-lg font-semibold text-white">{currentPlan.name} Plan</h3>
                   <p className="text-gray-400 text-sm">{currentPlan.credits} page credits</p>
-                  {'limitedTime' in currentPlan && currentPlan.limitedTime && (
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-full text-[10px] font-semibold text-red-400 mt-1 animate-pulse">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      LIMITED TIME
+                  {'perPage' in currentPlan && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      ${currentPlan.perPage} per page
                     </div>
                   )}
                 </div>
                 <div className="text-right">
                   <div className="flex items-baseline gap-2 justify-end">
                     <div className="text-3xl font-bold text-white">${currentPlan.price}</div>
-                    {'originalPrice' in currentPlan && currentPlan.originalPrice && (
-                      <div className="text-lg text-gray-500 line-through">${currentPlan.originalPrice}</div>
-                    )}
                   </div>
                   <div className="text-gray-500 text-xs">one-time</div>
-                  {'originalPrice' in currentPlan && currentPlan.originalPrice && (
-                    <div className="text-xs font-semibold text-green-400">
-                      Save {Math.round((1 - currentPlan.price / currentPlan.originalPrice) * 100)}%
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -366,14 +368,14 @@ function ModalContent({
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8 items-stretch">
             {PLANS.map((plan) => (
               <div
                 key={plan.id}
                 onClick={() => handlePlanSelect(plan.id)}
-                className={`relative p-6 sm:p-8 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-300 flex flex-col h-full ${
+                className={`relative p-4 sm:p-5 rounded-xl cursor-pointer transition-all duration-300 flex flex-col h-full ${
                   plan.popular
-                    ? 'bg-gradient-to-br from-[#9A8FEA]/20 via-[#65B4FF]/10 to-transparent border-[#9A8FEA]/30 sm:scale-105 order-first sm:order-none'
+                    ? 'bg-gradient-to-br from-[#9A8FEA]/20 via-[#65B4FF]/10 to-transparent border-[#9A8FEA]/30 order-first sm:order-none'
                     : 'bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10'
                 } ${
                   selectedPlan === plan.id
@@ -382,49 +384,38 @@ function ModalContent({
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-1 bg-gradient-to-r from-[#FFAF40] via-[#9A8FEA] to-[#65B4FF] rounded-full text-[10px] sm:text-xs font-semibold text-white whitespace-nowrap">
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gradient-to-r from-[#FFAF40] via-[#9A8FEA] to-[#65B4FF] rounded-full text-[9px] font-semibold text-white whitespace-nowrap">
                     MOST POPULAR
                   </div>
                 )}
 
                 {selectedPlan === plan.id && (
-                  <div className="absolute top-4 right-4">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#9A8FEA] to-[#65B4FF] flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="absolute top-3 right-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-[#9A8FEA] to-[#65B4FF] flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                   </div>
                 )}
 
-                <div className={`mb-4 sm:mb-6 ${plan.popular ? 'mt-2 sm:mt-0' : ''}`}>
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-300 mb-2">{plan.name}</h3>
-                  {'limitedTime' in plan && plan.limitedTime && (
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-full text-xs font-semibold text-red-400 mb-2 animate-pulse">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      LIMITED TIME OFFER
-                    </div>
-                  )}
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl sm:text-5xl font-bold text-white">${plan.price}</span>
-                    {'originalPrice' in plan && plan.originalPrice && (
-                      <span className="text-xl text-gray-500 line-through">${plan.originalPrice}</span>
-                    )}
-                    <span className="text-gray-500 text-sm">one-time</span>
+                <div className={`mb-3 sm:mb-4 ${plan.popular ? 'mt-2 sm:mt-0' : ''}`}>
+                  <h3 className="text-sm font-semibold text-gray-300 mb-1">{plan.name}</h3>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl sm:text-3xl font-bold text-white">${plan.price}</span>
+                    <span className="text-gray-500 text-xs">{plan.credits} page{plan.credits > 1 ? 's' : ''}</span>
                   </div>
-                  {'originalPrice' in plan && plan.originalPrice && (
-                    <div className="mt-1 text-sm font-semibold text-green-400">
-                      Save {Math.round((1 - plan.price / plan.originalPrice) * 100)}% today!
+                  {'perPage' in plan && (
+                    <div className="mt-0.5 text-[10px] text-gray-500">
+                      ${plan.perPage} per page
                     </div>
                   )}
                 </div>
 
-                <ul className="space-y-2 sm:space-y-3 flex-grow">
+                <ul className="space-y-1.5 flex-grow">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-3 text-gray-300">
-                      <svg className="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <li key={idx} className="flex items-center gap-1.5 text-gray-300 text-xs">
+                      <svg className="w-3 h-3 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       <span>
@@ -443,7 +434,7 @@ function ModalContent({
                     e.stopPropagation();
                     handlePlanSelect(plan.id);
                   }}
-                  className={`w-full py-2.5 sm:py-3 font-medium rounded-lg sm:rounded-xl transition-all text-sm mt-6 sm:mt-8 ${
+                  className={`w-full py-2 font-medium rounded-lg transition-all text-xs mt-4 ${
                     plan.popular
                       ? 'bg-gradient-to-r from-[#FFAF40] via-[#9A8FEA] to-[#65B4FF] text-white font-semibold hover:opacity-90'
                       : selectedPlan === plan.id
