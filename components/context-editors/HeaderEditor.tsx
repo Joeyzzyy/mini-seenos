@@ -356,17 +356,23 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
             <label className="block text-[10px] font-medium text-[#9CA3AF] uppercase tracking-wider mb-0.5">CTA Color</label>
             <div className="flex gap-1.5 items-center">
               <input
+                type="color"
+                value={headerConfig.ctaButton.color?.startsWith('#') ? headerConfig.ctaButton.color : '#111827'}
+                onChange={(e) => setHeaderConfig({
+                  ...headerConfig,
+                  ctaButton: { ...headerConfig.ctaButton, color: e.target.value }
+                })}
+                className="w-8 h-8 border border-[#E5E5E5] rounded cursor-pointer flex-shrink-0"
+              />
+              <input
                 type="text"
                 value={headerConfig.ctaButton.color}
                 onChange={(e) => setHeaderConfig({
                   ...headerConfig,
                   ctaButton: { ...headerConfig.ctaButton, color: e.target.value }
                 })}
+                placeholder="#111827"
                 className="flex-1 px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-[10px] font-mono bg-white text-[#111827]"
-              />
-              <div 
-                className="w-6 h-6 rounded border border-[#E5E5E5] flex-shrink-0"
-                style={{ background: headerConfig.ctaButton.color }}
               />
             </div>
           </div>
