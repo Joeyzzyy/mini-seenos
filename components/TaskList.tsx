@@ -411,13 +411,18 @@ export default function TaskList({
             {(() => {
               const competitorsContext = siteContexts.find(ctx => ctx.type === 'competitors');
               let competitorCount = 0;
+              let needsReviewCount = 0;
               let competitorNames: string[] = [];
+              let competitorsFailed: boolean[] = [];
               if (competitorsContext?.content) {
                 try {
                   const parsed = JSON.parse(competitorsContext.content);
                   if (Array.isArray(parsed)) {
                     competitorCount = parsed.length;
-                    competitorNames = parsed.slice(0, 3).map((c: any) => c.name || c.url || 'Unknown');
+                    needsReviewCount = parsed.filter((c: any) => c.logo_fetch_failed === true).length;
+                    const first3 = parsed.slice(0, 3);
+                    competitorNames = first3.map((c: any) => c.name || c.url || 'Unknown');
+                    competitorsFailed = first3.map((c: any) => c.logo_fetch_failed === true);
                   }
                 } catch {}
               }
@@ -427,12 +432,20 @@ export default function TaskList({
                     <div className="space-y-0.5">
                       {competitorNames.map((name, idx) => (
                         <div key={idx} className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                          <span className="truncate">{name}</span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${competitorsFailed[idx] ? 'bg-amber-400' : 'bg-green-500'}`} />
+                          <span className={`truncate ${competitorsFailed[idx] ? 'text-amber-600' : ''}`}>{name}</span>
                         </div>
                       ))}
                       {competitorCount > 3 && (
                         <div className="text-[10px] text-[#9CA3AF] ml-3.5">+{competitorCount - 3} more</div>
+                      )}
+                      {needsReviewCount > 0 && (
+                        <div className="flex items-center gap-1.5 mt-1.5 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-[10px] text-amber-700">
+                          <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          <span>{needsReviewCount} need{needsReviewCount !== 1 ? '' : 's'} review</span>
+                        </div>
                       )}
                     </div>
                   ) : (

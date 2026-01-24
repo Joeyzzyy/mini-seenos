@@ -329,18 +329,32 @@ export default function ConversationSidebar({
                 {(() => {
                   const competitorsContext = siteContexts.find(ctx => ctx.type === 'competitors');
                   let competitorCount = 0;
+                  let needsReviewCount = 0;
                   if (competitorsContext?.content) {
                     try {
                       const parsed = JSON.parse(competitorsContext.content);
-                      if (Array.isArray(parsed)) competitorCount = parsed.length;
+                      if (Array.isArray(parsed)) {
+                        competitorCount = parsed.length;
+                        needsReviewCount = parsed.filter((c: any) => c.logo_fetch_failed === true).length;
+                      }
                     } catch {}
                   }
                   return (
-                    <div className="flex items-center gap-2 px-2 py-1 text-[11px] text-[#6B7280]">
-                      <span className={`w-1.5 h-1.5 rounded-full ${competitorCount > 0 ? 'bg-green-500' : 'bg-gray-300'}`} />
-                      <span className="flex-1">
-                        {competitorCount > 0 ? `${competitorCount} competitor${competitorCount > 1 ? 's' : ''} configured` : 'No competitors yet'}
-                      </span>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 px-2 py-1 text-[11px] text-[#6B7280]">
+                        <span className={`w-1.5 h-1.5 rounded-full ${competitorCount > 0 ? (needsReviewCount > 0 ? 'bg-amber-400' : 'bg-green-500') : 'bg-gray-300'}`} />
+                        <span className="flex-1">
+                          {competitorCount > 0 ? `${competitorCount} competitor${competitorCount > 1 ? 's' : ''} configured` : 'No competitors yet'}
+                        </span>
+                      </div>
+                      {needsReviewCount > 0 && (
+                        <div className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-[10px] text-amber-700">
+                          <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          <span>{needsReviewCount} need{needsReviewCount !== 1 ? '' : 's'} review</span>
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
