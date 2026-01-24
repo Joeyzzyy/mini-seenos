@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { generateHeaderHTML, defaultHeaderConfig } from '@/lib/templates/default-header';
+import { generateHeaderHTML, defaultHeaderConfig, NavItem } from '@/lib/templates/default-header';
 
 // Scaled Preview Component - fits content to container without scrollbars
 function ScaledPreview({ html, contentHeight }: { html: string; contentHeight: number }) {
@@ -54,7 +54,7 @@ function ScaledPreview({ html, contentHeight }: { html: string; contentHeight: n
 interface HeaderConfig {
   siteName: string;
   logo: string;
-  navigation: Array<{ label: string; url: string }>;
+  navigation: NavItem[]; // Now supports children for dropdown menus
   ctaButton: {
     label: string;
     url: string;
@@ -69,6 +69,144 @@ interface HeaderEditorProps {
 }
 
 const DEFAULT_CTA_COLOR = '#111827';
+
+// NavItemEditor - supports both simple links and dropdown menus
+function NavItemEditor({ 
+  item, 
+  onChange, 
+  onDelete,
+  isChild = false 
+}: { 
+  item: NavItem; 
+  onChange: (updated: NavItem) => void; 
+  onDelete: () => void;
+  isChild?: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = item.children && item.children.length > 0;
+
+  return (
+    <div className={`${isChild ? 'ml-4' : ''}`}>
+      <div className={`flex gap-1.5 items-center bg-white p-1 rounded border ${hasChildren ? 'border-blue-200 bg-blue-50/30' : 'border-[#F0F0F0]'}`}>
+        {/* Expand/collapse toggle for items with children */}
+        {hasChildren ? (
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded transition-colors"
+          >
+            <svg 
+              className={`w-3 h-3 transition-transform ${expanded ? 'rotate-90' : ''}`} 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        ) : (
+          <div className="w-5" /> // Spacer for alignment
+        )}
+        
+        <input
+          type="text"
+          value={item.label}
+          onChange={(e) => onChange({ ...item, label: e.target.value })}
+          placeholder="Label"
+          className="w-1/3 px-1.5 py-0.5 border border-transparent hover:border-[#E5E5E5] rounded focus:border-[#9AD6FF] focus:outline-none text-[10px] bg-white text-[#111827] placeholder:text-[#9CA3AF]"
+        />
+        <input
+          type="text"
+          value={item.url}
+          onChange={(e) => onChange({ ...item, url: e.target.value })}
+          placeholder="URL"
+          className="flex-1 px-1.5 py-0.5 border border-transparent hover:border-[#E5E5E5] rounded focus:border-[#9AD6FF] focus:outline-none text-[10px] font-mono bg-white text-[#111827] placeholder:text-[#9CA3AF]"
+        />
+        
+        {/* Show children count badge */}
+        {hasChildren && (
+          <span className="px-1.5 py-0.5 text-[9px] font-medium bg-blue-100 text-blue-600 rounded">
+            {item.children!.length} items
+          </span>
+        )}
+
+        {/* Convert to/from dropdown (only for top-level items) */}
+        {!isChild && (
+          <button
+            type="button"
+            onClick={() => {
+              if (hasChildren) {
+                // Convert to simple link (remove children)
+                const { children, ...rest } = item;
+                onChange(rest);
+              } else {
+                // Convert to dropdown (add children)
+                onChange({ ...item, children: [{ label: 'Sub Item', url: '#' }] });
+              }
+            }}
+            className={`p-1 ${hasChildren ? 'text-blue-500 hover:text-blue-700' : 'text-[#9CA3AF] hover:text-blue-500'} hover:bg-blue-50 rounded transition-colors`}
+            title={hasChildren ? 'Convert to simple link' : 'Convert to dropdown'}
+          >
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={onDelete}
+          className="p-1 text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] rounded transition-colors"
+        >
+          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Render children if expanded */}
+      {hasChildren && expanded && (
+        <div className="mt-1 space-y-1 border-l-2 border-blue-200 pl-1">
+          {item.children!.map((child, childIndex) => (
+            <NavItemEditor
+              key={childIndex}
+              item={child}
+              isChild={true}
+              onChange={(updated) => {
+                const newChildren = [...item.children!];
+                newChildren[childIndex] = updated;
+                onChange({ ...item, children: newChildren });
+              }}
+              onDelete={() => {
+                const newChildren = item.children!.filter((_, i) => i !== childIndex);
+                if (newChildren.length === 0) {
+                  // If no children left, convert to simple link
+                  const { children, ...rest } = item;
+                  onChange(rest);
+                } else {
+                  onChange({ ...item, children: newChildren });
+                }
+              }}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              onChange({ 
+                ...item, 
+                children: [...(item.children || []), { label: 'New Sub Item', url: '#' }] 
+              });
+            }}
+            className="ml-4 w-[calc(100%-1rem)] py-0.5 text-[9px] font-medium text-blue-500 border border-dashed border-blue-200 rounded hover:bg-blue-50 transition-colors"
+          >
+            + Add sub-item
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }: HeaderEditorProps) {
   const [headerConfig, setHeaderConfig] = useState<HeaderConfig>({
@@ -236,62 +374,58 @@ export default function HeaderEditor({ initialConfig, logoUrl, onConfigChange }:
 
         <div className="pt-2 border-t border-[#E5E5E5]">
           <label className="block text-[10px] font-medium text-[#9CA3AF] uppercase tracking-wider mb-1.5">Navigation Links</label>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {headerConfig.navigation.map((link, index) => (
-              <div key={index} className="flex gap-1.5 items-center bg-white p-1 rounded border border-[#F0F0F0]">
-                <input
-                  type="text"
-                  value={link.label}
-                  onChange={(e) => {
-                    const newNav = [...headerConfig.navigation];
-                    newNav[index].label = e.target.value;
-                    setHeaderConfig({ ...headerConfig, navigation: newNav });
-                  }}
-                  placeholder="Label"
-                  className="w-1/3 px-1.5 py-0.5 border border-transparent hover:border-[#E5E5E5] rounded focus:border-[#9AD6FF] focus:outline-none text-[10px] bg-white text-[#111827] placeholder:text-[#9CA3AF]"
-                />
-                <input
-                  type="text"
-                  value={link.url}
-                  onChange={(e) => {
-                    const newNav = [...headerConfig.navigation];
-                    newNav[index].url = e.target.value;
-                    setHeaderConfig({ ...headerConfig, navigation: newNav });
-                  }}
-                  placeholder="URL"
-                  className="flex-1 px-1.5 py-0.5 border border-transparent hover:border-[#E5E5E5] rounded focus:border-[#9AD6FF] focus:outline-none text-[10px] font-mono bg-white text-[#111827] placeholder:text-[#9CA3AF]"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newNav = headerConfig.navigation.filter((_, i) => i !== index);
-                    setHeaderConfig({ ...headerConfig, navigation: newNav });
-                  }}
-                  className="p-1 text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] rounded transition-colors"
-                >
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+              <NavItemEditor
+                key={index}
+                item={link}
+                onChange={(updated) => {
+                  const newNav = [...headerConfig.navigation];
+                  newNav[index] = updated;
+                  setHeaderConfig({ ...headerConfig, navigation: newNav });
+                }}
+                onDelete={() => {
+                  const newNav = headerConfig.navigation.filter((_, i) => i !== index);
+                  setHeaderConfig({ ...headerConfig, navigation: newNav });
+                }}
+              />
             ))}
-            <button
-              type="button"
-              onClick={() => {
-                setHeaderConfig({
-                  ...headerConfig,
-                  navigation: [...headerConfig.navigation, { label: 'New Link', url: '#' }]
-                });
-              }}
-              className="w-full py-1 text-[10px] font-medium text-[#6B7280] border border-dashed border-[#E5E5E5] rounded hover:bg-white transition-colors"
-            >
-              <span className="inline-flex items-center gap-0.5">
-                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                Add Link
-              </span>
-            </button>
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setHeaderConfig({
+                    ...headerConfig,
+                    navigation: [...headerConfig.navigation, { label: 'New Link', url: '#' }]
+                  });
+                }}
+                className="flex-1 py-1 text-[10px] font-medium text-[#6B7280] border border-dashed border-[#E5E5E5] rounded hover:bg-white transition-colors"
+              >
+                <span className="inline-flex items-center gap-0.5">
+                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Add Link
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setHeaderConfig({
+                    ...headerConfig,
+                    navigation: [...headerConfig.navigation, { label: 'Dropdown', url: '#', children: [{ label: 'Sub Item', url: '#' }] }]
+                  });
+                }}
+                className="flex-1 py-1 text-[10px] font-medium text-[#6B7280] border border-dashed border-[#E5E5E5] rounded hover:bg-white transition-colors"
+              >
+                <span className="inline-flex items-center gap-0.5">
+                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M19 9l-7 7-7-7" />
+                  </svg>
+                  Add Dropdown
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
