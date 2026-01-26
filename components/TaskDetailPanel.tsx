@@ -285,9 +285,20 @@ function GeneratedPageViewer({
         setShowThemePicker(false);
       }
     }
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
+  // Handle iframe load to add click listener (closes theme picker when clicking in preview)
+  const handleIframeLoad = () => {
+    const iframe = iframeRef.current;
+    if (iframe?.contentWindow?.document) {
+      iframe.contentWindow.document.addEventListener('mousedown', () => {
+        setShowThemePicker(false);
+      });
+    }
+  };
 
   // Save theme to database (debounced)
   const saveThemeToDatabase = async (h: number, s: number, hexColor: string) => {
@@ -697,6 +708,7 @@ function GeneratedPageViewer({
             className="w-full h-full border-0"
             title={title}
             sandbox="allow-scripts allow-same-origin"
+            onLoad={handleIframeLoad}
           />
         ) : (
           <div className="h-full overflow-auto bg-[#1e1e1e]">
