@@ -196,6 +196,7 @@ All sections are automatically saved to database.
       (generate_cta_section as any).execute({
         content_item_id: contentItemId,
         brand_name: brand.name,
+        brand_primary_color: brand.primary_color || '#0ea5e9',
         headline: cta?.headline || `Ready to try ${brand.name}?`,
         description: cta?.description || brand.tagline || `Get started with ${brand.name} today.`,
         primary_cta: {
