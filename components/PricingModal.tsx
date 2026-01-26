@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { PayPalScriptProvider, PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface PricingModalProps {
   currentTier: string;
   onPaymentSuccess: (newCredits: number, newTier: string) => void;
   initialPlan?: 'single' | 'starter' | 'standard' | 'pro' | null;
+  uncloseable?: boolean; // When true, modal cannot be dismissed without payment
 }
 
 const PLANS = [
@@ -94,6 +96,7 @@ function ModalContent({
   currentTier,
   onPaymentSuccess,
   initialPlan,
+  uncloseable = false,
 }: Omit<PricingModalProps, 'isOpen'>) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(initialPlan || null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -218,20 +221,22 @@ function ModalContent({
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div 
           className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-          onClick={onClose}
+          onClick={uncloseable ? undefined : onClose}
         />
         
         <div className="relative bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md mx-4">
           <div className="border-b border-white/5 px-6 py-4 flex justify-between items-center">
             <h2 className="text-xl font-bold text-white">Complete Purchase</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            {!uncloseable && (
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
 
           <div className="p-6">
@@ -337,25 +342,31 @@ function ModalContent({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div 
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={uncloseable ? undefined : onClose}
       />
       
       <div className="relative bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto mx-4 dark-scrollbar">
         <div className="sticky top-0 bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/5 px-6 py-5 flex justify-between items-center z-10">
           <div>
-            <h2 className="text-2xl font-bold text-white">Upgrade Your Plan</h2>
+            <h2 className="text-2xl font-bold text-white">{uncloseable ? 'Choose a Plan to Continue' : 'Upgrade Your Plan'}</h2>
             <p className="text-gray-400 text-sm mt-1">
-              Current: <span className="text-white font-medium">{currentCredits} credits</span> · {currentTier} plan
+              {uncloseable ? (
+                'Select a plan to start creating alternative pages'
+              ) : (
+                <>Current: <span className="text-white font-medium">{currentCredits} credits</span> · {currentTier} plan</>
+              )}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {!uncloseable && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <div className="p-6">
@@ -499,6 +510,19 @@ function ModalContent({
               </svg>
               Secure payment powered by PayPal · Credits added instantly
             </p>
+            
+            {/* Back to home button for uncloseable mode */}
+            {uncloseable && (
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 mt-4 text-gray-500 hover:text-gray-300 text-sm transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Home
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -514,6 +538,7 @@ export default function PricingModal({
   currentTier,
   onPaymentSuccess,
   initialPlan = null,
+  uncloseable = false,
 }: PricingModalProps) {
   if (!isOpen) return null;
 
@@ -532,6 +557,7 @@ export default function PricingModal({
         currentTier={currentTier}
         onPaymentSuccess={onPaymentSuccess}
         initialPlan={initialPlan}
+        uncloseable={uncloseable}
       />
     </PayPalScriptProvider>
   );

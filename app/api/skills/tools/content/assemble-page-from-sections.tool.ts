@@ -3,6 +3,15 @@ import { z } from 'zod';
 import { getSections, clearSections } from '@/lib/section-storage';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
+
 /**
  * Assemble a complete HTML page from previously saved sections.
  * 
@@ -15,8 +24,6 @@ import { createServerSupabaseAdmin } from '@/lib/supabase-server';
  * - Each section was generated and saved independently
  * - Final assembly is a simple concatenation operation
  */
-
-const supabase = createServerSupabaseAdmin();
 
 export const assemble_page_from_sections = tool({
   description: `Assemble a complete HTML page from previously saved sections.
@@ -125,7 +132,7 @@ Returns the assembled page info (not the full HTML, to save tokens).`,
     console.log(`[assemble_page_from_sections] Page assembled: ${html.length} bytes`);
     
     // 4. Save to database
-    const { error: updateError } = await supabase
+    const { error: updateError } = await getSupabase()
       .from('content_items')
       .update({
         generated_content: html,

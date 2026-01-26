@@ -217,6 +217,11 @@ Current sections provided: ${Object.entries(sections).filter(([_, v]) => v && (A
       --brand-600: hsl(${primaryHsl.h}, ${primaryHsl.s}%, 45%);
       --brand-700: hsl(${primaryHsl.h}, ${primaryHsl.s}%, 38%);
       
+      /* Hex-based brand color variables (for theme color picker compatibility) */
+      --brand-color: ${primaryColor};
+      --brand-color-dark: hsl(${primaryHsl.h}, ${primaryHsl.s}%, 45%);
+      --brand-color-light: hsl(${primaryHsl.h}, ${primaryHsl.s}%, 97%);
+      
       /* Secondary Brand Color - ONLY for accent icons */
       --secondary-500: hsl(${secondaryHsl.h}, ${secondaryHsl.s}%, 50%);
       --secondary-600: hsl(${secondaryHsl.h}, ${secondaryHsl.s}%, 45%);

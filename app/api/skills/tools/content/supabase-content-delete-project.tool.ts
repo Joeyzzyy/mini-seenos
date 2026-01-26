@@ -1,6 +1,15 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase';
+import { createServerSupabaseAdmin } from '@/lib/supabase-server';
+
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 export const delete_content_project = tool({
   description: 'Permanently delete a topic cluster (project). By default, this will also delete all items within the cluster.',
@@ -12,10 +21,10 @@ export const delete_content_project = tool({
     try {
       if (cascade) {
         // Delete items first
-        await supabase.from('content_items').delete().eq('project_id', id);
+        await getSupabase().from('content_items').delete().eq('project_id', id);
       }
       
-      const { error } = await supabase
+      const { error } = await getSupabase()
         .from('content_projects')
         .delete()
         .eq('id', id);

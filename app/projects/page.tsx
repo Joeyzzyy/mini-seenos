@@ -23,7 +23,7 @@ export default function ProjectsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingProject, setDeletingProject] = useState<SEOProject | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [userCredits, setUserCredits] = useState<number>(1);
+  const [userCredits, setUserCredits] = useState<number>(0);
   const [subscriptionTier, setSubscriptionTier] = useState<string>('free');
   const [showPricingModal, setShowPricingModal] = useState(false);
   const hasShownPricingModal = useRef(false);
@@ -41,7 +41,7 @@ export default function ProjectsPage() {
       const response = await fetch('/api/user/credits', { headers });
       if (response.ok) {
         const data = await response.json();
-        setUserCredits(data.credits ?? 1);
+        setUserCredits(data.credits ?? 0);
         setSubscriptionTier(data.subscription_tier ?? 'free');
         
         // Auto-show pricing modal for free tier users (only once per session)
@@ -158,7 +158,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex flex-col font-sans">
       {user && (
         <TopBar 
           user={user}
@@ -169,117 +169,131 @@ export default function ProjectsPage() {
         />
       )}
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-8 py-12">
-        <div className="flex items-center justify-between mb-12">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Your Projects</h1>
-            <p className="text-gray-500 mt-1">Select or add a project to start creating alternative pages</p>
+      <main className="flex-1 flex items-start justify-center px-4 py-16">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Your Projects</h1>
+            <p className="text-gray-500 mt-2 text-sm">Select a project or create a new one</p>
           </div>
-          <button 
-            onClick={() => setIsAdding(true)}
-            className="px-4 py-2 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Project
-          </button>
-        </div>
 
-        {isAdding && (
-          <div className="mb-12 bg-white border border-gray-100 rounded-[32px] p-8 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Add New Project</h3>
-            <form onSubmit={handleAddProject} className="flex gap-4">
-              <input
-                type="text"
-                placeholder="e.g. example.com"
-                value={newDomain}
-                onChange={(e) => setNewDomain(e.target.value)}
-                className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-gray-300 transition-all"
-                autoFocus
-              />
-              <button
-                type="submit"
-                disabled={isSubmitting || !newDomain.trim()}
-                className="px-6 py-3 bg-black text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {isSubmitting ? 'Adding...' : 'Add Project'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAdding(false);
-                  setNewDomain('');
-                }}
-                className="px-6 py-3 bg-gray-100 text-gray-600 rounded-2xl text-sm font-bold hover:bg-gray-200 transition-all cursor-pointer"
-              >
-                Cancel
-              </button>
-            </form>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
-            <p className="text-sm text-gray-500 animate-pulse">Loading your projects...</p>
-          </div>
-        ) : projects.length === 0 && !isAdding ? (
-          <div className="bg-white border-2 border-dashed border-gray-200 rounded-[32px] p-16 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">No projects found</h3>
-            <p className="text-gray-500 max-w-xs mx-auto mb-8 text-sm">
-              Enter your domain to start creating alternative pages for your competitors.
-            </p>
-            <button 
-              onClick={() => setIsAdding(true)}
-              className="px-6 py-3 bg-black text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
-              Add My First Project
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {projects.map((project) => (
-              <Link 
-                key={project.id}
-                href={`/project/${project.id}`}
-                className="group px-6 py-5 bg-white border border-gray-100 rounded-2xl hover:border-gray-200 hover:shadow-md transition-all duration-300 flex items-center justify-between cursor-pointer"
-              >
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold text-gray-900 truncate">
-                    {project.domain}
-                  </h3>
-                </div>
-
-                <div className="flex items-center gap-2 ml-4">
+          {/* Add Project Form */}
+          {isAdding && (
+            <div className="mb-6 bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <form onSubmit={handleAddProject} className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Enter your domain (e.g. example.com)"
+                  value={newDomain}
+                  onChange={(e) => setNewDomain(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-gray-300 focus:bg-white transition-all"
+                  autoFocus
+                />
+                <div className="flex gap-2">
                   <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setDeletingProject(project);
-                    }}
-                    className="p-1.5 text-gray-300 hover:text-red-500 rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                    title="Delete"
+                    type="submit"
+                    disabled={isSubmitting || !newDomain.trim()}
+                    className="flex-1 px-4 py-2.5 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h14" />
-                    </svg>
+                    {isSubmitting ? 'Creating...' : 'Create Project'}
                   </button>
-                  <span className="text-gray-300 group-hover:text-gray-400 transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAdding(false);
+                      setNewDomain('');
+                    }}
+                    className="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
                 </div>
-              </Link>
-            ))}
-          </div>
-        )}
+              </form>
+            </div>
+          )}
+
+          {/* Content Area */}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <div className="w-8 h-8 border-3 border-gray-200 border-t-black rounded-full animate-spin" />
+              <p className="text-sm text-gray-400">Loading projects...</p>
+            </div>
+          ) : projects.length === 0 && !isAdding ? (
+            <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center shadow-sm">
+              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-gray-900 mb-1">No projects yet</h3>
+              <p className="text-gray-500 text-sm mb-6">
+                Create your first project to get started
+              </p>
+              <button 
+                onClick={() => setIsAdding(true)}
+                className="w-full px-4 py-3 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-all cursor-pointer"
+              >
+                Create Your First Project
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {/* Project List */}
+              {projects.map((project, index) => (
+                <Link 
+                  key={project.id}
+                  href={`/project/${project.id}`}
+                  className="group flex items-center gap-4 px-4 py-3.5 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all duration-200 cursor-pointer"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex-shrink-0 w-9 h-9 bg-gradient-to-br from-gray-100 to-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+                    <span className="text-sm font-bold text-gray-600">
+                      {project.domain.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-gray-900 truncate">
+                      {project.domain}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDeletingProject(project);
+                      }}
+                      className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                      title="Delete"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h14" />
+                      </svg>
+                    </button>
+                    <span className="text-gray-300 group-hover:text-gray-400 transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </div>
+                </Link>
+              ))}
+
+              {/* Add Project Button */}
+              {!isAdding && (
+                <button 
+                  onClick={() => setIsAdding(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:bg-gray-50/50 transition-all cursor-pointer"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add New Project
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </main>
 
       <DomainsModal isOpen={isDomainsOpen} onClose={() => setIsDomainsOpen(false)} />
@@ -297,13 +311,14 @@ export default function ProjectsPage() {
         />
       )}
 
-      {/* Pricing Modal - Auto shows for free tier users */}
+      {/* Pricing Modal - Auto shows for free tier users, uncloseable until they pay */}
       <PricingModal
         isOpen={showPricingModal}
         onClose={() => setShowPricingModal(false)}
         currentCredits={userCredits}
         currentTier={subscriptionTier}
         onPaymentSuccess={handlePaymentSuccess}
+        uncloseable={subscriptionTier === 'free'}
       />
     </div>
   );

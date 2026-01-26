@@ -152,10 +152,12 @@ REQUIRED SECTIONS (assemble will FAIL without these):
    - Pro tip for decision making
 
 8. generate_faq_section ⭐ REQUIRED
+   - content_item_id: THE CONTENT ITEM UUID (REQUIRED for database backup!)
    - 5-8 common questions with detailed answers
    - Schema.org FAQPage markup
 
 9. generate_cta_section ⭐ REQUIRED
+   - content_item_id: THE CONTENT ITEM UUID (REQUIRED for database backup!)
    - Compelling headline
    - Trust badges
    - Primary and secondary CTAs
@@ -177,7 +179,12 @@ If ANY of these are missing, GO BACK and generate them first!
 Call 'assemble_alternative_page' with:
 - item_id from content item
 - page_title and SEO metadata
-- brand name and colors
+- brand: { name, logo_url, primary_color, secondary_color } 
+  ⚠️ CRITICAL: Use EXACT colors from resolve_page_logos or logo_details:
+  - brand.primary_color: Use the EXACT value from logo_details.primary_color (e.g., "#FF5733")
+  - brand.secondary_color: Use the EXACT value from logo_details.secondary_color
+  - DO NOT use default values like "#0ea5e9" - always use the user's configured colors
+  - These colors control ALL buttons (btn-primary) and icons throughout the page
 - All generated section HTML
 
 **STEP 4: SITE INTEGRATION** ⚠️ MANDATORY ⚠️

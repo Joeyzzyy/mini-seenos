@@ -15,7 +15,7 @@ interface TopBarProps {
   onCreditsUpdate?: (newCredits: number, newTier: string) => void;
 }
 
-export default function TopBar({ onDomainsClick, user: propUser, credits = 1, subscriptionTier = 'free', onCreditsUpdate }: TopBarProps) {
+export default function TopBar({ onDomainsClick, user: propUser, credits = 0, subscriptionTier = 'free', onCreditsUpdate }: TopBarProps) {
   const [user, setUser] = useState<User | null>(propUser || null);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);

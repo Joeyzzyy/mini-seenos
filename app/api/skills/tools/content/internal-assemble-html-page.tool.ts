@@ -2,8 +2,14 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
-// Initialize Supabase client with proxy support for server-side operations
-const supabase = createServerSupabaseAdmin();
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 // Simple Markdown to HTML converter
 function markdownToHtml(markdown: string): string {
@@ -482,7 +488,7 @@ ${bodyContent}
 </html>`;
 
     console.log(`[assemble_html_page] Saving intermediate HTML to database for item: ${item_id}`);
-    await supabase.from('content_items').update({ generated_content: html, status: 'in_production', updated_at: new Date().toISOString() }).eq('id', item_id);
+    await getSupabase().from('content_items').update({ generated_content: html, status: 'in_production', updated_at: new Date().toISOString() }).eq('id', item_id);
 
     return {
       success: true,

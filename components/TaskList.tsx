@@ -61,7 +61,7 @@ export default function TaskList({
   isDiscoveringCompetitors = false,
   isPlanningPages = false,
   contextTaskStatus,
-  credits = 1,
+  credits = 0,
   projectDomain,
 }: TaskListProps) {
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});

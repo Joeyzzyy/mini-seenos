@@ -1,6 +1,15 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase';
+import { createServerSupabaseAdmin } from '@/lib/supabase-server';
+
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 export const delete_content_item = tool({
   description: 'Permanently delete a content item from the library. REQUIRES USER CONFIRMATION.',
@@ -9,7 +18,7 @@ export const delete_content_item = tool({
   }),
   execute: async ({ id }) => {
     try {
-      const { error } = await supabase
+      const { error } = await getSupabase()
         .from('content_items')
         .delete()
         .eq('id', id);

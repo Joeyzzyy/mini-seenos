@@ -5,13 +5,16 @@
  * This enables incremental page building to avoid token limits.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseAdmin } from './supabase-server';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-// Use service role for server-side operations
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Lazy-initialize supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 export interface SectionData {
   content_item_id: string;
@@ -38,7 +41,7 @@ export interface SavedSection {
  */
 export async function saveSection(data: SectionData): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('content_item_sections')
       .upsert({
         content_item_id: data.content_item_id,
@@ -71,7 +74,7 @@ export async function saveSection(data: SectionData): Promise<{ success: boolean
  */
 export async function getSections(contentItemId: string): Promise<SavedSection[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('content_item_sections')
       .select('*')
       .eq('content_item_id', contentItemId)
@@ -95,7 +98,7 @@ export async function getSections(contentItemId: string): Promise<SavedSection[]
  */
 export async function getSection(contentItemId: string, sectionId: string): Promise<SavedSection | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('content_item_sections')
       .select('*')
       .eq('content_item_id', contentItemId)
@@ -123,7 +126,7 @@ export async function getSection(contentItemId: string, sectionId: string): Prom
  */
 export async function clearSections(contentItemId: string): Promise<{ success: boolean; deleted: number }> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('content_item_sections')
       .delete()
       .eq('content_item_id', contentItemId)
@@ -148,7 +151,7 @@ export async function clearSections(contentItemId: string): Promise<{ success: b
  */
 export async function getSectionCount(contentItemId: string): Promise<number> {
   try {
-    const { count, error } = await supabase
+    const { count, error } = await getSupabase()
       .from('content_item_sections')
       .select('id', { count: 'exact', head: true })
       .eq('content_item_id', contentItemId);
@@ -239,7 +242,7 @@ export async function saveProductResearch(
  */
 export async function getProductResearchList(contentItemId: string): Promise<ProductResearchData[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('content_item_sections')
       .select('*')
       .eq('content_item_id', contentItemId)

@@ -2,7 +2,14 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
-const supabase = createServerSupabaseAdmin();
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 export const get_content_item_detail = tool({
   description: 'Fetch the full details of a planned content item, including its outline and SEO data. You can use either the UUID item_id or the slug.',
@@ -18,7 +25,7 @@ export const get_content_item_detail = tool({
       
       if (isUuid) {
         // Query by UUID
-        const result = await supabase
+        const result = await getSupabase()
           .from('content_items')
           .select('*')
           .eq('id', item_id)
@@ -27,7 +34,7 @@ export const get_content_item_detail = tool({
         error = result.error;
       } else {
         // Query by slug (case-insensitive)
-        const result = await supabase
+        const result = await getSupabase()
           .from('content_items')
           .select('*')
           .ilike('slug', item_id)

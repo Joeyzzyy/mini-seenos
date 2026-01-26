@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   email TEXT,
   full_name TEXT,
   avatar_url TEXT,
-  credits INTEGER NOT NULL DEFAULT 1,
+  credits INTEGER NOT NULL DEFAULT 0,
   subscription_tier TEXT DEFAULT 'free' CHECK (subscription_tier IN ('free', 'starter', 'standard', 'pro')),
   subscription_status TEXT DEFAULT 'inactive' CHECK (subscription_status IN ('active', 'inactive', 'cancelled', 'past_due')),
   subscription_id TEXT,
@@ -42,7 +42,7 @@ BEGIN
     NEW.email,
     NEW.raw_user_meta_data->>'full_name',
     NEW.raw_user_meta_data->>'avatar_url',
-    1 -- Default 1 credit for new users
+    0 -- Default 0 credits for new users (must purchase to use)
   );
   RETURN NEW;
 END;
@@ -70,7 +70,7 @@ CREATE TRIGGER update_user_profiles_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Credit tier configurations
--- Free tier: 1 credit (1 page)
+-- Free tier: 0 credits (must purchase to use)
 -- Starter ($9.9): 10 credits (10 pages)
 -- Standard ($19.9): 20 credits (20 pages)  
 -- Pro ($39.9): 50 credits (50 pages)
@@ -140,7 +140,7 @@ SELECT
   email,
   raw_user_meta_data->>'full_name',
   raw_user_meta_data->>'avatar_url',
-  1
+  0
 FROM auth.users
 WHERE NOT EXISTS (
   SELECT 1 FROM public.user_profiles WHERE user_profiles.id = users.id
@@ -149,7 +149,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Comments for documentation
 COMMENT ON TABLE public.user_profiles IS 'User profiles with credits and subscription information';
-COMMENT ON COLUMN public.user_profiles.credits IS 'Number of page generation credits remaining. Default 1 for free tier.';
+COMMENT ON COLUMN public.user_profiles.credits IS 'Number of page generation credits remaining. Default 0 for free tier.';
 COMMENT ON COLUMN public.user_profiles.subscription_tier IS 'Current subscription tier: free, starter, standard, or pro';
 COMMENT ON FUNCTION public.add_user_credits IS 'Add credits to a user account after purchase';
 COMMENT ON FUNCTION public.consume_credit IS 'Consume one credit when generating a page. Returns FALSE if no credits available.';

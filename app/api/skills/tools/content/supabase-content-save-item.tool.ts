@@ -2,7 +2,14 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
-const supabase = createServerSupabaseAdmin();
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 export const save_content_item = tool({
   description: 'Save a SINGLE planned content item. WARNING: If you are saving multiple items (e.g. a full topic cluster), DO NOT use this tool repeatedly. Use "save_content_items_batch" instead to prevent duplicate projects.',
@@ -109,7 +116,7 @@ export const save_content_item = tool({
         }
       }
       const slug = params.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-      const { data, error } = await supabase.from('content_items').insert({
+      const { data, error } = await getSupabase().from('content_items').insert({
         user_id: params.user_id, 
         seo_project_id: seoProjectId, // Direct link to SEO project (domain)
         project_id, // Topic Cluster ID 

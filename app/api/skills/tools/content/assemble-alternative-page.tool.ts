@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
+import { getSections } from '@/lib/section-storage';
 
 /**
  * Assemble a complete alternative page from individual section HTML snippets.
@@ -100,30 +101,90 @@ Workflow:
       }
     }
     
-    // BLOCK execution if sections contain invalid placeholder content
+    // Try to recover invalid sections from database (fallback for truncated AI output)
     if (invalidSections.length > 0) {
-      const errorMsg = `INVALID SECTION CONTENT DETECTED: ${invalidSections.join(', ')}
+      console.log(`[assemble_alternative_page] Invalid sections detected: ${invalidSections.join(', ')}. Attempting to recover from database...`);
+      
+      try {
+        // Map section names to section_type values used in database
+        const sectionTypeMap: Record<string, string> = {
+          'hero': 'hero',
+          'toc': 'toc',
+          'verdict': 'verdict',
+          'comparison': 'comparison_table',
+          'pricing': 'pricing',
+          'screenshots': 'screenshots',
+          'pros_cons': 'pros_cons',
+          'use_cases': 'use_cases',
+          'faq': 'faq',
+          'cta': 'cta',
+        };
+        
+        // Fetch saved sections from database
+        const savedSections = await getSections(item_id);
+        console.log(`[assemble_alternative_page] Found ${savedSections.length} saved sections in database`);
+        
+        let recoveredCount = 0;
+        for (const sectionName of invalidSections) {
+          const sectionType = sectionTypeMap[sectionName] || sectionName;
+          const savedSection = savedSections.find(s => s.section_type === sectionType || s.section_id === sectionName);
+          
+          if (savedSection && savedSection.section_html && isValidSectionContent(savedSection.section_html)) {
+            console.log(`[assemble_alternative_page] ✅ Recovered ${sectionName} from database (${savedSection.section_html.length} chars)`);
+            (sections as any)[sectionName] = savedSection.section_html;
+            recoveredCount++;
+          } else {
+            console.log(`[assemble_alternative_page] ⚠️ Could not recover ${sectionName} from database`);
+          }
+        }
+        
+        // Re-validate after recovery
+        const stillInvalid = invalidSections.filter(s => !isValidSectionContent((sections as any)[s]));
+        
+        if (stillInvalid.length > 0) {
+          const errorMsg = `INVALID SECTION CONTENT DETECTED: ${stillInvalid.join(', ')}
 
 These sections contain placeholder text ("...", "[content]", etc.) instead of actual HTML content.
-This is NOT acceptable - you MUST provide the FULL HTML content for each section.
+Attempted to recover from database but failed.
 
 CRITICAL: DO NOT use "..." or any placeholder text. Generate the COMPLETE HTML for each section.
 
-Go back and call the section generator tools again to get the FULL HTML content:
-${invalidSections.map(s => `- generate_${s === 'cta' ? 'cta_section' : s === 'comparison' ? 'comparison_table' : s + '_section'}`).join('\n')}
+Go back and call the section generator tools again WITH content_item_id parameter to save to database:
+${stillInvalid.map(s => `- generate_${s === 'cta' ? 'cta_section' : s === 'comparison' ? 'comparison_table' : s + '_section'}(content_item_id: "${item_id}", ...)`).join('\n')}
 
-Then call this tool again with the complete HTML content for each section.`;
-      
-      console.error(`[assemble_alternative_page] ERROR: ${errorMsg}`);
-      console.error(`[assemble_alternative_page] Invalid sections content preview:`, 
-        invalidSections.map(s => `${s}: "${(sections as any)[s]?.substring(0, 100)}..."`).join('\n'));
-      
-      return {
-        success: false,
-        error: errorMsg,
-        invalid_sections: invalidSections,
-        sections_provided: Object.entries(sections).filter(([_, v]) => v).map(([k]) => k),
-      };
+Then call this tool again.`;
+          
+          console.error(`[assemble_alternative_page] ERROR: ${errorMsg}`);
+          
+          return {
+            success: false,
+            error: errorMsg,
+            invalid_sections: stillInvalid,
+            recovered_sections: invalidSections.filter(s => !stillInvalid.includes(s)),
+            sections_provided: Object.entries(sections).filter(([_, v]) => v).map(([k]) => k),
+          };
+        } else {
+          console.log(`[assemble_alternative_page] ✅ Successfully recovered all ${recoveredCount} invalid sections from database`);
+          // Clear invalidSections since we recovered them
+          invalidSections.length = 0;
+        }
+      } catch (dbError: any) {
+        console.error(`[assemble_alternative_page] Database recovery failed:`, dbError);
+        // Continue with original error
+        const errorMsg = `INVALID SECTION CONTENT DETECTED: ${invalidSections.join(', ')}
+
+These sections contain placeholder text ("...", "[content]", etc.) instead of actual HTML content.
+Database recovery also failed: ${dbError.message}
+
+Go back and call the section generator tools again to get the FULL HTML content.`;
+        
+        return {
+          success: false,
+          error: errorMsg,
+          invalid_sections: invalidSections,
+          sections_provided: Object.entries(sections).filter(([_, v]) => v).map(([k]) => k),
+        };
+      }
     }
     
     // BLOCK execution if required sections are missing
@@ -231,6 +292,11 @@ DO NOT skip sections. Go back and generate the missing sections, then call this 
       --brand-500: hsl(${primaryHsl.h}, ${primaryHsl.s}%, 50%);
       --brand-600: hsl(${primaryHsl.h}, ${primaryHsl.s}%, 45%);
       --brand-700: hsl(${primaryHsl.h}, ${primaryHsl.s}%, 38%);
+      
+      /* Hex-based brand color variables (for theme color picker compatibility) */
+      --brand-color: ${primaryColor};
+      --brand-color-dark: hsl(${primaryHsl.h}, ${primaryHsl.s}%, 45%);
+      --brand-color-light: hsl(${primaryHsl.h}, ${primaryHsl.s}%, 97%);
       
       /* Secondary Brand Color - ONLY for accent icons */
       --secondary-500: hsl(${secondaryHsl.h}, ${secondaryHsl.s}%, 50%);

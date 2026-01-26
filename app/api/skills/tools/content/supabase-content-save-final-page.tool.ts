@@ -2,8 +2,14 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
-// Use a server-side client with SERVICE_ROLE_KEY and proxy support
-const supabase = createServerSupabaseAdmin();
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 export const save_final_page = tool({
   description: 'Save the complete generated content to the library and update status to "generated". This also generates a downloadable HTML file.',
@@ -24,7 +30,7 @@ export const save_final_page = tool({
         const retryDelay = 800; // ms
         
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
-          const { data: item, error: fetchError } = await supabase
+          const { data: item, error: fetchError } = await getSupabase()
             .from('content_items')
             .select('generated_content')
             .eq('id', item_id)
@@ -72,7 +78,7 @@ export const save_final_page = tool({
       console.log(`[save_final_page] 🔍 Content starts with: ${contentToSave.substring(0, 300)}`);
 
       // Update content item and get user info
-      const { data: item, error } = await supabase
+      const { data: item, error } = await getSupabase()
         .from('content_items')
         .update({
           generated_content: contentToSave,
@@ -89,7 +95,7 @@ export const save_final_page = tool({
       // Consume 1 credit for successful page generation
       let creditConsumed = false;
       try {
-        const { data: creditResult, error: creditError } = await supabase
+        const { data: creditResult, error: creditError } = await getSupabase()
           .rpc('consume_credit', { user_id: item.user_id });
         
         if (creditError) {
@@ -107,7 +113,7 @@ export const save_final_page = tool({
       const filename = `page-${item_id}-${timestamp}.html`;
       
       try {
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await getSupabase().storage
           .from('files')
           .upload(`${item.user_id}/${timestamp}-${filename}`, contentToSave, {
             contentType: 'text/html; charset=utf-8',
@@ -116,12 +122,12 @@ export const save_final_page = tool({
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage
+        const { data: urlData } = getSupabase().storage
           .from('files')
           .getPublicUrl(`${item.user_id}/${timestamp}-${filename}`);
 
         // Insert file record (conversation_id is null since content_items no longer links to conversations)
-        await supabase.from('files').insert({
+        await getSupabase().from('files').insert({
           user_id: item.user_id,
           conversation_id: null,
           filename: filename,

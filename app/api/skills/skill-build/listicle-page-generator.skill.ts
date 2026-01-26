@@ -211,6 +211,9 @@ Call 'assemble_page_from_sections' with:
 - content_item_id: THE CONTENT ITEM UUID
 - page_title
 - SEO metadata
+- brand_color: ⚠️ CRITICAL - Use the EXACT value from logo_details.primary_color (e.g., "#FF5733")
+  - This controls ALL buttons (btn-primary) and icons throughout the page
+  - DO NOT use default "#0ea5e9" - always use the user's configured colors from Brand Assets
 This reads all saved sections from database and assembles them.
 
 **STEP 4: SITE INTEGRATION** ⚠️ MANDATORY ⚠️

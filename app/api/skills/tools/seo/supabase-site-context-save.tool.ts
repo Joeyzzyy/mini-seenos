@@ -2,8 +2,14 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
-// Use a private service role client with proxy support for backend tools
-const supabase = createServerSupabaseAdmin();
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 /**
  * Supabase Site Context Save Tool (Simplified)

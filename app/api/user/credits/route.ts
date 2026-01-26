@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (authError || !user) {
       // Return default credits for unauthenticated users
       return NextResponse.json({
-        credits: 1,
+        credits: 0,
         subscription_tier: 'free',
         subscription_status: 'inactive',
       });
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       // Profile doesn't exist yet, return default
       console.log('Profile not found, returning default credits:', profileError.message);
       return NextResponse.json({
-        credits: 1,
+        credits: 0,
         subscription_tier: 'free',
         subscription_status: 'inactive',
         user_id: user.id,
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      credits: profile.credits ?? 1,
+      credits: profile.credits ?? 0,
       subscription_tier: profile.subscription_tier ?? 'free',
       subscription_status: profile.subscription_status ?? 'inactive',
       user_id: user.id,

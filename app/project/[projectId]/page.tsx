@@ -112,7 +112,7 @@ export default function ProjectChatPage() {
       const response = await fetch('/api/user/credits', { headers });
       if (response.ok) {
         const data = await response.json();
-        setUserCredits(data.credits ?? 1);
+        setUserCredits(data.credits ?? 0);
         setSubscriptionTier(data.subscription_tier ?? 'free');
       } else {
         console.error('Failed to fetch user credits: HTTP', response.status);

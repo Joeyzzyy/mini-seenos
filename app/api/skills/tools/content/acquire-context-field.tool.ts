@@ -4,7 +4,14 @@ import { generateText } from 'ai';
 import { createAzure } from '@ai-sdk/azure';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
-const supabase = createServerSupabaseAdmin();
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 const azure = createAzure({
   apiKey: process.env.AZURE_OPENAI_API_KEY || '',

@@ -2,8 +2,14 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
-// Initialize Supabase client with proxy support
-const supabase = createServerSupabaseAdmin();
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 export const fix_style_conflicts = tool({
   description: `Fix CSS style conflicts between page content and site contexts (header/footer).
@@ -23,7 +29,7 @@ Call this tool AFTER merge_html_with_site_contexts and BEFORE save_final_page.`,
       // If merged_html is not provided, fetch it from the database using item_id
       if (!htmlToProcess && item_id) {
         console.log(`[fix_style_conflicts] Fetching merged HTML from DB for item: ${item_id}`);
-        const { data: item, error: fetchError } = await supabase
+        const { data: item, error: fetchError } = await getSupabase()
           .from('content_items')
           .select('generated_content')
           .eq('id', item_id)
@@ -152,7 +158,7 @@ ${wrappedBodyContent}
       // Save the fixed HTML back to the database
       if (item_id) {
         console.log(`[fix_style_conflicts] 💾 Saving fixed HTML to database for item: ${item_id}`);
-        const { data: saveResult, error: saveError } = await supabase
+        const { data: saveResult, error: saveError } = await getSupabase()
           .from('content_items')
           .update({
             generated_content: fixedHtml,

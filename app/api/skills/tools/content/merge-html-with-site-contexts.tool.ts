@@ -2,8 +2,14 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
-// Initialize Supabase client with proxy support
-const supabase = createServerSupabaseAdmin();
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 /**
  * Generate a default EEAT-compliant footer when user hasn't configured one.
@@ -126,7 +132,7 @@ IMPORTANT:
       // If base_html is not provided, fetch it from the database using item_id
       if (!htmlToProcess && item_id) {
         console.log(`[merge_html_with_site_contexts] Fetching base HTML from DB for item: ${item_id}`);
-        const { data: item, error: fetchError } = await supabase
+        const { data: item, error: fetchError } = await getSupabase()
           .from('content_items')
           .select('generated_content, user_id, project_id, seo_project_id')
           .eq('id', item_id)
@@ -144,7 +150,7 @@ IMPORTANT:
           console.log(`[merge_html_with_site_contexts] Auto-fetching header/footer from site_contexts for user: ${item.user_id}, seo_project: ${seoProjectId || 'NULL (global)'}`);
           
           // First try to find project-specific contexts
-          let contextQuery = supabase
+          let contextQuery = getSupabase()
             .from('site_contexts')
             .select('type, content, html, domain_name, project_id')
             .eq('user_id', item.user_id)
@@ -162,7 +168,7 @@ IMPORTANT:
           // If no contexts found with project_id, fallback to global contexts (project_id = null)
           if (!contextError && (!contexts || contexts.length === 0) && seoProjectId) {
             console.log(`[merge_html_with_site_contexts] No project-specific contexts found, falling back to global contexts...`);
-            const { data: globalContexts, error: globalError } = await supabase
+            const { data: globalContexts, error: globalError } = await getSupabase()
               .from('site_contexts')
               .select('type, content, html, domain_name, project_id')
               .eq('user_id', item.user_id)
@@ -365,7 +371,7 @@ ${mergedBodyContent}
         console.log(`[merge_html_with_site_contexts] 💾 Saving merged HTML to database for item: ${item_id}`);
         console.log(`[merge_html_with_site_contexts] 💾 Final HTML length: ${mergedHtml.length} chars`);
         
-        const { data: saveResult, error: saveError } = await supabase
+        const { data: saveResult, error: saveError } = await getSupabase()
           .from('content_items')
           .update({
             generated_content: mergedHtml,

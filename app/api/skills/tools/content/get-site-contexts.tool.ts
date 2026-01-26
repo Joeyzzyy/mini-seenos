@@ -2,8 +2,14 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseAdmin } from '@/lib/supabase-server';
 
-// Initialize Supabase client with proxy support for server-side operations
-const supabase = createServerSupabaseAdmin();
+// Lazy-initialize Supabase client to ensure proxy is configured
+let _supabase: ReturnType<typeof createServerSupabaseAdmin> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createServerSupabaseAdmin();
+  }
+  return _supabase;
+}
 
 export const get_site_contexts = tool({
   description: `Retrieve saved site contexts for page generation. 
@@ -36,7 +42,7 @@ Example: types: ["logo", "header", "footer", "competitors"]`,
   }),
   execute: async ({ user_id, projectId, types }) => {
     try {
-      let query = supabase
+      let query = getSupabase()
         .from('site_contexts')
         .select('*')
         .eq('user_id', user_id);
