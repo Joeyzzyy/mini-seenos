@@ -336,6 +336,27 @@ function GeneratedPageViewer({
         `--brand-color-light: ${brandLight};`
       );
       
+      // Replace inline style fallback colors in btn-primary buttons
+      // Matches: var(--brand-color, #hexcolor) or var(--brand-color-dark, #hexcolor)
+      updatedHtml = updatedHtml.replace(
+        /var\(--brand-color,\s*#[0-9a-fA-F]{6}\)/g,
+        `var(--brand-color, ${hexColor})`
+      );
+      updatedHtml = updatedHtml.replace(
+        /var\(--brand-color-dark,\s*#[0-9a-fA-F]{6}\)/g,
+        `var(--brand-color-dark, ${brand600})`
+      );
+      updatedHtml = updatedHtml.replace(
+        /var\(--brand-color-dark,\s*hsl\([^)]+\)\)/g,
+        `var(--brand-color-dark, ${brand600})`
+      );
+      
+      // Also replace inline style fallback colors using --brand-500
+      updatedHtml = updatedHtml.replace(
+        /var\(--brand-500,\s*#[0-9a-fA-F]{6}\)/g,
+        `var(--brand-500, ${hexColor})`
+      );
+      
       setCurrentHtml(updatedHtml);
       setIsSavingTheme(true);
       
