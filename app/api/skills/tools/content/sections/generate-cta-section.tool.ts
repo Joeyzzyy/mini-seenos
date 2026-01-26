@@ -30,6 +30,7 @@ Returns a confirmation that the section was saved. The HTML is stored in the dat
   parameters: z.object({
     content_item_id: z.string().describe('Content item ID (UUID) for storing the section'),
     brand_name: z.string(),
+    brand_primary_color: z.string().optional().default('#0ea5e9').describe('Brand primary color (hex) for CTA button'),
     headline: z.string().describe('Main CTA headline'),
     description: z.string().describe('Supporting description'),
     primary_cta: z.object({
@@ -42,7 +43,7 @@ Returns a confirmation that the section was saved. The HTML is stored in the dat
     }).optional(),
     trust_badges: z.array(z.string()).optional().describe('e.g., "Free trial", "No credit card"'),
   }),
-  execute: async ({ content_item_id, brand_name, headline, description, primary_cta, secondary_cta, trust_badges }) => {
+  execute: async ({ content_item_id, brand_name, brand_primary_color, headline, description, primary_cta, secondary_cta, trust_badges }) => {
     // Trust badges with brand-colored checkmarks
     const trustBadgesHtml = trust_badges?.map(badge => `
             <div class="flex items-center gap-2">
@@ -68,7 +69,7 @@ Returns a confirmation that the section was saved. The HTML is stored in the dat
       
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
         <!-- Primary CTA - Brand color button (same style as Hero Section) -->
-        <a href="${escapeHtml(primary_cta.url)}" class="w-full sm:w-auto btn-primary px-10 py-4 rounded-2xl text-base font-semibold shadow-lg text-center">
+        <a href="${escapeHtml(primary_cta.url)}" class="w-full sm:w-auto btn-primary px-10 py-4 rounded-2xl text-base font-semibold shadow-lg text-center" style="background: linear-gradient(135deg, var(--brand-color, ${brand_primary_color}), var(--brand-color-dark, ${brand_primary_color})); color: white;">
           ${escapeHtml(primary_cta.text)}
         </a>
         ${secondary_cta ? `

@@ -114,7 +114,7 @@ Returns a confirmation that the section was saved. The HTML is stored in the dat
 
     // CTA button - only for brand product
     const ctaHtml = is_brand 
-      ? `<a href="${product.website_url || '/'}" class="btn-primary w-full py-3 rounded-xl text-sm font-semibold text-center mt-4">
+      ? `<a href="${product.website_url || '/'}" class="btn-primary w-full py-3 rounded-xl text-sm font-semibold text-center mt-4" style="background: linear-gradient(135deg, var(--brand-color, ${brand_primary_color}), var(--brand-color-dark, ${brand_primary_color})); color: white;">
           Try ${escapeHtml(product.name)} Free
         </a>`
       : `<div class="w-full py-3 text-center text-sm text-gray-500 mt-4">

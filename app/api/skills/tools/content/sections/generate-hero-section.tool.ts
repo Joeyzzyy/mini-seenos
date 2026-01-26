@@ -114,7 +114,7 @@ Returns HTML that can be assembled into the full page.`,
       
       <!-- CTA - Brand color for primary button -->
       <div class="flex items-center justify-center mb-6 md:mb-8">
-        <a href="${escapeHtml(primaryCta.url)}" class="btn-primary px-6 md:px-8 py-3 md:py-4 rounded-xl text-sm md:text-base text-center">
+        <a href="${escapeHtml(primaryCta.url)}" class="btn-primary px-6 md:px-8 py-3 md:py-4 rounded-xl text-sm md:text-base text-center" style="background: linear-gradient(135deg, var(--brand-color, ${brand.primary_color || '#0ea5e9'}), var(--brand-color-dark, ${brand.primary_color || '#0ea5e9'})); color: white;">
           ${escapeHtml(primaryCta.text)}
         </a>
       </div>

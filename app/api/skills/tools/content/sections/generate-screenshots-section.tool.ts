@@ -32,6 +32,7 @@ Returns HTML that can be assembled into the full page.`,
       screenshot_url: z.string().describe('Screenshot URL from capture_website_screenshot'),
       caption: z.string().optional().describe('Caption describing the interface'),
       cta_url: z.string().optional().describe('CTA URL - defaults to brand domain'),
+      primary_color: z.string().optional().default('#0ea5e9').describe('Primary brand color (hex) for CTA button'),
     }),
     competitor: z.object({
       name: z.string(),
@@ -88,7 +89,7 @@ Returns HTML that can be assembled into the full page.`,
               >
               <!-- Hover Overlay - CTA to brand site only -->
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                <a href="${escapeHtml(brandCtaUrl)}" class="btn-primary px-4 py-2 rounded-lg text-sm">
+                <a href="${escapeHtml(brandCtaUrl)}" class="btn-primary px-4 py-2 rounded-lg text-sm" style="background: linear-gradient(135deg, var(--brand-color, ${brand.primary_color || '#0ea5e9'}), var(--brand-color-dark, ${brand.primary_color || '#0ea5e9'})); color: white;">
                   Try ${escapeHtml(brand.name)}
                   <svg class="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>

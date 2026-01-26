@@ -106,7 +106,7 @@ Returns a confirmation that the section was saved. The HTML is stored in the dat
       
       <!-- CTA Button - Single primary CTA (no icon) -->
       <div class="flex items-center justify-center mb-10 md:mb-12">
-        <a href="${escapeHtml(primaryCta.url)}" class="btn-primary px-10 py-4 rounded-2xl text-base font-semibold shadow-lg">
+        <a href="${escapeHtml(primaryCta.url)}" class="btn-primary px-10 py-4 rounded-2xl text-base font-semibold shadow-lg" style="background: linear-gradient(135deg, var(--brand-color, ${brand.primary_color || '#0ea5e9'}), var(--brand-color-dark, ${brand.primary_color || '#0ea5e9'})); color: white;">
           ${escapeHtml(primaryCta.text)}
         </a>
       </div>
