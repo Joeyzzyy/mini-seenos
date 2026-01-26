@@ -24,6 +24,8 @@ import { generate_use_cases_section } from '../tools/content/sections/generate-u
 import { generate_faq_section } from '../tools/content/sections/generate-faq-section.tool';
 import { generate_cta_section } from '../tools/content/sections/generate-cta-section.tool';
 import { generate_screenshots_section } from '../tools/content/sections/generate-screenshots-section.tool';
+// 🚀 BATCH PARALLEL GENERATOR - 4x faster than individual section tools
+import { generate_sections_batch } from '../tools/content/sections/generate-sections-batch.tool';
 import { assemble_alternative_page } from '../tools/content/assemble-alternative-page.tool';
 
 export const alternativePageGeneratorSkill: Skill = {
@@ -109,71 +111,42 @@ Execute steps in ONE continuous turn:
 
 **STEP 2: GENERATE ALL SECTIONS (MANDATORY)**
 
-⚠️ CRITICAL WARNING ⚠️
-You MUST call ALL section generators listed below BEFORE calling assemble_alternative_page.
-The assemble tool will REJECT your request if required sections are missing.
-DO NOT skip any section - incomplete pages are NOT acceptable.
-
-REQUIRED SECTIONS (assemble will FAIL without these):
+🚀🚀🚀 SPEED OPTIMIZATION: USE BATCH GENERATOR 🚀🚀🚀
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+⭐ PREFERRED METHOD: Call 'generate_sections_batch' ONCE to generate ALL sections in PARALLEL.
+This is 4x FASTER than calling individual section tools one by one!
+
+The batch generator creates ALL sections simultaneously:
+- Hero, TOC, Verdict, Comparison Table, Pricing, Pros/Cons, Use Cases, FAQ, Screenshots, CTA
+
+Just provide:
+- brand: {name, logo_url, tagline, highlights, best_for, pricing, pros, cons, use_cases, website}
+- competitor: {same structure as brand}
+- verdict: {headline, summary, bottom_line}
+- features: [{name, description, brand_status, competitor_status}]
+- faqs: [{question, answer}]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ALTERNATIVE: Individual Section Tools (slower, but more control)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If you need fine-grained control, you CAN call individual section tools:
+
 1. generate_hero_section ⭐ REQUIRED
-   - brand: {name, logo_url, primary_color, tagline}
-   - competitor: {name, logo_url}
-   - CTAs and description
-
 2. generate_toc_section (recommended)
-   - List of section IDs and labels
-
 3. generate_verdict_section ⭐ REQUIRED
-   - Winner announcement
-   - Key stats (3-4 metrics)
-   - Side-by-side product cards
-   - Bottom line summary
-
 4. generate_comparison_table ⭐ REQUIRED
-   - Feature-by-feature comparison (8-15 features)
-   - Status indicators (yes/partial/no)
-   - Summary of who wins what
-
 5. generate_pricing_section (recommended)
-   - brand: {name, logo_url, pricing}
-   - competitor: {name, logo_url, pricing}
-   - Value analysis summary
-
 6. generate_pros_cons_section (recommended)
-   - brand: {name, logo_url, pros, cons}
-   - competitor: {name, logo_url, pros, cons}
-   - 4-6 pros and 2-4 cons per product
-
 7. generate_use_cases_section (recommended)
-   - brand: {name, logo_url, use_cases[]}
-   - competitor: {name, logo_url, use_cases[]}
-   - Pro tip for decision making
-
 8. generate_faq_section ⭐ REQUIRED
-   - content_item_id: THE CONTENT ITEM UUID (REQUIRED for database backup!)
-   - 5-8 common questions with detailed answers
-   - Schema.org FAQPage markup
-
 9. generate_cta_section ⭐ REQUIRED
-   - content_item_id: THE CONTENT ITEM UUID (REQUIRED for database backup!)
-   - Compelling headline
-   - Trust badges
-   - Primary and secondary CTAs
-
 10. generate_screenshots_section (optional)
-    - Brand screenshot from capture_website_screenshot
-    - Competitor screenshot
-    - Captions describing each interface
 
 CHECKLIST before calling assemble_alternative_page:
-□ hero section generated
-□ verdict section generated
-□ comparison table generated
-□ faq section generated
-□ cta section generated
-If ANY of these are missing, GO BACK and generate them first!
+□ ALL sections generated (via batch or individual tools)
+□ hero, verdict, comparison, faq, cta are REQUIRED
 
 **STEP 3: ASSEMBLE PAGE**
 Call 'assemble_alternative_page' with:
@@ -352,7 +325,7 @@ After completion, provide:
     capture_website_screenshot,
     resolve_page_logos,
     
-    // Section generators
+    // Section generators (individual)
     generate_hero_section,
     generate_toc_section,
     generate_verdict_section,
@@ -363,6 +336,9 @@ After completion, provide:
     generate_faq_section,
     generate_cta_section,
     generate_screenshots_section,
+    
+    // 🚀 BATCH GENERATOR (4x faster - generates all sections in parallel)
+    generate_sections_batch,
     
     // Assembly tools
     assemble_alternative_page,

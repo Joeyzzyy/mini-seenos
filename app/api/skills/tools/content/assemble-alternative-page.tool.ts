@@ -187,7 +187,57 @@ Go back and call the section generator tools again to get the FULL HTML content.
       }
     }
     
-    // BLOCK execution if required sections are missing
+    // Try to recover ALL missing sections from database first (both required and recommended)
+    const allMissingSections = [...missingSections, ...missingRecommended];
+    if (allMissingSections.length > 0) {
+      console.log(`[assemble_alternative_page] Missing sections detected: ${allMissingSections.join(', ')}. Attempting to recover from database...`);
+      
+      try {
+        const sectionTypeMap: Record<string, string> = {
+          'hero': 'hero',
+          'toc': 'toc',
+          'verdict': 'verdict',
+          'comparison': 'comparison_table',
+          'pricing': 'pricing',
+          'screenshots': 'screenshots',
+          'pros_cons': 'pros_cons',
+          'use_cases': 'use_cases',
+          'faq': 'faq',
+          'cta': 'cta',
+        };
+        
+        const savedSections = await getSections(item_id);
+        console.log(`[assemble_alternative_page] Found ${savedSections.length} saved sections in database for missing recovery`);
+        
+        let recoveredCount = 0;
+        // Recover both required and recommended sections
+        for (const sectionName of [...allMissingSections]) {
+          const sectionType = sectionTypeMap[sectionName] || sectionName;
+          const savedSection = savedSections.find(s => s.section_type === sectionType || s.section_id === sectionName);
+          
+          if (savedSection && savedSection.section_html && isValidSectionContent(savedSection.section_html)) {
+            console.log(`[assemble_alternative_page] ✅ Recovered missing ${sectionName} from database (${savedSection.section_html.length} chars)`);
+            (sections as any)[sectionName] = savedSection.section_html;
+            // Remove from appropriate list
+            if (missingSections.includes(sectionName)) {
+              missingSections.splice(missingSections.indexOf(sectionName), 1);
+            }
+            if (missingRecommended.includes(sectionName)) {
+              missingRecommended.splice(missingRecommended.indexOf(sectionName), 1);
+            }
+            recoveredCount++;
+          }
+        }
+        
+        if (recoveredCount > 0) {
+          console.log(`[assemble_alternative_page] ✅ Recovered ${recoveredCount} missing sections from database`);
+        }
+      } catch (dbError: any) {
+        console.error(`[assemble_alternative_page] Database recovery for missing sections failed:`, dbError);
+      }
+    }
+    
+    // BLOCK execution if required sections are still missing after database recovery
     if (missingSections.length > 0) {
       const errorMsg = `MISSING REQUIRED SECTIONS: ${missingSections.join(', ')}
 
@@ -532,10 +582,17 @@ DO NOT skip sections. Go back and generate the missing sections, then call this 
     try {
       const supabase = createServerSupabaseAdmin();
       
+      // Fix PostgreSQL Unicode escape sequence errors
+      // PostgreSQL interprets \uXXXX as Unicode escapes, causing "unsupported Unicode escape sequence" errors
+      // Replace \u with \\u to escape it (but only when followed by hex digits)
+      const safeHtml = html
+        .replace(/\\u([0-9a-fA-F]{4})/g, '\\\\u$1')  // Escape valid Unicode escapes
+        .replace(/\\u(?![0-9a-fA-F]{4})/g, '\\\\u'); // Escape invalid Unicode escapes too
+      
       const { error } = await supabase
         .from('content_items')
         .update({ 
-          generated_content: html,
+          generated_content: safeHtml,
           status: 'generated',
           updated_at: new Date().toISOString()
         })

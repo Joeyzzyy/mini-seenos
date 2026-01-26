@@ -388,6 +388,7 @@ async function extractAndSaveBrandAssets(
   const languages = langMatch ? langMatch[1] : 'en';
 
   // === Save to Database ===
+  // Note: primary_color, secondary_color, heading_font, body_font columns have been removed from DB
   const brandAssets = {
     domain_name: domainName,
     og_image: ogImage,
@@ -395,10 +396,6 @@ async function extractAndSaveBrandAssets(
     logo_dark_url: logoDarkUrl,
     favicon_light_url: faviconLightUrl,
     favicon_dark_url: null,
-    primary_color: primaryColor,
-    secondary_color: secondaryColor,
-    heading_font: headingFont,
-    body_font: bodyFont,
     languages,
   };
 
@@ -407,14 +404,15 @@ async function extractAndSaveBrandAssets(
   return {
     success: true,
     ...brandAssets,
-    message: `✅ Brand assets extracted: logo, favicon, colors, fonts`
+    message: `✅ Brand assets extracted: logo, favicon`
   };
 }
 
 async function saveBrandAssetsToDb(userId: string, projectId: string, data: any): Promise<void> {
+  // Note: primary_color, secondary_color, heading_font, body_font columns removed from DB
   const upsertData = {
     user_id: userId,
-    project_id: projectId,
+    seo_project_id: projectId,
     type: 'logo',
     domain_name: data.domain_name || null,
     og_image: data.og_image || null,
@@ -422,17 +420,13 @@ async function saveBrandAssetsToDb(userId: string, projectId: string, data: any)
     logo_dark_url: data.logo_dark_url || null,
     favicon_light_url: data.favicon_light_url || null,
     favicon_dark_url: data.favicon_dark_url || null,
-    primary_color: data.primary_color || null,
-    secondary_color: data.secondary_color || null,
-    heading_font: data.heading_font || null,
-    body_font: data.body_font || null,
     languages: data.languages || 'en',
     updated_at: new Date().toISOString(),
   };
 
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('site_contexts')
-    .upsert(upsertData, { onConflict: 'user_id,project_id,type' });
+    .upsert(upsertData, { onConflict: 'user_id,seo_project_id,type' });
 
   if (error) {
     console.error(`[saveBrandAssetsToDb] Error:`, error);
@@ -651,7 +645,7 @@ async function extractAndSaveFooter(
   }
 
   try {
-    // Use AI to analyze footer structure including background color
+    // Use AI to analyze footer structure (colors removed - using unified light theme)
     const aiPrompt = `Analyze this website footer HTML and extract the structure.
 
 Return ONLY valid JSON:
@@ -668,9 +662,7 @@ Return ONLY valid JSON:
   "socialMedia": [
     {"platform": "twitter|facebook|linkedin|github|instagram", "url": "URL"}
   ],
-  "copyright": "Copyright text",
-  "backgroundColor": "CSS background color from footer styles (e.g., #1a1a1a, rgb(26,26,26), or white)",
-  "textColor": "CSS text color from footer styles (e.g., #ffffff, #e5e7eb)"
+  "copyright": "Copyright text"
 }
 
 Rules:
@@ -678,10 +670,6 @@ Rules:
 - URLs should NOT have .html suffix
 - platform must be one of: twitter, facebook, linkedin, github, instagram
 - Keep copyright exactly as shown
-- Look for background-color in inline styles, class names like bg-*, or style blocks
-- If footer has dark background, use appropriate dark color (#111827, #1f2937, etc.)
-- If footer has light background, use white or appropriate light color
-- Extract text color to ensure contrast
 
 Footer HTML:
 ${footerHtml.substring(0, 8000)}`;
@@ -712,7 +700,7 @@ ${footerHtml.substring(0, 8000)}`;
       }));
     }
 
-    // Build footer config with background color
+    // Build footer config (unified light theme, no custom colors)
     const footerConfig: FooterConfig = {
       companyName: parsed.companyName || '',
       tagline: parsed.tagline || '',
@@ -722,8 +710,6 @@ ${footerHtml.substring(0, 8000)}`;
         ['twitter', 'facebook', 'linkedin', 'github', 'instagram'].includes(s.platform)
       ),
       copyright: parsed.copyright || '',
-      backgroundColor: parsed.backgroundColor || undefined, // Let template use default if not found
-      textColor: parsed.textColor || undefined,
     };
 
     // Generate HTML
@@ -755,16 +741,16 @@ async function saveHeaderFooterToDb(
 ): Promise<void> {
   const upsertData = {
     user_id: userId,
-    project_id: projectId,
+    seo_project_id: projectId,
     type,
     content: JSON.stringify(config),
     html,
     updated_at: new Date().toISOString(),
   };
 
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('site_contexts')
-    .upsert(upsertData, { onConflict: 'user_id,project_id,type' });
+    .upsert(upsertData, { onConflict: 'user_id,seo_project_id,type' });
 
   if (error) {
     console.error(`[saveHeaderFooterToDb] Error saving ${type}:`, error);

@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   seo_project_id UUID REFERENCES seo_projects(id) ON DELETE CASCADE,
+  project_id UUID REFERENCES seo_projects(id) ON DELETE CASCADE, -- 代码中使用的别名
   title TEXT,
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -39,6 +40,10 @@ CREATE TABLE IF NOT EXISTS messages (
   content TEXT,
   tool_invocations JSONB,
   annotations JSONB,
+  tokens_input INTEGER DEFAULT 0,
+  tokens_output INTEGER DEFAULT 0,
+  attached_files JSONB,
+  attached_content_items JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -72,11 +77,14 @@ CREATE TABLE IF NOT EXISTS content_items (
 CREATE TABLE IF NOT EXISTS content_item_sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   content_item_id UUID REFERENCES content_items(id) ON DELETE CASCADE,
-  section_key TEXT NOT NULL,
-  section_data JSONB NOT NULL DEFAULT '{}',
+  section_id TEXT NOT NULL,
+  section_type TEXT NOT NULL,
+  section_order INT NOT NULL DEFAULT 0,
+  section_html TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(content_item_id, section_key)
+  UNIQUE(content_item_id, section_id)
 );
 
 -- 7. Content Projects 表
@@ -98,13 +106,38 @@ CREATE TABLE IF NOT EXISTS site_contexts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   seo_project_id UUID REFERENCES seo_projects(id) ON DELETE CASCADE,
-  domain_id UUID,
-  url TEXT NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('brand', 'competitor')),
-  context_data JSONB NOT NULL DEFAULT '{}',
+  type TEXT NOT NULL,
+  content TEXT,
   html TEXT,
+  file_url TEXT,
+  -- Brand Assets fields
+  domain_name TEXT,
+  brand_name TEXT,
+  subtitle TEXT,
+  meta_description TEXT,
+  og_image TEXT,
+  favicon TEXT,
+  logo_url TEXT,
+  logo_light_url TEXT,
+  logo_dark_url TEXT,
+  favicon_url TEXT,
+  favicon_light_url TEXT,
+  favicon_dark_url TEXT,
+  -- Legacy logo/favicon fields for compatibility
+  logo_light TEXT,
+  logo_dark TEXT,
+  icon_light TEXT,
+  icon_dark TEXT,
+  -- Style fields
+  primary_color TEXT,
+  secondary_color TEXT,
+  heading_font TEXT,
+  body_font TEXT,
+  tone TEXT,
+  languages TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, seo_project_id, type)
 );
 
 -- 9. Offsite Contexts 表

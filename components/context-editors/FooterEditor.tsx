@@ -63,8 +63,7 @@ interface FooterConfig {
     platform: 'twitter' | 'facebook' | 'linkedin' | 'github' | 'instagram';
     url: string;
   }>;
-  backgroundColor: string;
-  textColor: string;
+  // Note: backgroundColor and textColor removed - footer uses unified light theme
 }
 
 interface FooterEditorProps {
@@ -72,9 +71,6 @@ interface FooterEditorProps {
   logoUrl?: string;
   onConfigChange: (config: FooterConfig) => void;
 }
-
-const DEFAULT_BG_COLOR = '#FFFFFF';
-const DEFAULT_TEXT_COLOR = '#374151';
 
 export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }: FooterEditorProps) {
   const [footerConfig, setFooterConfig] = useState<FooterConfig>({
@@ -111,8 +107,6 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
       { platform: 'twitter', url: 'https://twitter.com/example' },
       { platform: 'linkedin', url: 'https://linkedin.com/company/example' },
     ],
-    backgroundColor: initialConfig?.backgroundColor || DEFAULT_BG_COLOR,
-    textColor: initialConfig?.textColor || DEFAULT_TEXT_COLOR,
   });
 
   // Update config when initialConfig changes
@@ -152,8 +146,6 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
           { platform: 'twitter', url: 'https://twitter.com/example' },
           { platform: 'linkedin', url: 'https://linkedin.com/company/example' },
         ],
-        backgroundColor: initialConfig.backgroundColor || DEFAULT_BG_COLOR,
-        textColor: initialConfig.textColor || DEFAULT_TEXT_COLOR,
       });
     }
   }, [initialConfig, logoUrl]);
@@ -238,41 +230,6 @@ export default function FooterEditor({ initialConfig, logoUrl, onConfigChange }:
               onChange={(e) => setFooterConfig({ ...footerConfig, tagline: e.target.value })}
               className="w-full px-2 py-1 border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#9AD6FF] text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF]"
             />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-1.5 bg-white rounded border border-[#E5E5E5]">
-            <label className="block text-[10px] font-medium text-[#9CA3AF] uppercase tracking-wider mb-0.5">Background</label>
-            <div className="flex gap-1.5 items-center">
-              <input
-                type="text"
-                value={footerConfig.backgroundColor}
-                onChange={(e) => setFooterConfig({ ...footerConfig, backgroundColor: e.target.value })}
-                className="flex-1 px-1.5 py-0.5 border border-[#E5E5E5] rounded focus:outline-none text-[10px] font-mono bg-white text-[#111827]"
-              />
-              <div 
-                className="w-5 h-5 rounded border border-[#E5E5E5] flex-shrink-0"
-                style={{ background: footerConfig.backgroundColor }}
-              />
-            </div>
-          </div>
-          <div className="p-1.5 bg-white rounded border border-[#E5E5E5]">
-            <label className="block text-[10px] font-medium text-[#9CA3AF] uppercase tracking-wider mb-0.5">Text Color</label>
-            <div className="flex gap-1.5 items-center">
-              <input
-                type="text"
-                value={footerConfig.textColor}
-                onChange={(e) => setFooterConfig({ ...footerConfig, textColor: e.target.value })}
-                className="flex-1 px-1.5 py-0.5 border border-[#E5E5E5] rounded focus:outline-none text-[10px] font-mono bg-white text-[#111827]"
-              />
-              <input
-                type="color"
-                value={footerConfig.textColor}
-                onChange={(e) => setFooterConfig({ ...footerConfig, textColor: e.target.value })}
-                className="w-5 h-5 rounded border border-[#E5E5E5] cursor-pointer p-0 overflow-hidden"
-              />
-            </div>
           </div>
         </div>
 

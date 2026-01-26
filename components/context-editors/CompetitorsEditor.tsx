@@ -60,11 +60,15 @@ export default function CompetitorsEditor({
 
   const updateCompetitor = (index: number, field: keyof Competitor, value: string) => {
     const updated = [...competitors];
+    const oldUrl = updated[index].url;
     updated[index] = { ...updated[index], [field]: value };
     
-    // Auto-fetch logo when URL changes
-    if (field === 'url' && value && !updated[index].logo_url) {
+    // Auto-fetch logo when URL changes (always refresh, not just when empty)
+    if (field === 'url' && value && value !== oldUrl) {
+      // Mark as needing logo refresh
       updated[index].logo_url = getFaviconUrl(value);
+      updated[index].logo_fetch_failed = false;
+      updated[index].url_corrected = false;
     }
     
     updateCompetitors(updated);

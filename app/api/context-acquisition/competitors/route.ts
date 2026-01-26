@@ -945,7 +945,7 @@ export async function POST(request: NextRequest) {
         .from('site_contexts')
         .select('content')
         .eq('user_id', user.id)
-        .eq('project_id', projectId)
+        .eq('seo_project_id', projectId)
         .eq('type', 'competitors')
         .maybeSingle();
 
@@ -991,12 +991,12 @@ export async function POST(request: NextRequest) {
         .from('site_contexts')
         .upsert({
           user_id: user.id,
-          project_id: projectId,
+          seo_project_id: projectId,
           type: 'competitors',
           content: JSON.stringify(allCompetitors),
           updated_at: new Date().toISOString(),
         }, {
-          onConflict: 'user_id,project_id,type',
+          onConflict: 'user_id,seo_project_id,type',
         });
       
       // Count total failures (new + existing)

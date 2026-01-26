@@ -28,18 +28,6 @@ export interface BrandSiteSectionProps extends SectionProps {
   logoPreview: string | null;
   faviconPreview: string | null;
   
-  // Colors
-  primaryColor: string;
-  setPrimaryColor: (v: string) => void;
-  secondaryColor: string;
-  setSecondaryColor: (v: string) => void;
-  
-  // Typography
-  headingFont: string;
-  setHeadingFont: (v: string) => void;
-  bodyFont: string;
-  setBodyFont: (v: string) => void;
-  
   // Languages
   languages: string;
   setLanguages: (v: string) => void;
@@ -51,8 +39,6 @@ export interface BrandSiteSectionProps extends SectionProps {
   
   // Refs
   brandAssetsRef: React.RefObject<HTMLDivElement | null>;
-  colorsRef: React.RefObject<HTMLDivElement | null>;
-  typographyRef: React.RefObject<HTMLDivElement | null>;
   languagesRef: React.RefObject<HTMLDivElement | null>;
   headerRef: React.RefObject<HTMLDivElement | null>;
   footerRef: React.RefObject<HTMLDivElement | null>;

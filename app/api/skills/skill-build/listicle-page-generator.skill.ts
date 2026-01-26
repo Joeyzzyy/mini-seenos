@@ -25,6 +25,9 @@ import { generate_listicle_hero_section } from '../tools/content/sections/genera
 import { generate_listicle_product_card } from '../tools/content/sections/generate-listicle-product-card.tool';
 import { generate_listicle_comparison_table } from '../tools/content/sections/generate-listicle-comparison-table.tool';
 
+// 🚀 BATCH GENERATOR - Generates ALL sections in parallel for 5-10x speed
+import { generate_listicle_sections_batch } from '../tools/content/sections/generate-listicle-sections-batch.tool';
+
 // Assembly tools
 import { assemble_listicle_page } from '../tools/content/assemble-listicle-page.tool';
 import { assemble_page_from_sections } from '../tools/content/assemble-page-from-sections.tool';
@@ -135,76 +138,76 @@ For generate_listicle_product_card, use data from research:
 
 If a feature is 'not_mentioned', show "—" in the table (not "✗")
 
-**STEP 2: GENERATE ALL SECTIONS (Database Storage)**
+**STEP 2: GENERATE ALL SECTIONS IN PARALLEL (MANDATORY)**
 
-⚠️ CRITICAL: PASS content_item_id TO EVERY SECTION TOOL ⚠️
-Each section tool SAVES to database automatically. You don't need to collect HTML.
+🚀 USE generate_listicle_sections_batch FOR 5-10x FASTER GENERATION! 🚀
 
-REQUIRED SECTIONS - Call in this order:
+⚠️ CRITICAL: Call 'generate_listicle_sections_batch' ONCE to generate ALL sections:
+- Hero section
+- Comparison table
+- ALL product cards (in parallel!)
+- FAQ section
+- CTA section
+
+This generates 10+ sections in ~1-2 seconds instead of 10+ seconds!
+
+Example call:
+generate_listicle_sections_batch({
+  content_item_id: "uuid",
+  brand: {
+    name: "YourBrand",
+    logo_url: "https://...",
+    primary_color: "#0ea5e9",
+    website_url: "https://...",
+  },
+  hero: {
+    title: "Top 10 Best Writesonic Alternatives in 2025",
+    description: "Comprehensive comparison of the best AI writing tools...",
+    cta_text: "Try YourBrand Free",
+    cta_url: "/",
+  },
+  products: [
+    {
+      rank: 1,  // Your brand is #1
+      name: "YourBrand",
+      logo_url: "...",
+      description: "...",
+      features: ["Feature 1", "Feature 2", ...],
+      feature_map: { "AI Content": "yes", "SEO": "yes", ... },
+      pricing: { starting_price: "$29/mo", free_tier: true },
+      pros: ["Pro 1", "Pro 2", ...],
+      cons: ["Con 1", ...],
+      best_for: "Teams needing...",
+      rating: 4.9,
+    },
+    {
+      rank: 2,
+      name: "Competitor1",
+      // ... same structure
+    },
+    // ... more products
+  ],
+  feature_names: ["AI Content", "SEO Tools", "API Access", ...],
+  faqs: [
+    { question: "What is...?", answer: "..." },
+    // ... 4-10 FAQs
+  ],
+  cta: {
+    headline: "Ready to try YourBrand?",
+    primary_text: "Get Started Free",
+    primary_url: "/",
+  },
+})
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ALTERNATIVE: Individual section tools (slower, only use if needed)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. generate_listicle_hero_section ⭐ REQUIRED
-   - content_item_id: THE CONTENT ITEM UUID (REQUIRED!)
-   - brand: {name, logo_url, primary_color}
-   - title: "Top 10 Best X Alternatives in 2025"
-   - description: What readers will learn
-   - total_alternatives: number of products
-   → Saves to DB, returns confirmation
-
-2. generate_listicle_comparison_table ⭐ REQUIRED
-   - content_item_id: THE CONTENT ITEM UUID (REQUIRED!)
-   - auto_load_from_research: true (default) - automatically loads features from saved research!
-   - Quick-reference table for all products
-   
-   ✨ NEW: AUTO-LOADING FROM RESEARCH ✨
-   If you called research_product_deep with content_item_id FIRST, the table tool will
-   AUTOMATICALLY load features from the saved research data!
-   
-   You can now pass simpler product data:
-   products: [
-     { rank: 1, name: "ProductName", rating: 4.8 },
-     { rank: 2, name: "Competitor1", rating: 4.5 },
-     // ... features will be auto-loaded from saved research!
-   ]
-   
-   ⚠️ Make sure to call research_product_deep for ALL products BEFORE this tool!
-   
-   → Saves to DB, returns confirmation
-
-3. generate_listicle_product_card ⭐ REQUIRED (call for EACH product)
-   - content_item_id: THE CONTENT ITEM UUID (REQUIRED!)
-   - ⚠️ MUST call for ALL products including YOUR BRAND (#1)
-   - rank: 1 for your brand (FIRST), 2-N for competitors
-   - is_brand: true for your product (rank 1)
-   - Use data from research_product_deep for features, pricing, pros, cons
-   - 📸 NEW: Include screenshot_url from research to show homepage screenshot!
-   → Each call saves to DB, returns confirmation
-
-   Example product object:
-   {
-     name: "ProductName",
-     website_url: "https://example.com",
-     screenshot_url: "https://api.screenshotmachine.com?...",  // From research data
-     description: "...",
-     features: [...],
-     pricing: {...},
-     pros: [...],
-     cons: [...],
-     best_for: "...",
-     rating: 4.5
-   }
-
-   ⚠️ COMMON MISTAKE: Don't skip rank #1! Your brand MUST have a product card!
-
-4. generate_faq_section ⭐ REQUIRED
-   - content_item_id: THE CONTENT ITEM UUID (REQUIRED!)
-   - 5-8 common questions
-   → Saves to DB, returns confirmation
-
-5. generate_cta_section ⭐ REQUIRED
-   - content_item_id: THE CONTENT ITEM UUID (REQUIRED!)
-   - Strong final call to action
-   → Saves to DB, returns confirmation
+1. generate_listicle_hero_section
+2. generate_listicle_comparison_table (auto_load_from_research: true)
+3. generate_listicle_product_card (call for EACH product)
+4. generate_faq_section
+5. generate_cta_section
 
 **STEP 3: ASSEMBLE PAGE FROM DATABASE**
 Call 'assemble_page_from_sections' with:
@@ -323,6 +326,9 @@ After completion, provide:
     generate_listicle_hero_section,
     generate_listicle_product_card,
     generate_listicle_comparison_table,
+    
+    // 🚀 BATCH GENERATOR - Generates ALL sections in parallel (RECOMMENDED!)
+    generate_listicle_sections_batch,
     
     // Assembly tools
     assemble_listicle_page,           // Legacy: accepts section HTML as parameters

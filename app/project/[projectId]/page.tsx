@@ -92,6 +92,27 @@ export default function ProjectChatPage() {
   // Track initialization phase: 'brand' → 'competitors' → 'planning' → 'done'
   const [initPhase, setInitPhase] = useState<'brand' | 'competitors' | 'planning' | 'done'>('brand');
   
+  // Initialization data for overlay display
+  const [initData, setInitData] = useState<{
+    logo?: string;
+    brandName?: string;
+    brandColors?: string[];
+    headerItems?: number;
+    footerColumns?: number;
+    competitors?: Array<{ name: string; logo?: string; domain?: string }>;
+    pagesCreated?: number;
+    logs?: Array<{ time: string; type: 'info' | 'success' | 'error' | 'warning'; message: string }>;
+  }>({});
+  
+  // Helper to add log entry
+  const addInitLog = (type: 'info' | 'success' | 'error' | 'warning', message: string) => {
+    const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    setInitData(prev => ({
+      ...prev,
+      logs: [...(prev.logs || []), { time, type, message }],
+    }));
+  };
+  
   // Delete confirmation
   const [deletingCluster, setDeletingCluster] = useState<{ id: string; name: string } | null>(null);
   const [deletingContentItem, setDeletingContentItem] = useState<{ id: string; name: string } | null>(null);
@@ -153,8 +174,10 @@ export default function ProjectChatPage() {
       // Update task status
       if (currentTaskId === 'context-analysis') {
         setContextTaskStatus('error');
-        // Exit initialization mode on error
-        setIsInitializing(false);
+        setInitPhase('done');
+        // Keep overlay visible so user can see error and click button to exit
+        addInitLog('error', errorMessage);
+        addInitLog('info', 'Click "Enter Workspace" to continue →');
       }
       setRunningTaskId(null);
       
@@ -296,17 +319,20 @@ export default function ProjectChatPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
         console.log('[triggerPagePlanningAfterInit] No session, aborting');
+        addInitLog('error', 'Session expired, please refresh');
         setInitPhase('done');
         setIsInitializing(false);
         return;
       }
 
+      addInitLog('info', 'Loading extracted brand assets...');
+      
       // Get domain from logo context
       const { data: contexts } = await supabase
         .from('site_contexts')
         .select('*')
         .eq('user_id', userId)
-        .eq('project_id', projectId);
+        .eq('seo_project_id', projectId);
 
       const logoContext = contexts?.find((c: any) => c.type === 'logo');
       const domainName = (logoContext as any)?.domain_name || currentProject?.domain || '';
@@ -314,9 +340,98 @@ export default function ProjectChatPage() {
       const capitalizedBrandName = brandName.charAt(0).toUpperCase() + brandName.slice(1);
       const fullUrl = domainName.startsWith('http') ? domainName : `https://${domainName}`;
 
+      // Update initData with brand info
+      const logoData = logoContext as any;
+      const headerContext = contexts?.find((c: any) => c.type === 'header');
+      const footerContext = contexts?.find((c: any) => c.type === 'footer');
+      
+      // Build brand colors array from individual color fields
+      const colors: string[] = [];
+      if (logoData?.primary_color) colors.push(logoData.primary_color);
+      if (logoData?.secondary_color) colors.push(logoData.secondary_color);
+      
+      // Count header nav items - parse content JSON string
+      let headerData: any = null;
+      try {
+        headerData = headerContext?.content ? JSON.parse(headerContext.content) : null;
+      } catch (e) { /* ignore parse errors */ }
+      const headerItems = headerData?.navigation?.length || 0;
+      
+      // Count footer columns - parse content JSON string
+      let footerData: any = null;
+      try {
+        footerData = footerContext?.content ? JSON.parse(footerContext.content) : null;
+      } catch (e) { /* ignore parse errors */ }
+      const footerColumns = footerData?.columns?.length || 0;
+      
+      // Log extracted assets - show everything we got
+      addInitLog('success', `Domain: ${logoData?.domain_name || domainName}`);
+      
+      if (logoData?.logo_url || logoData?.logo_light_url) {
+        addInitLog('success', `Logo: ${logoData?.logo_url || logoData?.logo_light_url}`);
+      }
+      if (logoData?.favicon_url || logoData?.favicon_light_url) {
+        addInitLog('success', `Favicon: ${logoData?.favicon_url || logoData?.favicon_light_url}`);
+      }
+      if (logoData?.og_image) {
+        addInitLog('success', `OG Image: ${logoData?.og_image}`);
+      }
+      if (colors.length > 0) {
+        addInitLog('success', `Primary color: ${logoData?.primary_color || 'N/A'}`);
+        if (logoData?.secondary_color) {
+          addInitLog('success', `Secondary color: ${logoData?.secondary_color}`);
+        }
+      }
+      if (logoData?.heading_font) {
+        addInitLog('success', `Heading font: ${logoData?.heading_font}`);
+      }
+      if (logoData?.body_font) {
+        addInitLog('success', `Body font: ${logoData?.body_font}`);
+      }
+      if (logoData?.languages) {
+        addInitLog('success', `Languages: ${logoData?.languages}`);
+      }
+      
+      // Header info (headerData already parsed above)
+      if (headerContext && headerData) {
+        addInitLog('success', `Header: ${headerItems} nav items`);
+        if (headerData?.siteName) {
+          addInitLog('info', `  Site name: ${headerData.siteName}`);
+        }
+        if (headerData?.navigation) {
+          headerData.navigation.slice(0, 3).forEach((nav: any) => {
+            addInitLog('info', `  → ${nav.label}${nav.children?.length ? ` (${nav.children.length} items)` : ''}`);
+          });
+          if (headerData.navigation.length > 3) {
+            addInitLog('info', `  ... and ${headerData.navigation.length - 3} more`);
+          }
+        }
+      }
+      
+      // Footer info (footerData already parsed above)
+      if (footerContext && footerData) {
+        addInitLog('success', `Footer: ${footerColumns} columns`);
+        if (footerData?.companyName) {
+          addInitLog('info', `  Company: ${footerData.companyName}`);
+        }
+        if (footerData?.socialMedia?.length) {
+          addInitLog('info', `  Social links: ${footerData.socialMedia.length}`);
+        }
+      }
+      
+      setInitData(prev => ({
+        ...prev,
+        logo: logoData?.logo_url || logoData?.logo_light_url || logoData?.file_url,
+        brandName: capitalizedBrandName,
+        brandColors: colors.length > 0 ? colors : undefined,
+        headerItems: headerItems > 0 ? headerItems : undefined,
+        footerColumns: footerColumns > 0 ? footerColumns : undefined,
+      }));
+
       // PHASE 2: Discover competitors using API
       setInitPhase('competitors');
       setDiscoveringCompetitors(true);
+      addInitLog('info', `Starting competitor discovery for ${capitalizedBrandName}...`);
       console.log('[Init-Competitors] Discovering competitors for:', fullUrl);
       const competitorsResponse = await fetch('/api/context-acquisition/competitors', {
         method: 'POST',
@@ -338,14 +453,38 @@ export default function ProjectChatPage() {
       
       if (!competitorsResult.success || !competitorsResult.competitors?.length) {
         console.log('[Init-Competitors] No competitors found');
-        setToast({ isOpen: true, message: 'No competitors found. You can add them manually.' });
+        addInitLog('warning', 'No competitors found. You can add them manually.');
+        addInitLog('info', 'Click "Enter Workspace" to continue →');
         setInitPhase('done');
-        setIsInitializing(false);
+        // Keep isInitializing true - user must click button to exit
+        setContextTaskStatus('completed');
         return;
       }
 
       const competitors = competitorsResult.competitors;
       console.log(`[Init-PagePlanning] Discovered ${competitors.length} competitors, creating page plans...`);
+      
+      addInitLog('success', `Found ${competitors.length} competitors via AI search`);
+      
+      // Log each competitor
+      competitors.slice(0, 8).forEach((c: any) => {
+        const name = c.name || c.competitorName;
+        const domain = c.website || c.domain || c.url;
+        addInitLog('info', `  → ${name} (${domain})`);
+      });
+      if (competitors.length > 8) {
+        addInitLog('info', `  ... and ${competitors.length - 8} more`);
+      }
+
+      // Update initData with competitors
+      setInitData(prev => ({
+        ...prev,
+        competitors: competitors.map((c: any) => ({
+          name: c.name || c.competitorName,
+          logo: c.logo,
+          domain: c.website || c.domain,
+        })),
+      }));
 
       // Refresh site contexts to show competitors
       await loadSiteContexts(userId);
@@ -353,6 +492,7 @@ export default function ProjectChatPage() {
       // PHASE 3: Create page plans
       setInitPhase('planning');
       setPlanningPages(true);
+      addInitLog('info', 'Creating comparison page blueprints...');
 
       const pagesResponse = await fetch('/api/context-acquisition/competitors/create-pages', {
         method: 'POST',
@@ -369,23 +509,45 @@ export default function ProjectChatPage() {
 
       const pagesResult = await pagesResponse.json();
       console.log(`[Init-PagePlanning] Result:`, pagesResult);
+      
+      if (pagesResult.success) {
+        const altCount = pagesResult.alternativePages || 0;
+        const listCount = pagesResult.listiclePages || 0;
+        addInitLog('success', `Created ${altCount} alternative pages (1v1 comparisons)`);
+        if (listCount > 0) {
+          addInitLog('success', `Created ${listCount} listicle pages (top N lists)`);
+        }
+      } else {
+        addInitLog('error', `Page creation failed: ${pagesResult.error || 'Unknown error'}`);
+      }
+
+      // Update initData with pages created
+      setInitData(prev => ({
+        ...prev,
+        pagesCreated: pagesResult.created || 0,
+      }));
 
       // Refresh BOTH content projects and content items
       await loadContentProjects(userId);
       await loadContentItems(userId);
 
-      // PHASE 4: Done - exit initialization mode
+      // PHASE 4: Done - show completion summary (keep overlay visible until user clicks button)
+      addInitLog('info', '─'.repeat(40));
+      addInitLog('success', 'Setup complete!');
+      addInitLog('info', `  • ${competitors.length} competitors discovered`);
+      addInitLog('info', `  • ${pagesResult.created || 0} page blueprints created`);
+      addInitLog('info', '─'.repeat(40));
+      addInitLog('info', 'Click "Enter Workspace" to continue →');
+      
       setInitPhase('done');
-      setIsInitializing(false);
+      // Keep isInitializing true - user must click button to exit
       setContextTaskStatus('completed');
-
-      if (pagesResult.created > 0) {
-        setToast({ isOpen: true, message: `Found ${competitors.length} competitors, created ${pagesResult.created} page plans!` });
-      }
     } catch (error) {
       console.error('[Init-PagePlanning] Error:', error);
+      addInitLog('error', `Setup failed: ${error}`);
+      addInitLog('info', 'Click "Enter Workspace" to continue anyway →');
       setInitPhase('done');
-      setIsInitializing(false);
+      // Keep overlay visible so user can see error and click button
     } finally {
       setDiscoveringCompetitors(false);
       setPlanningPages(false);
@@ -457,6 +619,7 @@ export default function ProjectChatPage() {
     try {
       console.log(`[Project-Init] Initializing project: ${projectId} for user: ${userId}`);
       setInitialLoading(true);
+      
       const project = await getSEOProjectById(projectId);
       if (!project || project.user_id !== userId) {
         console.error('[Project-Init] Project not found or unauthorized');
@@ -465,8 +628,17 @@ export default function ProjectChatPage() {
       }
       setCurrentProject(project);
       
-      // Load project specific data
+      // Quick check: if this is a new project, show overlay immediately
       const contexts = await getSiteContexts(userId, projectId);
+      const hasBrandContext = contexts.some(c => c.type === 'logo');
+      
+      // If no brand context yet, immediately show overlay (don't wait for all data to load)
+      if (!hasBrandContext && lastInitiatedProjectId.current !== projectId) {
+        console.log('[Project-Init] New project detected, showing overlay immediately');
+        setIsInitializing(true);
+        setInitPhase('brand');
+      }
+      
       setSiteContexts(contexts);
       console.log(`[Project-Init] Loaded ${contexts.length} site contexts`);
       
@@ -477,7 +649,6 @@ export default function ProjectChatPage() {
       ]);
 
       // Check if context is empty and auto-initiate
-      const hasBrandContext = contexts.some(c => c.type === 'logo');
       const hasContentItems = items && items.length > 0;
       
       // Check if any conversation has messages
@@ -506,7 +677,7 @@ export default function ProjectChatPage() {
         console.log('[Auto-Initiate] Project needs initialization, triggering context analysis...');
         lastInitiatedProjectId.current = projectId;
         
-        // Show full-screen initialization overlay
+        // Ensure overlay is visible
         setIsInitializing(true);
         // Auto-select context task and start analysis
         setSelectedTask({
@@ -535,15 +706,20 @@ export default function ProjectChatPage() {
     setContextTaskStatus('running');
     setRunningTaskId('context-analysis');
     
+    // Initialize logs
+    addInitLog('info', `Initializing workspace for ${domain}`);
+    
     let conversationToUse = existingConvo;
     if (!conversationToUse) {
       try {
         console.log('[Auto-Initiate] Creating new conversation for context analysis...');
+        addInitLog('info', 'Creating conversation session...');
         conversationToUse = await createConversation(userId, projectId, `Context Analysis: ${domain}`);
         setConversations([conversationToUse]);
         updateCurrentConversation(conversationToUse);
       } catch (error) {
         console.error('[Auto-Initiate] Failed to create conversation:', error);
+        addInitLog('error', 'Failed to create conversation');
         setContextTaskStatus('error');
         setRunningTaskId(null);
         return;
@@ -553,6 +729,8 @@ export default function ProjectChatPage() {
     }
 
     const fullUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+    addInitLog('info', `Fetching ${fullUrl}...`);
+    addInitLog('info', 'Extracting brand assets, header & footer...');
     const prompt = `[Auto-initiated by system]
 
 ## Site Context Collection for ${fullUrl}
@@ -925,6 +1103,7 @@ Execute the full page generation workflow.`;
         messages={messages}
         isLoading={isLoading}
         initPhase={initPhase}
+        initData={initData}
         onComplete={handleInitializationComplete}
       />
     );

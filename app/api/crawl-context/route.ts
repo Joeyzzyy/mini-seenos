@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         .eq('user_id', userId);
       
       if (projectId) {
-        query.eq('project_id', projectId);
+        query.eq('seo_project_id', projectId);
       }
       
       const { data } = await query;
@@ -145,36 +145,7 @@ export async function POST(request: NextRequest) {
       results.fields['footer'] = { skipped: true, reason: 'Already has values' };
     }
 
-    // === UPDATE BRAND ASSETS WITH AI-EXTRACTED DATA ===
-    // If we didn't get colors/fonts from regex, use AI-extracted values
-    if (shouldCrawlBrandAssets && brandAssets) {
-      const needsUpdate = !brandAssets.primary_color || !brandAssets.heading_font;
-      if (needsUpdate) {
-        const updates: any = {};
-        if (!brandAssets.primary_color && headerExtractedAssets.primaryColor) {
-          updates.primary_color = headerExtractedAssets.primaryColor;
-          brandAssets.primary_color = headerExtractedAssets.primaryColor;
-        }
-        if (!brandAssets.heading_font && headerExtractedAssets.headingFont) {
-          updates.heading_font = headerExtractedAssets.headingFont;
-          brandAssets.heading_font = headerExtractedAssets.headingFont;
-        }
-        
-        // Update database if we have new values
-        if (Object.keys(updates).length > 0) {
-          console.log(`[crawl-context] Updating brand assets with AI-extracted data:`, updates);
-          await supabase
-            .from('site_contexts')
-            .update({ ...updates, updated_at: new Date().toISOString() })
-            .eq('user_id', userId)
-            .eq('type', 'logo')
-            .eq('project_id', projectId || null);
-          
-          // Update results
-          results.fields['brand-assets'].data = { ...results.fields['brand-assets'].data, ...updates };
-        }
-      }
-    }
+    // Note: primary_color, secondary_color, heading_font, body_font columns removed from DB
 
     console.log(`[crawl-context] Completed:`, results);
 
@@ -202,9 +173,7 @@ function hasBrandAssets(ctx: any): boolean {
     ctx.file_url ||
     ctx.favicon_url ||
     ctx.favicon_light_url ||
-    ctx.domain_name ||
-    ctx.primary_color ||
-    ctx.heading_font
+    ctx.domain_name
   );
 }
 
@@ -498,15 +467,12 @@ function extractBrandAssets(html: string, origin: string, domainName: string): a
 
   console.log(`[extractBrandAssets] domain_name: ${domainName}, logo: ${logoLightUrl || 'none'}, favicon: ${faviconLightUrl || 'none'}`);
   
+  // Note: primary_color, secondary_color, heading_font, body_font removed from DB
   return {
     domain_name: domainName,
     og_image: ogImage,
     logo_url: logoLightUrl,  // Simplified: single logo field
     favicon_url: faviconLightUrl,  // Simplified: single favicon field
-    primary_color: primaryColor,
-    secondary_color: secondaryColor,
-    heading_font: headingFont,
-    body_font: bodyFont,
     languages,
   };
 }
@@ -767,7 +733,7 @@ async function saveBrandAssets(
 ): Promise<void> {
   const updateData: any = {
     user_id: userId,
-    project_id: projectId || null,
+    seo_project_id: projectId || null,
     type: 'logo',
     updated_at: new Date().toISOString(),
   };
@@ -800,28 +766,16 @@ async function saveBrandAssets(
     // Also update legacy fields for compatibility
     updateData.favicon_light_url = data.favicon_url;
   }
-  if (shouldUpdate('primary_color') && data.primary_color) {
-    updateData.primary_color = data.primary_color;
-  }
-  if (shouldUpdate('secondary_color') && data.secondary_color) {
-    updateData.secondary_color = data.secondary_color;
-  }
-  if (shouldUpdate('heading_font') && data.heading_font) {
-    updateData.heading_font = data.heading_font;
-    console.log(`[saveBrandAssets] Setting heading_font: ${data.heading_font}`);
-  }
-  if (shouldUpdate('body_font') && data.body_font) {
-    updateData.body_font = data.body_font;
-  }
+  // Note: primary_color, secondary_color, heading_font, body_font columns removed from DB
   if (shouldUpdate('languages') && data.languages) {
     updateData.languages = data.languages;
   }
 
-  console.log(`[saveBrandAssets] Saving:`, Object.keys(updateData).filter(k => !['user_id', 'project_id', 'type', 'updated_at'].includes(k)));
+  console.log(`[saveBrandAssets] Saving:`, Object.keys(updateData).filter(k => !['user_id', 'seo_project_id', 'type', 'updated_at'].includes(k)));
 
   const { error } = await supabase
     .from('site_contexts')
-    .upsert(updateData, { onConflict: 'user_id,project_id,type' });
+    .upsert(updateData, { onConflict: 'user_id,seo_project_id,type' });
 
   if (error) {
     console.error('[saveBrandAssets] Error:', error);
@@ -838,7 +792,7 @@ async function saveHeaderFooter(
 ): Promise<void> {
   const upsertData = {
     user_id: userId,
-    project_id: projectId || null,
+    seo_project_id: projectId || null,
     type,
     content: JSON.stringify(config),
     html,
@@ -847,7 +801,7 @@ async function saveHeaderFooter(
 
   const { error } = await supabase
     .from('site_contexts')
-    .upsert(upsertData, { onConflict: 'user_id,project_id,type' });
+    .upsert(upsertData, { onConflict: 'user_id,seo_project_id,type' });
 
   if (error) {
     console.error(`[saveHeaderFooter] Error saving ${type}:`, error);

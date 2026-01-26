@@ -288,11 +288,17 @@ export default function TaskList({
                     e.stopPropagation();
                     onGeneratePage(item);
                   }}
-                  className="px-2 py-1 text-[10px] font-semibold rounded transition-all"
+                  disabled={!!runningTaskId}
+                  className={`px-2 py-1 text-[10px] font-semibold rounded transition-all ${
+                    runningTaskId ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                   style={{
-                    background: 'linear-gradient(80deg, rgb(255, 175, 64) -21.49%, rgb(209, 148, 236) 18.44%, rgb(154, 143, 234) 61.08%, rgb(101, 180, 255) 107.78%)',
+                    background: runningTaskId 
+                      ? '#D1D5DB'
+                      : 'linear-gradient(80deg, rgb(255, 175, 64) -21.49%, rgb(209, 148, 236) 18.44%, rgb(154, 143, 234) 61.08%, rgb(101, 180, 255) 107.78%)',
                     color: 'white',
                   }}
+                  title={runningTaskId ? 'Another page is being generated...' : 'Generate this page'}
                 >
                   Generate
                 </button>

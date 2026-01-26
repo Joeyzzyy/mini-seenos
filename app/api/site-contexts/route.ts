@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id);
     
     if (projectId) {
-      query = query.eq('project_id', projectId);
+      query = query.eq('seo_project_id', projectId);
     } else {
-      query = query.is('project_id', null);
+      query = query.is('seo_project_id', null);
     }
 
     const { data: rawContexts, error } = await query.order('type', { ascending: true });
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         user_id: ctx.user_id,
         type: ctx.type,
         content: ctx.content,
-        project_id: ctx.project_id,
+        seo_project_id: ctx.seo_project_id,
         created_at: ctx.created_at,
         updated_at: ctx.updated_at,
       };
@@ -54,10 +54,6 @@ export async function GET(request: NextRequest) {
           logo_light_url: ctx.logo_light_url,
           domain_name: ctx.domain_name,
           og_image: ctx.og_image,
-          primary_color: ctx.primary_color,
-          secondary_color: ctx.secondary_color,
-          heading_font: ctx.heading_font,
-          body_font: ctx.body_font,
           languages: ctx.languages,
         };
       }
@@ -100,8 +96,7 @@ export async function POST(request: NextRequest) {
     const { 
       type, content, fileUrl, projectId, html,
       logoUrl, faviconUrl, // Simplified fields
-      domainName, ogImage, primaryColor, secondaryColor, 
-      headingFont, bodyFont, languages 
+      domainName, ogImage, languages 
     } = body;
 
     console.log('POST /api/site-contexts - User:', user.id, 'Type:', type, 'Project:', projectId);
@@ -130,9 +125,9 @@ export async function POST(request: NextRequest) {
       .eq('type', type);
     
     if (projectId) {
-      query = query.eq('project_id', projectId);
+      query = query.eq('seo_project_id', projectId);
     } else {
-      query = query.is('project_id', null);
+      query = query.is('seo_project_id', null);
     }
 
     const { data: existing, error: selectError } = await query.maybeSingle();
@@ -161,7 +156,7 @@ export async function POST(request: NextRequest) {
     const updateData: any = {
       content: content || null,
       file_url: fileUrl || null,
-      project_id: projectId || null,
+      seo_project_id: projectId || null,
       updated_at: new Date().toISOString(),
     };
 
@@ -183,10 +178,6 @@ export async function POST(request: NextRequest) {
     }
     if (domainName !== undefined) updateData.domain_name = toNullIfEmpty(domainName);
     if (ogImage !== undefined) updateData.og_image = toNullIfEmpty(ogImage);
-    if (primaryColor !== undefined) updateData.primary_color = toNullIfEmpty(primaryColor);
-    if (secondaryColor !== undefined) updateData.secondary_color = toNullIfEmpty(secondaryColor);
-    if (headingFont !== undefined) updateData.heading_font = toNullIfEmpty(headingFont);
-    if (bodyFont !== undefined) updateData.body_font = toNullIfEmpty(bodyFont);
     if (languages !== undefined) updateData.languages = toNullIfEmpty(languages);
 
     if (existing) {
@@ -219,7 +210,7 @@ export async function POST(request: NextRequest) {
         type,
         content: content || null,
         file_url: fileUrl || null,
-        project_id: projectId || null,
+        seo_project_id: projectId || null,
       };
 
       // Add html field if provided (for header/footer)
@@ -240,10 +231,6 @@ export async function POST(request: NextRequest) {
       }
       if (domainName !== undefined) insertData.domain_name = toNullIfEmpty(domainName);
       if (ogImage !== undefined) insertData.og_image = toNullIfEmpty(ogImage);
-      if (primaryColor !== undefined) insertData.primary_color = toNullIfEmpty(primaryColor);
-      if (secondaryColor !== undefined) insertData.secondary_color = toNullIfEmpty(secondaryColor);
-      if (headingFont !== undefined) insertData.heading_font = toNullIfEmpty(headingFont);
-      if (bodyFont !== undefined) insertData.body_font = toNullIfEmpty(bodyFont);
       if (languages !== undefined) insertData.languages = toNullIfEmpty(languages);
 
       const { data, error } = await supabase

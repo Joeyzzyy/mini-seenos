@@ -48,10 +48,6 @@ interface ContextModalNewProps {
     ogImage?: string;
     logoUrl?: string;
     faviconUrl?: string;
-    primaryColor?: string;
-    secondaryColor?: string;
-    headingFont?: string;
-    bodyFont?: string;
     languages?: string;
   }) => Promise<void>;
   onRefresh?: () => Promise<void>;
@@ -110,18 +106,12 @@ export default function ContextModalNew({
   const [ogImage, setOgImage] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [faviconUrl, setFaviconUrl] = useState('');
-  const [primaryColor, setPrimaryColor] = useState('');
-  const [secondaryColor, setSecondaryColor] = useState('');
-  const [headingFont, setHeadingFont] = useState('');
-  const [bodyFont, setBodyFont] = useState('');
   const [languages, setLanguages] = useState('');
   const [headerConfig, setHeaderConfig] = useState<any>(null);
   const [footerConfig, setFooterConfig] = useState<any>(null);
   
   // Refs for scrolling
   const brandAssetsRef = useRef<HTMLDivElement>(null);
-  const colorsRef = useRef<HTMLDivElement>(null);
-  const typographyRef = useRef<HTMLDivElement>(null);
   const languagesRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
@@ -140,10 +130,6 @@ export default function ContextModalNew({
         // Use logo_url first, fallback to legacy fields
         setLogoUrl(ctx.logo_url || ctx.logo_light_url || ctx.file_url || '');
         setFaviconUrl(ctx.favicon_url || ctx.favicon_light_url || '');
-        setPrimaryColor(ctx.primary_color || '');
-        setSecondaryColor(ctx.secondary_color || '');
-        setHeadingFont(ctx.heading_font || '');
-        setBodyFont(ctx.body_font || '');
         setLanguages(ctx.languages || '');
         
         // Reset file states
@@ -241,10 +227,6 @@ export default function ContextModalNew({
         // Use simplified logo_url and favicon_url fields
         if (data.logo_url) setLogoUrl(data.logo_url);
         if (data.favicon_url) setFaviconUrl(data.favicon_url);
-        if (data.primary_color) setPrimaryColor(data.primary_color);
-        if (data.secondary_color) setSecondaryColor(data.secondary_color);
-        if (data.heading_font) setHeadingFont(data.heading_font);
-        if (data.body_font) setBodyFont(data.body_font);
         if (data.languages) setLanguages(data.languages);
       }
 
@@ -310,10 +292,6 @@ export default function ContextModalNew({
           ogImage: finalOgImage,
           logoUrl: finalLogoUrl,
           faviconUrl: finalFaviconUrl,
-          primaryColor,
-          secondaryColor,
-          headingFont,
-          bodyFont,
           languages,
           projectId,
         }),
@@ -367,10 +345,6 @@ export default function ContextModalNew({
         return hasStringValue(logoContext?.domain_name);
       case 'logo':
         return hasStringValue(logoContext?.logo_url) || hasStringValue(logoContext?.logo_light_url) || hasStringValue(logoContext?.file_url);
-      case 'colors':
-        return hasStringValue(logoContext?.primary_color) || hasStringValue(logoContext?.secondary_color);
-      case 'typography':
-        return hasStringValue(logoContext?.heading_font) || hasStringValue(logoContext?.body_font);
       case 'languages':
         return hasStringValue(logoContext?.languages);
       case 'header':
@@ -395,8 +369,6 @@ export default function ContextModalNew({
   const sidebarItems = [
     { key: 'domain', label: 'Domain', ref: brandAssetsRef },
     { key: 'logo', label: 'Logo, Favicon & OG', ref: brandAssetsRef },
-    { key: 'colors', label: 'Colors', ref: colorsRef },
-    { key: 'typography', label: 'Typography', ref: typographyRef },
     { key: 'languages', label: 'Languages', ref: languagesRef },
     { key: 'header', label: 'Header', ref: headerRef },
     { key: 'footer', label: 'Footer', ref: footerRef },
@@ -661,22 +633,12 @@ export default function ContextModalNew({
                 onFaviconFileChange={handleFaviconFileChange}
                 logoPreview={logoPreview}
                 faviconPreview={faviconPreview}
-                primaryColor={primaryColor}
-                setPrimaryColor={setPrimaryColor}
-                secondaryColor={secondaryColor}
-                setSecondaryColor={setSecondaryColor}
-                headingFont={headingFont}
-                setHeadingFont={setHeadingFont}
-                bodyFont={bodyFont}
-                setBodyFont={setBodyFont}
                 languages={languages}
                 setLanguages={setLanguages}
                 userLogoUrl={userLogoUrl}
                 setHeaderConfig={setHeaderConfig}
                 setFooterConfig={setFooterConfig}
                 brandAssetsRef={brandAssetsRef}
-                colorsRef={colorsRef}
-                typographyRef={typographyRef}
                 languagesRef={languagesRef}
                 headerRef={headerRef}
                 footerRef={footerRef}

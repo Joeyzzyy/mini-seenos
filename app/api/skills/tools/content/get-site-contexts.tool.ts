@@ -48,9 +48,9 @@ Example: types: ["logo", "header", "footer", "competitors"]`,
         .eq('user_id', user_id);
 
       if (projectId) {
-        query = query.eq('project_id', projectId);
+        query = query.eq('seo_project_id', projectId);
       } else {
-        query = query.is('project_id', null);
+        query = query.is('seo_project_id', null);
       }
 
       // Filter by specific types if provided

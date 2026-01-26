@@ -22,7 +22,13 @@ export { generate_faq_section } from './generate-faq-section.tool';
 export { generate_cta_section } from './generate-cta-section.tool';
 export { generate_screenshots_section } from './generate-screenshots-section.tool';
 
+// 🚀 BATCH PARALLEL GENERATOR - Use this for 4x faster generation
+export { generate_sections_batch } from './generate-sections-batch.tool';
+
 // Listicle Page (Best Of / Top N) Section Generators
 export { generate_listicle_hero_section } from './generate-listicle-hero-section.tool';
 export { generate_listicle_product_card } from './generate-listicle-product-card.tool';
 export { generate_listicle_comparison_table } from './generate-listicle-comparison-table.tool';
+
+// 🚀 LISTICLE BATCH PARALLEL GENERATOR - Use this for 5-10x faster generation
+export { generate_listicle_sections_batch } from './generate-listicle-sections-batch.tool';

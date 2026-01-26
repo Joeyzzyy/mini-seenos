@@ -19,8 +19,7 @@ export interface FooterConfig {
     url: string;
   }>;
   copyright?: string;
-  backgroundColor?: string; // CSS color value (can be hex, rgb, or gradient)
-  textColor?: string; // CSS color value
+  // Note: backgroundColor and textColor removed - footer uses unified light theme
 }
 
 export const defaultFooterConfig: FooterConfig = {
@@ -56,23 +55,18 @@ export const defaultFooterConfig: FooterConfig = {
     { platform: 'twitter', url: 'https://twitter.com/example' },
     { platform: 'linkedin', url: 'https://linkedin.com/company/example' },
   ],
-  backgroundColor: 'linear-gradient(80deg, rgb(255, 175, 64) -21.49%, rgb(209, 148, 236) 18.44%, rgb(154, 143, 234) 61.08%, rgb(101, 180, 255) 107.78%)',
-  textColor: '#E5E7EB',
 };
 
 /**
  * Generate Tailwind footer HTML from config
+ * Uses unified light theme for consistency
  */
 export function generateFooterHTML(config: FooterConfig): string {
-  // Use custom colors if provided, otherwise use defaults
-  const bgStyle = config.backgroundColor 
-    ? `style="background: ${config.backgroundColor};"` 
-    : `class="bg-gray-900"`;
+  // Fixed light theme colors for consistency
+  const textColor = '#6B7280';      // gray-500
+  const headingColor = '#111827';   // gray-900
   
-  const textColor = config.textColor || '#D1D5DB';
-  const headingColor = config.textColor || '#FFFFFF';
-  
-  return `<footer ${bgStyle}>
+  return `<footer class="bg-gray-50 border-t border-gray-200">
   <div class="container mx-auto px-4 py-12" style="color: ${textColor};">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-16">
       <!-- Company Info -->
@@ -94,7 +88,7 @@ export function generateFooterHTML(config: FooterConfig): string {
         ${config.socialMedia && config.socialMedia.length > 0 ? `
         <div class="flex space-x-6 mt-6">
           ${config.socialMedia.map(social => `
-          <a href="${escapeHtml(social?.url || '#')}" target="_blank" rel="noopener noreferrer" class="hover:opacity-75 transition-opacity" aria-label="${social?.platform || 'social'}">
+          <a href="${escapeHtml(social?.url || '#')}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="${social?.platform || 'social'}">
             ${getSocialIcon(social?.platform || '')}
           </a>
           `).join('')}
@@ -111,7 +105,7 @@ export function generateFooterHTML(config: FooterConfig): string {
         <ul class="space-y-4">
           ${(column?.links || []).map(link => `
           <li>
-            <a href="${escapeHtml(link?.url || '#')}" class="text-sm hover:opacity-75 transition-opacity">
+            <a href="${escapeHtml(link?.url || '#')}" class="text-sm hover:text-gray-900 transition-colors">
               ${escapeHtml(link?.label || '')}
             </a>
           </li>
@@ -122,7 +116,7 @@ export function generateFooterHTML(config: FooterConfig): string {
     </div>
     
     <!-- Copyright -->
-    <div class="border-t border-gray-800 mt-8 pt-8 text-sm text-center" style="opacity: 0.75;">
+    <div class="border-t border-gray-200 mt-8 pt-8 text-sm text-center text-gray-500">
       <p>
         ${config.copyright && config.copyright.trim() !== '' ? escapeHtml(config.copyright) : `© ${new Date().getFullYear()} ${escapeHtml(config.companyName || 'Company')}. All rights reserved.`}
       </p>

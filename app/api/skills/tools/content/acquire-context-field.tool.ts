@@ -506,7 +506,7 @@ Return ONLY valid JSON, no explanation.`;
             .from('site_contexts')
             .update({ tone: extractedData, updated_at: new Date().toISOString() })
             .eq('user_id', userId)
-            .eq('project_id', projectId)
+            .eq('seo_project_id', projectId)
             .eq('type', 'logo');
           break;
 
@@ -1191,7 +1191,7 @@ async function saveToDatabase(
 ): Promise<void> {
   const upsertData: any = {
     user_id: userId,
-    project_id: projectId,
+    seo_project_id: projectId,
     type,
     content,
     updated_at: new Date().toISOString()
@@ -1207,15 +1207,7 @@ async function saveToDatabase(
     if (extras.faviconDarkUrl) upsertData.icon_dark = extras.faviconDarkUrl;
     if (extras.favicon) upsertData.favicon = extras.favicon;
     
-    // Colors
-    if (extras.primaryColor) upsertData.primary_color = extras.primaryColor;
-    if (extras.secondaryColor) upsertData.secondary_color = extras.secondaryColor;
-    
-    // Typography
-    if (extras.headingFont || extras.fonts?.[0]) upsertData.heading_font = extras.headingFont || extras.fonts?.[0];
-    if (extras.bodyFont || extras.fonts?.[1] || extras.fonts?.[0]) {
-      upsertData.body_font = extras.bodyFont || extras.fonts?.[1] || extras.fonts?.[0];
-    }
+    // Note: primary_color, secondary_color, heading_font, body_font columns removed from DB
     
     // Brand Info
     if (extras.brandName) upsertData.brand_name = extras.brandName;
@@ -1225,9 +1217,9 @@ async function saveToDatabase(
     if (extras.languages || extras.language) upsertData.languages = extras.languages || extras.language;
   }
 
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('site_contexts')
-    .upsert(upsertData, { onConflict: 'user_id,project_id,type' });
+    .upsert(upsertData, { onConflict: 'user_id,seo_project_id,type' });
 
   if (error) {
     console.error(`[saveToDatabase] Error saving ${type}:`, error);
@@ -1235,7 +1227,7 @@ async function saveToDatabase(
   }
   
   console.log(`[saveToDatabase] ✅ Saved ${type}`, 
-    Object.keys(upsertData).filter(k => !['user_id', 'project_id', 'type', 'content', 'updated_at'].includes(k)));
+    Object.keys(upsertData).filter(k => !['user_id', 'seo_project_id', 'type', 'content', 'updated_at'].includes(k)));
 }
 
 // ========== Regex Extractors ==========

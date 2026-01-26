@@ -24,7 +24,7 @@ export default function ProjectsPage() {
   const [deletingProject, setDeletingProject] = useState<SEOProject | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [userCredits, setUserCredits] = useState<number>(0);
-  const [subscriptionTier, setSubscriptionTier] = useState<string>('free');
+  const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null); // null = not loaded yet
   const [showPricingModal, setShowPricingModal] = useState(false);
   const hasShownPricingModal = useRef(false);
   const router = useRouter();
@@ -41,11 +41,15 @@ export default function ProjectsPage() {
       const response = await fetch('/api/user/credits', { headers });
       if (response.ok) {
         const data = await response.json();
-        setUserCredits(data.credits ?? 0);
-        setSubscriptionTier(data.subscription_tier ?? 'free');
+        const tier = data.subscription_tier ?? 'free';
+        const credits = data.credits ?? 0;
+        
+        setUserCredits(credits);
+        setSubscriptionTier(tier);
         
         // Auto-show pricing modal for free tier users (only once per session)
-        if (data.subscription_tier === 'free' && !hasShownPricingModal.current) {
+        // Only show if tier is 'free' AND user has 0 credits
+        if (tier === 'free' && credits === 0 && !hasShownPricingModal.current) {
           hasShownPricingModal.current = true;
           // Small delay to ensure page is loaded
           setTimeout(() => {
@@ -54,6 +58,7 @@ export default function ProjectsPage() {
         }
       } else {
         console.error('Failed to fetch user credits: HTTP', response.status);
+        setSubscriptionTier('free'); // Set to free on error so UI doesn't hang
         showToast('Failed to fetch subscription info. Please check your network connection.', 'error', 5000);
       }
     } catch (error) {

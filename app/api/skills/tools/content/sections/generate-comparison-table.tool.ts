@@ -43,8 +43,8 @@ Returns HTML that can be assembled into the full page.`,
       competitor_value: z.string().describe('Competitor support level or value'),
       competitor_status: z.enum(['yes', 'partial', 'no', 'badge']),
     })).min(4).max(15).describe('Feature comparison rows'),
-    brand_wins: z.array(z.string()).min(3).max(8).describe('Features where brand wins'),
-    competitor_wins: z.array(z.string()).min(3).max(8).describe('Features where competitor wins'),
+    brand_wins: z.array(z.string()).min(1).max(8).describe('Features where brand wins'),
+    competitor_wins: z.array(z.string()).min(1).max(8).describe('Features where competitor wins (can be few if brand dominates)'),
   }),
   execute: async ({ brand, competitor, features, brand_wins, competitor_wins }) => {
     const brandInitial = brand.name.charAt(0).toUpperCase();
@@ -219,7 +219,8 @@ Returns HTML that can be assembled into the full page.`,
   },
 });
 
-function escapeHtml(text: string): string {
+function escapeHtml(text: string | undefined | null): string {
+  if (!text) return '';
   const map: { [key: string]: string } = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }

@@ -212,56 +212,25 @@ function ThinkingIndicator({ pageTitle }: { pageTitle: string }) {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8">
-      {/* Animated orb */}
-      <div className="relative mb-8">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 via-blue-100 to-cyan-100 animate-pulse" />
-        <div 
-          className="absolute inset-2 rounded-full bg-gradient-to-br from-purple-200 via-blue-200 to-cyan-200 animate-spin"
-          style={{ animationDuration: '3s' }}
-        />
-        <div className="absolute inset-4 rounded-full bg-white flex items-center justify-center">
-          <svg 
-            className="w-8 h-8 text-purple-500 animate-pulse" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="1.5"
-          >
-            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-          </svg>
-        </div>
-      </div>
-      
       {/* Page title */}
-      <h3 className="text-lg font-semibold text-[#111827] mb-2 text-center max-w-md truncate">
+      <h3 className="text-base font-medium text-[#111827] mb-3 text-center max-w-md truncate">
         {pageTitle}
       </h3>
       
       {/* Current phase */}
       <div className="flex items-center gap-2 mb-6">
-        <span className="text-sm text-[#6B7280]">
+        <span className="text-sm text-[#9CA3AF]">
           {phaseMessages[phase]}{dots}
         </span>
       </div>
       
-      {/* Progress steps */}
-      <div className="flex items-center gap-2">
-        {[0, 1, 2, 3].map((step) => (
-          <div
-            key={step}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              step <= phase 
-                ? 'bg-purple-500 scale-100' 
-                : 'bg-[#E5E5E5] scale-75'
-            }`}
-          />
-        ))}
+      {/* Progress bar */}
+      <div className="w-48 h-0.5 bg-[#E5E5E5] rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-[#111827] rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${((phase + 1) / 4) * 100}%` }}
+        />
       </div>
-      
-      {/* Hint text */}
-      <p className="text-xs text-[#9CA3AF] mt-8 text-center max-w-sm">
-        AI is preparing to generate your page. This may take a few moments as we analyze the blueprint and set up the workflow.
-      </p>
     </div>
   );
 }

@@ -700,7 +700,7 @@ ${itemsList}
         const { data: logoContext } = await serverSupabase
           .from('site_contexts')
           .select('languages')
-          .eq('project_id', projectId)
+          .eq('seo_project_id', projectId)
           .eq('type', 'logo')
           .single();
         

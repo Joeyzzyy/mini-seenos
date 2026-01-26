@@ -261,7 +261,17 @@ export async function saveMessage(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('[saveMessage] Error details:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      conversationId,
+      role,
+    });
+    throw error;
+  }
   return data;
 }
 
@@ -283,10 +293,10 @@ export async function getUserConversations(userId: string, projectId?: string) {
     .eq('user_id', userId);
   
   if (projectId) {
-    query = query.eq('project_id', projectId);
+    query = query.eq('seo_project_id', projectId);
   } else {
     // For global conversations or non-scoped ones
-    query = query.is('project_id', null);
+    query = query.is('seo_project_id', null);
   }
 
   const { data, error } = await query.order('updated_at', { ascending: false });
@@ -311,7 +321,7 @@ export async function createConversation(userId: string, projectId?: string, tit
     .from('conversations')
     .insert({
       user_id: userId,
-      project_id: projectId || null,
+      seo_project_id: projectId || null,
       title,
     })
     .select()
@@ -836,7 +846,7 @@ export async function deleteSEOProject(projectId: string): Promise<void> {
   const { data: conversations } = await supabase
     .from('conversations')
     .select('id')
-    .eq('project_id', projectId);
+    .eq('seo_project_id', projectId);
   
   if (conversations && conversations.length > 0) {
     const conversationIds = conversations.map(c => c.id);
@@ -857,7 +867,7 @@ export async function deleteSEOProject(projectId: string): Promise<void> {
     const { error: conversationsError } = await supabase
       .from('conversations')
       .delete()
-      .eq('project_id', projectId);
+      .eq('seo_project_id', projectId);
     
     if (conversationsError) {
       console.error('[deleteSEOProject] Failed to delete conversations:', conversationsError);
@@ -894,7 +904,7 @@ export async function deleteSEOProject(projectId: string): Promise<void> {
   const { error: contextsError } = await supabase
     .from('site_contexts')
     .delete()
-    .eq('project_id', projectId);
+    .eq('seo_project_id', projectId);
   
   if (contextsError) {
     console.error('[deleteSEOProject] Failed to delete site_contexts:', contextsError);
@@ -978,10 +988,10 @@ export async function getSiteContexts(userId: string, projectId?: string): Promi
     .eq('user_id', userId);
   
   if (projectId) {
-    query = query.eq('project_id', projectId);
+    query = query.eq('seo_project_id', projectId);
   } else {
-    // If no projectId, fetch global contexts (where project_id is null)
-    query = query.is('project_id', null);
+    // If no projectId, fetch global contexts (where seo_project_id is null)
+    query = query.is('seo_project_id', null);
   }
 
   const { data: rawData, error } = await query.order('type', { ascending: true });
@@ -1041,9 +1051,9 @@ export async function getSiteContextByType(
     .eq('type', type);
   
   if (projectId) {
-    query = query.eq('project_id', projectId);
+    query = query.eq('seo_project_id', projectId);
   } else {
-    query = query.is('project_id', null);
+    query = query.is('seo_project_id', null);
   }
 
   const { data, error } = await query.maybeSingle();
@@ -1068,7 +1078,7 @@ export async function upsertSiteContext(
     const updateData: Record<string, unknown> = {
       content: content || null,
       file_url: fileUrl || null,
-      project_id: projectId || null,
+      seo_project_id: projectId || null,
       updated_at: new Date().toISOString(),
     };
     // Only update html if explicitly provided (even if empty string, to clear it)
@@ -1092,7 +1102,7 @@ export async function upsertSiteContext(
       type,
       content: content || null,
       file_url: fileUrl || null,
-      project_id: projectId || null,
+      seo_project_id: projectId || null,
     };
     // Only set html if explicitly provided
     if (html !== undefined) {

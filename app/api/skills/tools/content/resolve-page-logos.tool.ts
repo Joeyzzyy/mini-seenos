@@ -59,7 +59,7 @@ Returns a structured object with all resolved logo URLs.`,
         .from('site_contexts')
         .select('*')
         .eq('user_id', user_id)
-        .eq('project_id', project_id)
+        .eq('seo_project_id', project_id)
         .in('type', ['logo', 'competitors']);
       
       if (error) {

@@ -290,7 +290,8 @@ Returns a confirmation that the section was saved. The HTML is stored in the dat
   },
 });
 
-function escapeHtml(text: string): string {
+function escapeHtml(text: string | undefined | null): string {
+  if (!text) return '';
   const map: { [key: string]: string } = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }

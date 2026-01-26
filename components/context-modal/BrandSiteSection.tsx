@@ -138,22 +138,12 @@ export default function BrandSiteSection({
   onFaviconFileChange,
   logoPreview,
   faviconPreview,
-  primaryColor,
-  setPrimaryColor,
-  secondaryColor,
-  setSecondaryColor,
-  headingFont,
-  setHeadingFont,
-  bodyFont,
-  setBodyFont,
   languages,
   setLanguages,
   userLogoUrl,
   setHeaderConfig,
   setFooterConfig,
   brandAssetsRef,
-  colorsRef,
-  typographyRef,
   languagesRef,
   headerRef,
   footerRef,
@@ -186,14 +176,14 @@ export default function BrandSiteSection({
           ctaButton: parsedHeader.ctaButton || {
             label: 'Get Started',
             url: '#',
-            color: primaryColor || '#111827',
+            color: '#111827',
           },
         });
       } catch (err) {
         console.error('Failed to parse header content:', err);
       }
     }
-  }, [headerContext, logoUrl, primaryColor, domainName]);
+  }, [headerContext, logoUrl, domainName]);
 
   // Parse footer config from content (JSON format)
   useEffect(() => {
@@ -276,76 +266,6 @@ export default function BrandSiteSection({
             previewUrl={ogImagePreview}
             placeholder="https://example.com/og.png"
           />
-        </div>
-      </div>
-
-      {/* Colors */}
-      <div ref={colorsRef} className="space-y-3 pl-6 mb-5 pt-5 border-t-2 border-[#E5E5E5]">
-        <h4 className="text-xs font-semibold text-[#111827]">Colors</h4>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1">Primary Color</label>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                value={primaryColor || '#9A8FEA'}
-                onChange={(e) => setPrimaryColor(e.target.value)}
-                className="w-8 h-8 border border-[#E5E5E5] rounded-lg cursor-pointer"
-              />
-              <input
-                type="text"
-                value={primaryColor}
-                onChange={(e) => setPrimaryColor(e.target.value)}
-                placeholder="#9A8FEA"
-                className="flex-1 px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1">Secondary Color</label>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                value={secondaryColor || '#FF5733'}
-                onChange={(e) => setSecondaryColor(e.target.value)}
-                className="w-8 h-8 border border-[#E5E5E5] rounded-lg cursor-pointer"
-              />
-              <input
-                type="text"
-                value={secondaryColor}
-                onChange={(e) => setSecondaryColor(e.target.value)}
-                placeholder="#FF5733"
-                className="flex-1 px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Typography */}
-      <div ref={typographyRef} className="space-y-3 pl-6 mb-5 pt-5 border-t-2 border-[#E5E5E5]">
-        <h4 className="text-xs font-semibold text-[#111827]">Typography</h4>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1">Heading Font</label>
-            <input
-              type="text"
-              value={headingFont}
-              onChange={(e) => setHeadingFont(e.target.value)}
-              placeholder="e.g., Montserrat, Poppins"
-              className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1">Body Font</label>
-            <input
-              type="text"
-              value={bodyFont}
-              onChange={(e) => setBodyFont(e.target.value)}
-              placeholder="e.g., Inter, Roboto"
-              className="w-full px-2.5 py-1.5 text-xs bg-white text-[#111827] placeholder:text-[#9CA3AF] border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9A8FEA]"
-            />
-          </div>
         </div>
       </div>
 

@@ -71,7 +71,7 @@ IMPORTANT: This saves to site_contexts table, NOT to content_items.`,
         .from('site_contexts')
         .select('id')
         .eq('user_id', userId)
-        .eq('project_id', projectId)
+        .eq('seo_project_id', projectId)
         .eq('type', type)
         .maybeSingle();
 
@@ -94,10 +94,7 @@ IMPORTANT: This saves to site_contexts table, NOT to content_items.`,
         if (logoDarkUrl !== undefined) updateData.logo_dark_url = logoDarkUrl || null;
         if (faviconLightUrl !== undefined) updateData.favicon_light_url = faviconLightUrl || null;
         if (faviconDarkUrl !== undefined) updateData.favicon_dark_url = faviconDarkUrl || null;
-        if (primaryColor !== undefined) updateData.primary_color = primaryColor || null;
-        if (secondaryColor !== undefined) updateData.secondary_color = secondaryColor || null;
-        if (headingFont !== undefined) updateData.heading_font = headingFont || null;
-        if (bodyFont !== undefined) updateData.body_font = bodyFont || null;
+        // Note: primary_color, secondary_color, heading_font, body_font columns removed from DB
         if (languages !== undefined) updateData.languages = languages || null;
       }
 
@@ -119,7 +116,7 @@ IMPORTANT: This saves to site_contexts table, NOT to content_items.`,
         // Create new
         const insertData = {
           user_id: userId,
-          project_id: projectId,
+          seo_project_id: projectId,
           type,
           ...updateData,
         };
