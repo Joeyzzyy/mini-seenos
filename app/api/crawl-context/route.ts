@@ -651,21 +651,24 @@ async function extractHeader(html: string, origin: string, logoUrl?: string | nu
     const aiPrompt = `Analyze this website header HTML and extract the navigation structure.
 
 IMPORTANT: 
-- For dropdown menus, use the parent link URL or the first child's URL. Never return null for URL.
-- Only include top-level navigation items (flatten dropdowns to their parent).
-- Extract the CTA button (usually styled differently, like "Get Started", "Sign Up", "Try Free").
+- Look for ALL <a> tags with href starting with "#" (anchor links) or "/" (path links) - these are navigation items
+- IGNORE CSS classes like "hidden" - extract all links regardless of visibility classes
+- The link text may be INSIDE nested <span> or other elements - extract the VISIBLE TEXT from within
+- Example: <a href="#pricing"><span>Pricing</span></a> → label: "Pricing", url: "#pricing"
+- For dropdown menus, use the parent link URL or the first child's URL
+- Extract CTA buttons (styled differently, like "Sign In", "Get Started", "Try Free")
 
 Return ONLY valid JSON:
 {
   "siteName": "Site name (use "${siteName || 'Site'}" if not found)",
-  "navigation": [{"label": "Link text", "url": "/valid-url"}],
+  "navigation": [{"label": "Link text from span/text", "url": "#anchor or /path"}],
   "ctaButton": {"label": "CTA text", "url": "CTA URL", "color": "#hex"} or null,
   "primaryColor": "#hex color from the header/CTA button" or null,
   "headingFont": "Font family name" or null
 }
 
 Header HTML:
-${headerHtml.substring(0, 4000)}`;
+${headerHtml.substring(0, 8000)}`;
 
     const { text } = await generateText({
       model: azure(process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4.1'),
