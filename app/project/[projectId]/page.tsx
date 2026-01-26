@@ -35,6 +35,7 @@ import CompetitorsModal from '@/components/CompetitorsModal';
 import Toast from '@/components/Toast';
 import ConfirmModal from '@/components/ConfirmModal';
 import SiteInitializationOverlay from '@/components/SiteInitializationOverlay';
+import PricingModal from '@/components/PricingModal';
 
 export default function ProjectChatPage() {
   const params = useParams();
@@ -120,6 +121,7 @@ export default function ProjectChatPage() {
   // User credits and subscription
   const [userCredits, setUserCredits] = useState<number>(1);
   const [subscriptionTier, setSubscriptionTier] = useState<string>('free');
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   // Fetch user credits from API
   const fetchUserCredits = async () => {
@@ -1006,6 +1008,12 @@ Start now with acquire_site_context(url="${fullUrl}", field="all").`;
     const currentUser = userRef.current;
     if (!currentUser || !currentConversation || isLoading) return;
     
+    // Check credits before generating
+    if (userCredits <= 0) {
+      setShowPricingModal(true);
+      return;
+    }
+    
     // Check if this is a regeneration (page already has content)
     const isRegenerate = item.status === 'generated' || !!item.generated_content;
     
@@ -1273,6 +1281,19 @@ Execute the full page generation workflow.`;
           isDangerous={true}
         />
       )}
+      
+      {/* Pricing Modal - shows when user tries to generate with 0 credits */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        currentCredits={userCredits}
+        currentTier={subscriptionTier}
+        onPaymentSuccess={(newCredits, newTier) => {
+          setShowPricingModal(false);
+          setUserCredits(newCredits);
+          setSubscriptionTier(newTier);
+        }}
+      />
     </div>
   );
 }

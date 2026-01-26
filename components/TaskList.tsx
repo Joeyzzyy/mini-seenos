@@ -133,9 +133,8 @@ export default function TaskList({
     data: siteContexts,
   };
 
-  // Calculate visible items based on credits
-  // With 1 credit, user can only see 1 page task (the first one)
-  const maxVisibleItems = credits;
+  // All items are now visible - credits check happens on Generate click
+  // const maxVisibleItems = credits;
 
   // Convert content items to tasks
   const getPageTask = (item: ContentItem): Task => {
@@ -232,7 +231,7 @@ export default function TaskList({
   };
 
   // Helper to render a single page item
-  const renderPageItem = (item: ContentItem, isLocked: boolean) => {
+  const renderPageItem = (item: ContentItem) => {
     const task = getPageTask(item);
     const isSelected = selectedTaskId === task.id;
     const isRunning = task.status === 'running';
@@ -240,7 +239,7 @@ export default function TaskList({
     const pageTypeBadge = getPageTypeBadge(item.page_type);
 
     return (
-      <div key={item.id} className={isLocked ? 'locked-item' : ''}>
+      <div key={item.id}>
         <div
           className={`group flex items-center gap-2 p-2 rounded-lg transition-all ${
             isSelected 
@@ -249,9 +248,8 @@ export default function TaskList({
           }`}
         >
           <button
-            onClick={() => !isLocked && onSelectTask(task)}
+            onClick={() => onSelectTask(task)}
             className="flex-1 flex items-center gap-2 min-w-0 text-left"
-            disabled={isLocked}
           >
             {getStatusIcon(task.status, 'page')}
             <div className="flex-1 min-w-0">
@@ -279,9 +277,8 @@ export default function TaskList({
             </div>
           </button>
 
-          {/* Action buttons - hidden when locked */}
-          {!isLocked && (
-            <div className="flex items-center gap-1 shrink-0">
+          {/* Action buttons */}
+          <div className="flex items-center gap-1 shrink-0">
               {!isCompleted && !isRunning && (
                 <button
                   onClick={(e) => {
@@ -320,14 +317,11 @@ export default function TaskList({
                 </a>
               )}
             </div>
-          )}
         </div>
       </div>
     );
   };
 
-  // Calculate global item index across all projects
-  let globalItemIndex = 0;
 
   return (
     <aside className="w-80 bg-white border border-[#E5E5E5] rounded-lg shadow-sm flex flex-col h-full overflow-hidden">
@@ -587,35 +581,6 @@ export default function TaskList({
             </div>
           )}
 
-          {/* Upgrade banner - show at top when there are locked items */}
-          {contentItems.length > maxVisibleItems && (
-            <div className="mb-3 px-3 py-2.5 bg-gradient-to-r from-amber-50 to-purple-50 rounded-lg border border-amber-100">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#6B7280]">
-                    <span className="font-bold">{contentItems.length}</span> pages planned
-                  </span>
-                  <a
-                    href="/#pricing"
-                    className="inline-flex items-center gap-1 px-3 py-1 text-[10px] font-semibold text-white rounded-full transition-all hover:opacity-90 shadow-sm"
-                    style={{
-                      background: 'linear-gradient(80deg, rgb(255, 175, 64) -21.49%, rgb(209, 148, 236) 18.44%, rgb(154, 143, 234) 61.08%, rgb(101, 180, 255) 107.78%)',
-                    }}
-                  >
-                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    Upgrade
-                  </a>
-                </div>
-                <div className="text-[10px] text-[#9CA3AF]">
-                  Your plan allows <span className="font-semibold text-[#6B7280]">{maxVisibleItems}</span> page{maxVisibleItems > 1 ? 's' : ''}. 
-                  Upgrade to generate all <span className="font-semibold text-[#6B7280]">{contentItems.length}</span> pages.
-                </div>
-              </div>
-            </div>
-          )}
-
           {contentItems.length === 0 ? (
             <div className="px-3 py-8 text-center">
               <svg className="w-10 h-10 text-[#E5E5E5] mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -643,12 +608,7 @@ export default function TaskList({
             <div className="space-y-1 relative">
               {/* Render all filtered items in sorted order (generated first, then by time desc) */}
               <div className="space-y-0.5">
-                {filteredItems.map((item) => {
-                  const currentIndex = globalItemIndex;
-                  globalItemIndex++;
-                  const isLocked = currentIndex >= maxVisibleItems;
-                  return renderPageItem(item, isLocked);
-                })}
+                {filteredItems.map((item) => renderPageItem(item))}
               </div>
 
             </div>
