@@ -327,16 +327,6 @@ function GeneratedPageViewer({
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         animation: slideUp 0.2s ease-out;
       }
-      .preview-alert-icon {
-        width: 48px;
-        height: 48px;
-        background: #FEF3C7;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 16px;
-      }
       .preview-alert-title {
         font-size: 16px;
         font-weight: 700;
@@ -398,13 +388,6 @@ function GeneratedPageViewer({
       overlay.className = 'preview-alert-overlay';
       overlay.innerHTML = `
         <div class="preview-alert-box">
-          <div class="preview-alert-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-          </div>
           <div class="preview-alert-title">Preview Mode</div>
           <div class="preview-alert-message">
             This is a preview only. To experience in-page navigation, please <a href="${previewUrl}" target="_blank" class="preview-alert-link">open in a new tab</a>.
@@ -855,7 +838,7 @@ function GeneratedPageViewer({
             srcDoc={currentHtml || undefined}
             className="w-full h-full border-0"
             title={title}
-            sandbox="allow-scripts allow-same-origin"
+            sandbox="allow-scripts allow-same-origin allow-popups"
             onLoad={handleIframeLoad}
           />
         ) : (
