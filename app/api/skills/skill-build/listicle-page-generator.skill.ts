@@ -32,6 +32,9 @@ import { generate_listicle_sections_batch } from '../tools/content/sections/gene
 import { assemble_listicle_page } from '../tools/content/assemble-listicle-page.tool';
 import { assemble_page_from_sections } from '../tools/content/assemble-page-from-sections.tool';
 
+// Cleanup tools
+import { clear_content_item_sections } from '../tools/content/clear-content-item-sections.tool';
+
 export const listiclePageGeneratorSkill: Skill = {
   id: 'listicle-page-generator',
   name: 'Build: Listicle/Best-Of Page Generator',
@@ -98,6 +101,17 @@ QUALITY STANDARDS (NON-NEGOTIABLE)
    - Mobile-first responsive
    - Cards with shadow depth hierarchy
    - Clean, scannable layout
+
+====================
+⚠️ REGENERATION HANDLING ⚠️
+====================
+If the user message contains "REGENERATE" or asks to regenerate:
+
+**STEP 0: CLEAR OLD DATA** (MANDATORY for regeneration!)
+Call 'clear_content_item_sections' with the content_item_id FIRST.
+This ensures a completely fresh start - no old sections will be reused.
+
+Then proceed with the FULL workflow below. DO NOT skip any steps!
 
 ====================
 GENERATION WORKFLOW
@@ -336,6 +350,9 @@ After completion, provide:
     merge_html_with_site_contexts,
     fix_style_conflicts,
     save_final_page,
+    
+    // Cleanup tools
+    clear_content_item_sections,      // Clear old sections before regeneration
   },
   enabled: true,
   metadata: {

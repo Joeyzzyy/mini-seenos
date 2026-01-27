@@ -28,6 +28,9 @@ import { generate_screenshots_section } from '../tools/content/sections/generate
 import { generate_sections_batch } from '../tools/content/sections/generate-sections-batch.tool';
 import { assemble_alternative_page } from '../tools/content/assemble-alternative-page.tool';
 
+// Cleanup tools
+import { clear_content_item_sections } from '../tools/content/clear-content-item-sections.tool';
+
 export const alternativePageGeneratorSkill: Skill = {
   id: 'alternative-page-generator',
   name: 'Build: Alternative Page Generator',
@@ -88,6 +91,17 @@ Your pages must be TOP-TIER, meaning:
    - Mobile-first responsive layout
    - Premium visual hierarchy through typography and shadows
    - Consistent grayscale design with brand accents
+
+====================
+⚠️ REGENERATION HANDLING ⚠️
+====================
+If the user message contains "REGENERATE" or asks to regenerate:
+
+**STEP 0: CLEAR OLD DATA** (MANDATORY for regeneration!)
+Call 'clear_content_item_sections' with the content_item_id FIRST.
+This ensures a completely fresh start - no old sections will be reused.
+
+Then proceed with the FULL workflow below. DO NOT skip any steps!
 
 ====================
 GENERATION WORKFLOW
@@ -345,6 +359,9 @@ After completion, provide:
     merge_html_with_site_contexts,
     fix_style_conflicts,
     save_final_page,
+    
+    // Cleanup tools
+    clear_content_item_sections,      // Clear old sections before regeneration
   },
   enabled: true,
   metadata: {
