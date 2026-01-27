@@ -1123,7 +1123,7 @@ Execute the full page generation workflow.`;
         <TopBar 
           user={user}
           onDomainsClick={() => setIsDomainsOpen(true)}
-          credits={userCredits}
+          credits={userCredits ?? undefined}
           subscriptionTier={subscriptionTier}
         />
       )}
@@ -1286,7 +1286,7 @@ Execute the full page generation workflow.`;
       <PricingModal
         isOpen={showPricingModal}
         onClose={() => setShowPricingModal(false)}
-        currentCredits={userCredits}
+        currentCredits={userCredits ?? 0}
         currentTier={subscriptionTier}
         onPaymentSuccess={(newCredits, newTier) => {
           setShowPricingModal(false);

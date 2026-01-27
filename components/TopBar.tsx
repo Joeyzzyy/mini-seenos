@@ -155,8 +155,8 @@ export default function TopBar({ onDomainsClick, user: propUser, credits, subscr
       <PricingModal
         isOpen={showPricingModal}
         onClose={() => setShowPricingModal(false)}
-        currentCredits={credits}
-        currentTier={subscriptionTier}
+        currentCredits={credits ?? 0}
+        currentTier={subscriptionTier ?? 'free'}
         onPaymentSuccess={(newCredits, newTier) => {
           setShowPricingModal(false);
           onCreditsUpdate?.(newCredits, newTier);
