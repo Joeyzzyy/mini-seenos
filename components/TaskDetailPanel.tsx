@@ -406,25 +406,18 @@ function GeneratedPageViewer({
       doc.body.appendChild(overlay);
     };
     
-    // Intercept all link clicks
+    // Intercept navigation clicks only
     doc.addEventListener('click', (e) => {
       const target = e.target as Element;
       const link = target.closest('a');
-      const button = target.closest('button');
       
-      // Don't intercept alert close button
+      // Don't intercept alert buttons
       if (target.classList.contains('preview-alert-close') || target.classList.contains('preview-alert-link')) {
         return;
       }
       
-      // Intercept links with href (except # anchors that stay on page)
+      // Only intercept links with external href (not # anchors)
       if (link && link.getAttribute('href') && !link.getAttribute('href')?.startsWith('#')) {
-        showPreviewAlert(e);
-        return;
-      }
-      
-      // Intercept buttons (they might trigger navigation)
-      if (button && !button.closest('.preview-alert-box')) {
         showPreviewAlert(e);
         return;
       }
