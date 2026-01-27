@@ -1172,7 +1172,7 @@ Execute the full page generation workflow.`;
             isDiscoveringCompetitors={discoveringCompetitors}
             isPlanningPages={planningPages}
             contextTaskStatus={contextTaskStatus}
-            credits={userCredits}
+            credits={userCredits ?? undefined}
             projectDomain={currentProject?.domain}
           />
         )}
