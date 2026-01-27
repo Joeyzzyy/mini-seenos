@@ -26,8 +26,8 @@ Returns a confirmation that the section was saved. The HTML is stored in the dat
   execute: async ({ content_item_id, brand_name, competitor_name, faqs }) => {
     // Generate FAQ items HTML
     const faqItemsHtml = faqs.map((faq, index) => `
-          <div class="faq-item border border-gray-200 rounded-xl overflow-hidden">
-            <button class="faq-trigger w-full px-4 md:px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors" onclick="this.parentElement.classList.toggle('active')">
+          <div class="faq-item border border-gray-200 rounded-xl overflow-hidden bg-white">
+            <button class="faq-trigger w-full px-4 md:px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors" onclick="const item=this.parentElement;item.classList.toggle('active');item.querySelector('.faq-content').classList.toggle('hidden')">
               <span class="font-semibold text-gray-900 text-sm md:text-base pr-4">${escapeHtml(faq.question)}</span>
               <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
