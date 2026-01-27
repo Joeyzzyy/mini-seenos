@@ -316,8 +316,9 @@ Current sections provided: ${Object.entries(sections).filter(([_, v]) => v && (A
       font-weight: 700;
     }
     
-    /* FAQ Accordion */
-    .faq-item.active .faq-content { display: block; }
+    /* FAQ Accordion - use !important to override Tailwind's hidden class */
+    .faq-content { display: none !important; }
+    .faq-item.active .faq-content { display: block !important; }
     .faq-item.active .faq-icon { transform: rotate(180deg); }
     
     /* TOC Link */
