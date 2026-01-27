@@ -87,12 +87,8 @@ export default function TopBar({ onDomainsClick, user: propUser, credits, subscr
               </>
             ) : (
               <>
-                <span className="text-[10px] text-[#9CA3AF]">Your Subscription:</span>
-                <span className="text-[10px] font-medium uppercase text-[#374151]">
-                  {subscriptionTier}
-                </span>
-                <span className="text-[10px] text-[#D1D5DB]">·</span>
-                <span className="text-xs font-medium text-[#374151]">{credits} pages left</span>
+                <span className="text-[10px] text-[#9CA3AF]">Your plan can generate</span>
+                <span className="text-xs font-semibold text-[#374151]">{credits} more pages</span>
                 <svg className="w-3 h-3 text-[#9A8FEA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
