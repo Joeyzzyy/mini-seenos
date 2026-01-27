@@ -1009,7 +1009,7 @@ Start now with acquire_site_context(url="${fullUrl}", field="all").`;
     if (!currentUser || !currentConversation || isLoading) return;
     
     // Check credits before generating
-    if (userCredits <= 0) {
+    if (userCredits === null || userCredits <= 0) {
       setShowPricingModal(true);
       return;
     }
