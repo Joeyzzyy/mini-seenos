@@ -18,23 +18,43 @@ export async function GET(request: NextRequest) {
 
     // Try to get user profile with credits
     const supabaseAdmin = createServerSupabaseAdmin();
-    const { data: profile, error: profileError } = await supabaseAdmin
+    let { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('credits, subscription_tier, subscription_status, max_projects')
       .eq('id', user.id)
       .single();
 
     if (profileError) {
-      // Profile doesn't exist yet, return default (3 credits for new users)
-      console.log('Profile not found, returning default credits:', profileError.message);
-      return NextResponse.json({
-        credits: 3,
-        subscription_tier: 'free',
-        subscription_status: 'inactive',
-        max_projects: 3,
-        user_id: user.id,
-        email: user.email,
-      });
+      // Profile doesn't exist yet, create one with 3 free credits
+      console.log('Profile not found, creating new profile for user:', user.id);
+      const { data: newProfile, error: createError } = await supabaseAdmin
+        .from('user_profiles')
+        .insert({
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || null,
+          avatar_url: user.user_metadata?.avatar_url || null,
+          credits: 3,
+          subscription_tier: 'free',
+          subscription_status: 'inactive',
+          max_projects: 3,
+        })
+        .select('credits, subscription_tier, subscription_status, max_projects')
+        .single();
+      
+      if (createError) {
+        console.error('Failed to create user profile:', createError);
+        return NextResponse.json({
+          credits: 3,
+          subscription_tier: 'free',
+          subscription_status: 'inactive',
+          max_projects: 3,
+          user_id: user.id,
+          email: user.email,
+        });
+      }
+      
+      profile = newProfile;
     }
 
     return NextResponse.json({
