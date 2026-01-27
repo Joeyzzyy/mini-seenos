@@ -1017,6 +1017,23 @@ Start now with acquire_site_context(url="${fullUrl}", field="all").`;
     // Check if this is a regeneration (page already has content)
     const isRegenerate = item.status === 'generated' || !!item.generated_content;
     
+    // For regeneration, clear old sections FIRST (don't rely on AI to do this)
+    if (isRegenerate) {
+      try {
+        console.log('[handleGeneratePage] Clearing old sections before regeneration...');
+        const clearResponse = await fetch('/api/content/clear-sections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content_item_id: item.id }),
+        });
+        const clearResult = await clearResponse.json();
+        console.log('[handleGeneratePage] Clear sections result:', clearResult);
+      } catch (clearError) {
+        console.error('[handleGeneratePage] Failed to clear sections:', clearError);
+        // Continue anyway - AI might still work
+      }
+    }
+    
     // Set running state
     setRunningTaskId(item.id);
     setSelectedTask({
